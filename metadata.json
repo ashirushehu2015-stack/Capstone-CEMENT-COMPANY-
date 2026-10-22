@@ -1,0 +1,6 @@
+{
+  "name": "BuildCem Nigeria - Secure Cement Ordering & Retail Management System",
+  "description": "Enterprise-grade web-based cement ordering and management system for local cement retailers in Nigeria, featuring real-time stock management, secure checkout, multi-tier RBAC, Paystack and bank transfer payment reconciliation, and delivery dispatch.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
