@@ -37,6 +37,7 @@ import { CheckoutModal } from './components/CheckoutModal.tsx';
 import { OrderReceiptModal } from './components/OrderReceiptModal.tsx';
 import { OrderTrackerModal } from './components/OrderTrackerModal.tsx';
 import { StaffDashboard } from './components/StaffDashboard.tsx';
+import { CustomerPortal } from './components/CustomerPortal.tsx';
 import { apiProducts, apiReports } from './services/api.ts';
 import type { Product, Order, BusinessSettings, UserRole } from './types/index.ts';
 
@@ -55,8 +56,8 @@ function StorefrontContent() {
   const [isTrackerOpen, setIsTrackerOpen] = useState(false);
   const [receiptOrder, setReceiptOrder] = useState<Order | null>(null);
 
-  // View state: 'store' or 'dashboard'
-  const [activeView, setActiveView] = useState<'store' | 'dashboard'>('store');
+  // View state: 'landing' (single unscrollable), 'customer_portal' (full buyer experience), or 'dashboard' (staff logistics)
+  const [activeView, setActiveView] = useState<'landing' | 'customer_portal' | 'dashboard'>('landing');
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
@@ -135,8 +136,15 @@ function StorefrontContent() {
     }
   };
 
+  const handleOpenCustomerPortal = async () => {
+    if (!user || user.role !== 'CUSTOMER') {
+      await handleQuickRoleSelect('CUSTOMER');
+    }
+    setActiveView('customer_portal');
+  };
+
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#040914] text-slate-100 font-sans flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950">
+    <div className={`w-screen ${activeView === 'landing' ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-[#040914] text-slate-100 font-sans flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950`}>
       
       {/* 1. TOP STATUS & NAVIGATION BAR (Dark navy with amber operational badge) */}
       <header className="bg-[#060e1d] border-b border-blue-900/40 text-xs py-2 px-4 sm:px-6 shrink-0 z-30">
@@ -169,6 +177,28 @@ function StorefrontContent() {
             </a>
 
             <button
+              onClick={handleOpenCustomerPortal}
+              className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition-colors ${
+                activeView === 'customer_portal'
+                  ? 'bg-amber-500 text-slate-950 font-bold border border-amber-400'
+                  : 'bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50'
+              }`}
+            >
+              <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Customer Portal</span>
+            </button>
+
+            {activeView !== 'landing' && (
+              <button
+                onClick={() => setActiveView('landing')}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-semibold"
+              >
+                <Lock className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Staff Terminal / Landing</span>
+              </button>
+            )}
+
+            <button
               onClick={() => setIsCalculatorOpen(true)}
               className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-colors"
             >
@@ -185,7 +215,13 @@ function StorefrontContent() {
             </button>
 
             <button
-              onClick={handleQuickOrderDirect}
+              onClick={() => {
+                if (activeView !== 'customer_portal') {
+                  handleOpenCustomerPortal();
+                } else {
+                  handleQuickOrderDirect();
+                }
+              }}
               className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3 py-1 rounded-lg flex items-center gap-1.5 text-xs shadow-md transition-all active:scale-95"
             >
               <Truck className="w-3.5 h-3.5 text-slate-950" />
@@ -200,12 +236,25 @@ function StorefrontContent() {
         </div>
       </header>
 
-      {/* RENDER VIEW: STAFF LOGISTICS PORTAL OR SPLIT LANDING PAGE */}
+      {/* RENDER VIEW: STAFF LOGISTICS PORTAL, CUSTOMER FACING PORTAL, OR SPLIT LANDING PAGE */}
       {activeView === 'dashboard' && isStaff ? (
         <div className="flex-1 min-h-0 overflow-y-auto">
           <StaffDashboard
-            onClose={() => setActiveView('store')}
+            onClose={() => setActiveView('landing')}
             onViewOrderReceipt={(order) => setReceiptOrder(order)}
+          />
+        </div>
+      ) : activeView === 'customer_portal' ? (
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <CustomerPortal
+            products={products}
+            settings={settings}
+            onOpenCheckout={() => setIsCheckoutOpen(true)}
+            onOpenCalculator={() => setIsCalculatorOpen(true)}
+            onOpenTracker={() => setIsTrackerOpen(true)}
+            onViewOrderReceipt={(order) => setReceiptOrder(order)}
+            onViewSpecs={(product) => setViewSpecsProduct(product)}
+            onReturnToLanding={() => setActiveView('landing')}
           />
         </div>
       ) : (
@@ -369,14 +418,23 @@ function StorefrontContent() {
                         <ArrowRight className="w-4 h-4" />
                       </button>
                     ) : (
-                      <button
-                        onClick={handleQuickOrderDirect}
-                        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm transition-all active:scale-95"
-                      >
-                        <Truck className="w-4 h-4" />
-                        <span>Place 600-Bag Trailer Order Now</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </button>
+                      <div className="space-y-2">
+                        <button
+                          onClick={() => setActiveView('customer_portal')}
+                          className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm transition-all active:scale-95"
+                        >
+                          <ShoppingBag className="w-4 h-4" />
+                          <span>Enter Customer Facing Portal</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={handleQuickOrderDirect}
+                          className="w-full bg-[#0b224d] hover:bg-[#122e61] text-amber-300 border border-blue-600/50 font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all"
+                        >
+                          <Truck className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Order 1 Trailer Directly (₦6,510,000)</span>
+                        </button>
+                      </div>
                     )}
 
                     <div className="flex items-center justify-between pt-1">

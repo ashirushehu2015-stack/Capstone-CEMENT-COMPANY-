@@ -27,8 +27,8 @@ const paystackVerifySchema = z.object({
   reference: z.string().min(3),
 });
 
-// GET /api/payments (Cashier, Store Manager, Admin)
-router.get('/', authenticate, requireRole('ADMIN', 'CASHIER', 'STORE_MANAGER'), (_req, res) => {
+// GET /api/payments (Cashier, Manager, Admin)
+router.get('/', authenticate, requireRole('ADMIN', 'MANAGER', 'CASHIER', 'STORE_MANAGER'), (_req, res) => {
   const payments = db.getAllPayments();
   return res.json({ success: true, payments });
 });
@@ -110,8 +110,8 @@ router.post('/verify-paystack', authenticate, (req: AuthenticatedRequest, res) =
   }
 });
 
-// POST /api/payments/record-offline (Cashier, Store Manager, Admin)
-router.post('/record-offline', authenticate, requireRole('ADMIN', 'CASHIER', 'STORE_MANAGER'), (req: AuthenticatedRequest, res) => {
+// POST /api/payments/record-offline (Cashier, Manager, Admin)
+router.post('/record-offline', authenticate, requireRole('ADMIN', 'MANAGER', 'CASHIER', 'STORE_MANAGER'), (req: AuthenticatedRequest, res) => {
   const parsed = offlinePaymentSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ success: false, error: parsed.error.issues[0].message });

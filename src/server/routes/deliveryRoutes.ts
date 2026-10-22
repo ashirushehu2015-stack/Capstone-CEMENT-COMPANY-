@@ -25,7 +25,7 @@ const confirmCollectionSchema = z.object({
 });
 
 // GET /api/deliveries
-router.get('/', authenticate, requireRole('ADMIN', 'STORE_MANAGER', 'SALES_OFFICER', 'DELIVERY_OFFICER'), (req: AuthenticatedRequest, res) => {
+router.get('/', authenticate, requireRole('ADMIN', 'MANAGER', 'ASSISTANT_MANAGER', 'AGENT', 'STORE_MANAGER', 'SALES_OFFICER', 'DELIVERY_OFFICER'), (req: AuthenticatedRequest, res) => {
   const allOrders = db.getAllOrders();
   const deliveryOrders = allOrders.filter(
     (o) => o.fulfillmentType === 'FACTORY_TRAILER_HAULAGE' && o.status !== 'CANCELLED'
@@ -42,7 +42,7 @@ router.get('/', authenticate, requireRole('ADMIN', 'STORE_MANAGER', 'SALES_OFFIC
 });
 
 // POST /api/deliveries/:orderId/assign
-router.post('/:orderId/assign', authenticate, requireRole('ADMIN', 'STORE_MANAGER', 'SALES_OFFICER'), (req: AuthenticatedRequest, res) => {
+router.post('/:orderId/assign', authenticate, requireRole('ADMIN', 'MANAGER', 'ASSISTANT_MANAGER', 'STORE_MANAGER', 'SALES_OFFICER'), (req: AuthenticatedRequest, res) => {
   const parsed = assignDeliverySchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ success: false, error: parsed.error.issues[0].message });
@@ -87,7 +87,7 @@ router.post('/:orderId/assign', authenticate, requireRole('ADMIN', 'STORE_MANAGE
 });
 
 // POST /api/deliveries/:orderId/dispatch
-router.post('/:orderId/dispatch', authenticate, requireRole('ADMIN', 'STORE_MANAGER', 'DELIVERY_OFFICER'), (req: AuthenticatedRequest, res) => {
+router.post('/:orderId/dispatch', authenticate, requireRole('ADMIN', 'MANAGER', 'AGENT', 'STORE_MANAGER', 'DELIVERY_OFFICER'), (req: AuthenticatedRequest, res) => {
   const order = db.getOrderById(req.params.orderId);
   if (!order) return res.status(404).json({ success: false, error: 'Order not found' });
 
@@ -116,7 +116,7 @@ router.post('/:orderId/dispatch', authenticate, requireRole('ADMIN', 'STORE_MANA
 });
 
 // POST /api/deliveries/:orderId/confirm-delivery
-router.post('/:orderId/confirm-delivery', authenticate, requireRole('ADMIN', 'STORE_MANAGER', 'DELIVERY_OFFICER'), (req: AuthenticatedRequest, res) => {
+router.post('/:orderId/confirm-delivery', authenticate, requireRole('ADMIN', 'MANAGER', 'AGENT', 'STORE_MANAGER', 'DELIVERY_OFFICER'), (req: AuthenticatedRequest, res) => {
   const parsed = confirmDeliverySchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ success: false, error: parsed.error.issues[0].message });
@@ -150,7 +150,7 @@ router.post('/:orderId/confirm-delivery', authenticate, requireRole('ADMIN', 'ST
 });
 
 // POST /api/deliveries/:orderId/confirm-collection
-router.post('/:orderId/confirm-collection', authenticate, requireRole('ADMIN', 'STORE_MANAGER', 'SALES_OFFICER'), (req: AuthenticatedRequest, res) => {
+router.post('/:orderId/confirm-collection', authenticate, requireRole('ADMIN', 'MANAGER', 'AGENT', 'STORE_MANAGER', 'SALES_OFFICER'), (req: AuthenticatedRequest, res) => {
   const parsed = confirmCollectionSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ success: false, error: parsed.error.issues[0].message });

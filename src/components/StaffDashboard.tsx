@@ -206,7 +206,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
         setDeliveries(delRes.deliveries);
       }
 
-      if (isAdmin) {
+      if (isAdmin || isManager) {
         const [logsRes, staffRes, settingsRes] = await Promise.all([
           apiReports.getAuditLogs().catch(() => ({ logs: [] })),
           apiAuth.getStaff().catch(() => ({ staff: [] })),
@@ -553,10 +553,10 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
             </button>
           )}
 
-          {isAdmin && (
+          {(isAdmin || isManager) && (
             <>
               <div className="pt-4 pb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                Administrator
+                Executive Management
               </div>
               <button
                 onClick={() => setActiveTab('staff')}

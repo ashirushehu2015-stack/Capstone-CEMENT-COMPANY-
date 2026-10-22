@@ -26,7 +26,7 @@ const createStaffSchema = z.object({
   password: z.string().min(6),
   fullName: z.string().min(2),
   phone: z.string().min(10),
-  role: z.enum(['ADMIN', 'STORE_MANAGER', 'SALES_OFFICER', 'CASHIER', 'DELIVERY_OFFICER']),
+  role: z.enum(['MANAGER', 'ASSISTANT_MANAGER', 'CASHIER', 'AGENT', 'ADMIN', 'STORE_MANAGER', 'SALES_OFFICER', 'DELIVERY_OFFICER']),
 });
 
 // POST /api/auth/register
@@ -124,14 +124,14 @@ router.post('/logout', authenticate, (req: AuthenticatedRequest, res) => {
   return res.json({ success: true, message: 'Logged out successfully' });
 });
 
-// GET /api/auth/staff (Admin only)
-router.get('/staff', authenticate, requireRole('ADMIN'), (_req, res) => {
+// GET /api/auth/staff (Manager and Admin)
+router.get('/staff', authenticate, requireRole('ADMIN', 'MANAGER'), (_req, res) => {
   const users = db.getAllUsers().filter((u) => u.role !== 'CUSTOMER');
   return res.json({ success: true, staff: users });
 });
 
-// POST /api/auth/staff (Admin only)
-router.post('/staff', authenticate, requireRole('ADMIN'), (req: AuthenticatedRequest, res) => {
+// POST /api/auth/staff (Manager and Admin)
+router.post('/staff', authenticate, requireRole('ADMIN', 'MANAGER'), (req: AuthenticatedRequest, res) => {
   const parsed = createStaffSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ success: false, error: parsed.error.issues[0].message });

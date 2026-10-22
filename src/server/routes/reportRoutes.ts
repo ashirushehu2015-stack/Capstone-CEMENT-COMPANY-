@@ -69,8 +69,8 @@ router.get('/analytics', authenticate, requireRole('ADMIN', 'MANAGER', 'ASSISTAN
   });
 });
 
-// GET /api/reports/audit-logs (Admin only)
-router.get('/audit-logs', authenticate, requireRole('ADMIN'), (_req, res) => {
+// GET /api/reports/audit-logs (Manager and Admin)
+router.get('/audit-logs', authenticate, requireRole('ADMIN', 'MANAGER'), (_req, res) => {
   const logs = db.getAuditLogs();
   return res.json({ success: true, logs });
 });
@@ -81,8 +81,8 @@ router.get('/settings', (_req, res) => {
   return res.json({ success: true, settings });
 });
 
-// PUT /api/settings (Admin only)
-router.put('/settings', authenticate, requireRole('ADMIN'), (req: AuthenticatedRequest, res) => {
+// PUT /api/settings (Manager and Admin)
+router.put('/settings', authenticate, requireRole('ADMIN', 'MANAGER'), (req: AuthenticatedRequest, res) => {
   try {
     const updated = db.updateSettings(req.body, {
       id: req.user!.userId,

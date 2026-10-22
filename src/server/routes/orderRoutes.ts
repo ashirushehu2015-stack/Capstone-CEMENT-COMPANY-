@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { db } from '../db.ts';
-import { authenticate, type AuthenticatedRequest } from '../middleware/authMiddleware.ts';
+import { authenticate, requireRole, type AuthenticatedRequest } from '../middleware/authMiddleware.ts';
 
 const router = Router();
 
@@ -215,7 +215,7 @@ router.post('/:id/cancel', authenticate, (req: AuthenticatedRequest, res) => {
 });
 
 // POST /api/orders/:id/approve-manager (Manager Approval Only - Section 1 & 5)
-router.post('/:id/approve-manager', authenticate, (req: AuthenticatedRequest, res) => {
+router.post('/:id/approve-manager', authenticate, requireRole('MANAGER', 'ADMIN', 'STORE_MANAGER'), (req: AuthenticatedRequest, res) => {
   try {
     const order = db.approveOrderByManager({
       orderId: req.params.id,
@@ -238,7 +238,7 @@ router.post('/:id/approve-manager', authenticate, (req: AuthenticatedRequest, re
 });
 
 // POST /api/orders/:id/reject-manager (Manager Rejection Only - Section 1)
-router.post('/:id/reject-manager', authenticate, (req: AuthenticatedRequest, res) => {
+router.post('/:id/reject-manager', authenticate, requireRole('MANAGER', 'ADMIN', 'STORE_MANAGER'), (req: AuthenticatedRequest, res) => {
   if (!req.body.reason) {
     return res.status(400).json({ success: false, error: 'Rejection reason is mandatory.' });
   }
@@ -264,8 +264,8 @@ router.post('/:id/reject-manager', authenticate, (req: AuthenticatedRequest, res
   }
 });
 
-// POST /api/orders/:id/record-payment (Record 100% Full Payment - Section 1 & 6)
-router.post('/:id/record-payment', authenticate, (req: AuthenticatedRequest, res) => {
+// POST /api/orders/:id/record-payment (Record 100% Full Payment - Section 1 & 6: Cashier or Manager)
+router.post('/:id/record-payment', authenticate, requireRole('CASHIER', 'MANAGER', 'ADMIN'), (req: AuthenticatedRequest, res) => {
   const { amount, paymentMethod, referenceNumber, payerName, destinationAccount, notes } = req.body;
   if (!amount || typeof amount !== 'number') {
     return res.status(400).json({ success: false, error: 'Valid payment amount is required.' });
@@ -302,7 +302,7 @@ router.post('/:id/record-payment', authenticate, (req: AuthenticatedRequest, res
 });
 
 // POST /api/orders/:id/issue-truck (Physical Cement Issuance: Agent Only - Section 1 & 6)
-router.post('/:id/issue-truck', authenticate, (req: AuthenticatedRequest, res) => {
+router.post('/:id/issue-truck', authenticate, requireRole('AGENT', 'ADMIN'), (req: AuthenticatedRequest, res) => {
   const { truckAllocationId, truckHeadReg, trailerBedReg, driverName, driverPhone, recipientSignatureName, notes } = req.body;
   if (!truckAllocationId) {
     return res.status(400).json({ success: false, error: 'Truck allocation ID required.' });

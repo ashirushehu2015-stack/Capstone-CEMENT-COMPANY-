@@ -41,8 +41,8 @@ router.get('/:id', (req, res) => {
   return res.json({ success: true, product });
 });
 
-// PUT /api/products/:id (Store Manager & Admin only)
-router.put('/:id', authenticate, requireRole('ADMIN', 'STORE_MANAGER'), (req: AuthenticatedRequest, res) => {
+// PUT /api/products/:id (Manager and Admin)
+router.put('/:id', authenticate, requireRole('ADMIN', 'MANAGER', 'STORE_MANAGER'), (req: AuthenticatedRequest, res) => {
   const parsed = productSchema.partial().safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ success: false, error: parsed.error.issues[0].message });
