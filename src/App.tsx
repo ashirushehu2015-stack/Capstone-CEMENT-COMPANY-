@@ -256,7 +256,7 @@ function StorefrontContent() {
 
               {/* Description */}
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-lg">
-                Exclusive Authorized Merchant for genuine <strong className="text-white">Sokoto Cement (Kalambaina Plant)</strong>. Standardized articulated trailer haulage only (600 standard 50kg bags / 30 metric tonnes). Real-time inventory reservation, Manager approval &amp; automated gate pass issuance.
+                Exclusive Authorized Merchant for authentic <strong className="text-white">Sokoto Cement (Kalambaina Plant)</strong> trailers (600 standard 50kg bags / 30 metric tonnes). Orders placed via the <strong className="text-amber-400">Customer Facing Portal</strong>, verified by the <strong className="text-white">Cashier</strong>, checked by the <strong className="text-white">Assistant Manager</strong>, authorized by the <strong className="text-white">Manager</strong>, and physically issued at the production site by the <strong className="text-white">Agent</strong>.
               </p>
 
               {/* 3 Key Metric Highlight Cards */}
@@ -289,19 +289,19 @@ function StorefrontContent() {
                 </div>
               </div>
 
-              {/* Feature Pills */}
+              {/* Feature Pills showing the exact system workflow */}
               <div className="flex flex-wrap items-center justify-center gap-1.5 text-[11px] max-w-lg pt-1">
                 <span className="bg-[#0d2857]/80 text-blue-200 border border-blue-600/40 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Kalambaina Plant Direct
+                  <DollarSign className="w-3.5 h-3.5 text-emerald-400" /> Cashier: 100% Upfront Settlement
                 </span>
                 <span className="bg-[#0d2857]/80 text-blue-200 border border-blue-600/40 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                  <DollarSign className="w-3.5 h-3.5 text-amber-400" /> 100% Upfront Settlement
+                  <FileCheck2 className="w-3.5 h-3.5 text-indigo-400" /> Asst. Mgr: Queue Verification
                 </span>
                 <span className="bg-[#0d2857]/80 text-blue-200 border border-blue-600/40 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                  <Award className="w-3.5 h-3.5 text-purple-400" /> NIS 444-1:2018 Certified
+                  <ShieldCheck className="w-3.5 h-3.5 text-purple-400" /> Manager: Order Approval
                 </span>
                 <span className="bg-[#0d2857]/80 text-blue-200 border border-blue-600/40 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                  <Truck className="w-3.5 h-3.5 text-blue-400" /> Instant Gate Clearance
+                  <Truck className="w-3.5 h-3.5 text-teal-400" /> Agent: Production Site Issuance
                 </span>
               </div>
             </div>
@@ -444,49 +444,37 @@ function StorefrontContent() {
                   </form>
                 )}
 
-                {/* Quick 1-Click Demo Staff & Buyer Roles Grid (Matches reference image) */}
+                {/* Exactly 4 Staff Roles: Manager, Assistant Manager, Cashier, Agent (Production Site) */}
                 <div className="pt-2 border-t border-slate-200 space-y-2">
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="font-bold text-slate-700 flex items-center gap-1 uppercase tracking-wider text-[10px]">
-                      <User className="w-3.5 h-3.5 text-blue-700" /> DEMO STAFF ROLES (CLICK TO FILL)
+                      <User className="w-3.5 h-3.5 text-blue-700" /> SYSTEM STAFF ROLES (CLICK TO FILL)
                     </span>
-                    <span className="font-mono text-slate-400 text-[10px]">Pass: Manager123!</span>
+                    <span className="font-mono text-slate-400 text-[10px]">Production Site &amp; Desk</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-left">
+                    {/* 1. MANAGER */}
                     <button
                       onClick={() => handleQuickRoleSelect('MANAGER')}
-                      className={`p-2 rounded-xl border text-left transition-all ${
+                      className={`p-2.5 rounded-xl border text-left transition-all ${
                         user?.role === 'MANAGER'
                           ? 'bg-blue-50 border-blue-600 text-blue-900 ring-1 ring-blue-500'
                           : 'bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800'
                       }`}
                     >
                       <strong className="text-xs text-slate-900 block font-bold leading-tight flex items-center justify-between">
-                        <span>Alhaji Sanusi Gusau</span>
+                        <span>Engr. Sanusi Kalambaina</span>
                         {user?.role === 'MANAGER' && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
                       </strong>
-                      <span className="text-[10px] text-blue-700 font-semibold block">Manager (Approvals)</span>
+                      <span className="text-[10px] text-blue-700 font-semibold block mt-0.5">1. Manager (Approval)</span>
+                      <span className="text-[9px] text-slate-500 block">Overall stock approval &amp; reservation</span>
                     </button>
 
-                    <button
-                      onClick={() => handleQuickRoleSelect('AGENT')}
-                      className={`p-2 rounded-xl border text-left transition-all ${
-                        user?.role === 'AGENT'
-                          ? 'bg-blue-50 border-blue-600 text-blue-900 ring-1 ring-blue-500'
-                          : 'bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800'
-                      }`}
-                    >
-                      <strong className="text-xs text-slate-900 block font-bold leading-tight flex items-center justify-between">
-                        <span>Haruna Danladi</span>
-                        {user?.role === 'AGENT' && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
-                      </strong>
-                      <span className="text-[10px] text-blue-700 font-semibold block">Agent (Truck Loading)</span>
-                    </button>
-
+                    {/* 2. ASSISTANT MANAGER */}
                     <button
                       onClick={() => handleQuickRoleSelect('ASSISTANT_MANAGER')}
-                      className={`p-2 rounded-xl border text-left transition-all ${
+                      className={`p-2.5 rounded-xl border text-left transition-all ${
                         user?.role === 'ASSISTANT_MANAGER'
                           ? 'bg-blue-50 border-blue-600 text-blue-900 ring-1 ring-blue-500'
                           : 'bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800'
@@ -496,22 +484,57 @@ function StorefrontContent() {
                         <span>Fatima Aliyu</span>
                         {user?.role === 'ASSISTANT_MANAGER' && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
                       </strong>
-                      <span className="text-[10px] text-blue-700 font-semibold block">Asst. Manager (Queue)</span>
+                      <span className="text-[10px] text-blue-700 font-semibold block mt-0.5">2. Assistant Manager</span>
+                      <span className="text-[9px] text-slate-500 block">Queue &amp; document verification</span>
                     </button>
 
+                    {/* 3. CASHIER */}
                     <button
-                      onClick={() => handleQuickRoleSelect('CUSTOMER')}
-                      className={`p-2 rounded-xl border text-left transition-all ${
-                        user?.role === 'CUSTOMER'
+                      onClick={() => handleQuickRoleSelect('CASHIER')}
+                      className={`p-2.5 rounded-xl border text-left transition-all ${
+                        user?.role === 'CASHIER'
                           ? 'bg-blue-50 border-blue-600 text-blue-900 ring-1 ring-blue-500'
                           : 'bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800'
                       }`}
                     >
                       <strong className="text-xs text-slate-900 block font-bold leading-tight flex items-center justify-between">
-                        <span>Mukhtar Dan-Kano</span>
-                        {user?.role === 'CUSTOMER' && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
+                        <span>Abubakar Garba</span>
+                        {user?.role === 'CASHIER' && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
                       </strong>
-                      <span className="text-[10px] text-blue-700 font-semibold block">Registered Contractor</span>
+                      <span className="text-[10px] text-blue-700 font-semibold block mt-0.5">3. Cashier (Accounts)</span>
+                      <span className="text-[9px] text-slate-500 block">100% upfront bank reconciliation</span>
+                    </button>
+
+                    {/* 4. AGENT (Production Site) */}
+                    <button
+                      onClick={() => handleQuickRoleSelect('AGENT')}
+                      className={`p-2.5 rounded-xl border text-left transition-all ${
+                        user?.role === 'AGENT'
+                          ? 'bg-blue-50 border-blue-600 text-blue-900 ring-1 ring-blue-500'
+                          : 'bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800'
+                      }`}
+                    >
+                      <strong className="text-xs text-slate-900 block font-bold leading-tight flex items-center justify-between">
+                        <span>Haruna Danladi</span>
+                        {user?.role === 'AGENT' && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
+                      </strong>
+                      <span className="text-[10px] text-blue-700 font-semibold block mt-0.5">4. Agent (Production Site)</span>
+                      <span className="text-[9px] text-slate-500 block">Physical stock issuance &amp; gate pass</span>
+                    </button>
+                  </div>
+
+                  {/* Customer Facing Portal Option */}
+                  <div className="pt-1.5 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[10px] text-slate-500 font-medium">Ordering Cement as a Contractor?</span>
+                    <button
+                      onClick={() => handleQuickRoleSelect('CUSTOMER')}
+                      className={`text-xs font-bold px-3 py-1 rounded-lg border transition-all ${
+                        user?.role === 'CUSTOMER'
+                          ? 'bg-emerald-50 border-emerald-500 text-emerald-800 ring-1 ring-emerald-500'
+                          : 'bg-slate-100 hover:bg-emerald-50 text-slate-700 border-slate-200'
+                      }`}
+                    >
+                      Customer Facing Portal &rarr;
                     </button>
                   </div>
                 </div>

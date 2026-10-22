@@ -12,13 +12,13 @@
  */
 
 export type UserRole =
-  | 'CUSTOMER'          // Buyer (must register before ordering)
-  | 'MANAGER'           // Manager (order approval, stock receipt approval, adjustments)
-  | 'ASSISTANT_MANAGER' // Assistant Manager (registers receipts, reviews docs, monitors stock)
-  | 'AGENT'             // Agent / Issuing Officer (physical cement issuance only)
-  | 'CASHIER'           // Cashier (verifies 100% full payment)
-  | 'ADMIN'             // System Administrator
-  // Legacy aliases for backward compatibility
+  | 'CUSTOMER'          // Customer Facing Portal / Wholesale Buyer
+  | 'MANAGER'           // Manager (overall operational authority, order approvals, inventory oversight)
+  | 'ASSISTANT_MANAGER' // Assistant Manager (queue review, document verification, stock intake review)
+  | 'CASHIER'           // Cashier (verifies 100% upfront bank payments & financial reconciliation)
+  | 'AGENT'             // Agent (issues stock at the production site / Kalambaina Plant)
+  // Legacy aliases maintained for backward database compatibility
+  | 'ADMIN'
   | 'STORE_MANAGER'
   | 'SALES_OFFICER'
   | 'DELIVERY_OFFICER';

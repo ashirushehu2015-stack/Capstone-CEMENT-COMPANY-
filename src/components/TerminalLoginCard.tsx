@@ -239,22 +239,10 @@ export const TerminalLoginCard: React.FC<TerminalLoginCardProps> = ({
                     className="w-full text-left p-2 rounded-xl bg-slate-950 hover:bg-purple-950/40 border border-slate-800 hover:border-purple-600 text-xs flex items-center justify-between group transition-all"
                   >
                     <div>
-                      <strong className="text-white block group-hover:text-purple-300">Manager Terminal</strong>
-                      <span className="text-[10px] text-slate-400">Alhaji Sanusi Kalambaina (Approvals)</span>
+                      <strong className="text-white block group-hover:text-purple-300">1. Manager Terminal</strong>
+                      <span className="text-[10px] text-slate-400">Engr. Sanusi Kalambaina (Order &amp; Stock Approvals)</span>
                     </div>
                     <span className="text-[10px] font-bold text-purple-400">&rarr;</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleQuickSwitch('AGENT')}
-                    disabled={isSubmitting}
-                    className="w-full text-left p-2 rounded-xl bg-slate-950 hover:bg-teal-950/40 border border-slate-800 hover:border-teal-600 text-xs flex items-center justify-between group transition-all"
-                  >
-                    <div>
-                      <strong className="text-white block group-hover:text-teal-300">Agent Terminal</strong>
-                      <span className="text-[10px] text-slate-400">Haruna Danladi (Truck Gate Loading)</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-teal-400">&rarr;</span>
                   </button>
 
                   <button
@@ -263,10 +251,34 @@ export const TerminalLoginCard: React.FC<TerminalLoginCardProps> = ({
                     className="w-full text-left p-2 rounded-xl bg-slate-950 hover:bg-indigo-950/40 border border-slate-800 hover:border-indigo-600 text-xs flex items-center justify-between group transition-all"
                   >
                     <div>
-                      <strong className="text-white block group-hover:text-indigo-300">Assistant Manager</strong>
-                      <span className="text-[10px] text-slate-400">Fatima Aliyu (Queue Review)</span>
+                      <strong className="text-white block group-hover:text-indigo-300">2. Assistant Manager</strong>
+                      <span className="text-[10px] text-slate-400">Fatima Aliyu (Queue &amp; Document Review)</span>
                     </div>
                     <span className="text-[10px] font-bold text-indigo-400">&rarr;</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleQuickSwitch('CASHIER')}
+                    disabled={isSubmitting}
+                    className="w-full text-left p-2 rounded-xl bg-slate-950 hover:bg-blue-950/40 border border-slate-800 hover:border-blue-600 text-xs flex items-center justify-between group transition-all"
+                  >
+                    <div>
+                      <strong className="text-white block group-hover:text-blue-300">3. Cashier Terminal</strong>
+                      <span className="text-[10px] text-slate-400">Abubakar Garba (100% Upfront Bank Reconciliation)</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-blue-400">&rarr;</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleQuickSwitch('AGENT')}
+                    disabled={isSubmitting}
+                    className="w-full text-left p-2 rounded-xl bg-slate-950 hover:bg-teal-950/40 border border-slate-800 hover:border-teal-600 text-xs flex items-center justify-between group transition-all"
+                  >
+                    <div>
+                      <strong className="text-white block group-hover:text-teal-300">4. Agent (Production Site)</strong>
+                      <span className="text-[10px] text-slate-400">Haruna Danladi (Truck Issuance &amp; Gate Pass)</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-teal-400">&rarr;</span>
                   </button>
 
                   <button
@@ -275,8 +287,8 @@ export const TerminalLoginCard: React.FC<TerminalLoginCardProps> = ({
                     className="w-full text-left p-2 rounded-xl bg-slate-950 hover:bg-emerald-950/40 border border-slate-800 hover:border-emerald-600 text-xs flex items-center justify-between group transition-all"
                   >
                     <div>
-                      <strong className="text-white block group-hover:text-emerald-300">Buyer / Contractor</strong>
-                      <span className="text-[10px] text-slate-400">Alhaji Mukhtar Dan-Kano</span>
+                      <strong className="text-white block group-hover:text-emerald-300">5. Customer Facing Portal</strong>
+                      <span className="text-[10px] text-slate-400">Alhaji Mukhtar Dan-Kano (Wholesale Buyer)</span>
                     </div>
                     <span className="text-[10px] font-bold text-emerald-400">&rarr;</span>
                   </button>

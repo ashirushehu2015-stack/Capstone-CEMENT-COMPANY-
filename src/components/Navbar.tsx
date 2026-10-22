@@ -182,7 +182,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </p>
                   </div>
                   <div className="py-1 space-y-1">
-                    {(Object.keys(DEMO_ACCOUNTS) as UserRole[]).map((r) => {
+                    {(['MANAGER', 'ASSISTANT_MANAGER', 'CASHIER', 'AGENT', 'CUSTOMER'] as UserRole[]).map((r) => {
                       const acc = DEMO_ACCOUNTS[r];
                       const isCurrent = user?.role === r;
                       return (
@@ -200,7 +200,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         >
                           <div>
                             <span className="font-bold block text-white">{r.replace('_', ' ')}</span>
-                            <span className="text-[11px] text-slate-400">{acc.label}</span>
+                            <span className="text-[11px] text-slate-400">{acc?.label || r}</span>
                           </div>
                           {isCurrent && <span className="text-amber-400 font-bold text-xs">Active</span>}
                         </button>

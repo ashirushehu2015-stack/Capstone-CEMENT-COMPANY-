@@ -379,13 +379,17 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-black text-white">Retailer Administrative Portal</h1>
-              <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-600/20 text-amber-300 border border-amber-500/30">
-                {user?.role.replace('_', ' ')}
+              <h1 className="text-lg font-black text-white">A.A. Master Nig. Limited — Operations Portal</h1>
+              <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-600/30 text-blue-300 border border-blue-500/40">
+                {user?.role === 'MANAGER' && 'Manager (Approval Authority)'}
+                {user?.role === 'ASSISTANT_MANAGER' && 'Assistant Manager (Queue Review)'}
+                {user?.role === 'CASHIER' && 'Cashier (Payment Reconciliation)'}
+                {user?.role === 'AGENT' && 'Agent (Production Site Stock Issuance)'}
+                {!['MANAGER', 'ASSISTANT_MANAGER', 'CASHIER', 'AGENT'].includes(user?.role || '') && user?.role.replace('_', ' ')}
               </span>
             </div>
             <p className="text-xs text-slate-400">
-              BuildCem Direct • Authorized Operator: <strong>{user?.fullName}</strong> ({user?.email})
+              Sokoto Cement Kalambaina Plant Wholesale Terminal • Active Operator: <strong>{user?.fullName}</strong> ({user?.email})
             </p>
           </div>
         </div>
@@ -521,7 +525,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                   : 'text-slate-400 hover:bg-slate-800 hover:text-white'
               }`}
             >
-              <CreditCard className="w-4 h-4" /> Cashier & Payments
+              <CreditCard className="w-4 h-4" /> Cashier: Payment Reconciliations
             </button>
           )}
 
@@ -533,7 +537,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                 : 'text-slate-400 hover:bg-slate-800 hover:text-white'
             }`}
           >
-            <Truck className="w-4 h-4" /> Logistics & Dispatch
+            <Truck className="w-4 h-4" /> Agent: Production Site Truck Issuance
           </button>
 
           {(isAdmin || isStoreManager) && (
