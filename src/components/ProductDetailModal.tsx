@@ -14,9 +14,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
 
   if (!product) return null;
 
-  const subtotal = trailers * product.pricePerTrailer;
-  const totalBags = trailers * product.bagsPerTrailer;
-  const totalTonnes = trailers * product.tonnesPerTrailer;
+  const subtotal = trailers * (product.pricePerTrailer || 6510000);
+  const totalBags = trailers * (product.bagsPerTrailer || 600);
+  const totalTonnes = trailers * (product.trailerWeightTonnes || (product as any).tonnesPerTrailer || 30);
 
   const handleAdd = () => {
     addItem(product, trailers);
@@ -59,7 +59,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
             </div>
             <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800 text-center">
               <span className="text-xs text-slate-400 block">Trailer Price</span>
-              <span className="text-lg font-black text-emerald-400">₦{product.pricePerTrailer.toLocaleString('en-NG')}</span>
+              <span className="text-lg font-black text-emerald-400">₦{(product.pricePerTrailer || 6510000).toLocaleString('en-NG')}</span>
             </div>
             <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800 text-center">
               <span className="text-xs text-slate-400 block">Plant Yard Stock</span>
@@ -83,7 +83,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
               <Layers className="w-4 h-4 text-amber-400" /> Wholesale Structural Applications
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {product.applications.map((app, i) => (
+              {(product.applications || []).map((app, i) => (
                 <div key={i} className="flex items-center gap-2 p-2.5 rounded-lg bg-slate-800/50 text-xs text-slate-200">
                   <CheckCircle className="w-4 h-4 text-amber-400 shrink-0" />
                   <span>{app}</span>
@@ -98,7 +98,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
               <Shield className="w-4 h-4 text-emerald-400" /> Factory Standards & Logistics Guarantees
             </h4>
             <div className="space-y-1.5">
-              {product.features.map((feat, i) => (
+              {(
+                (product as any).features || [
+                  product.certification || 'SON Mandatory Conformity Assessment Programme (MANCAP) — NIS 444-1:2014 Certified',
+                  '600 Standard 50kg Valve Bags (30 Metric Tonnes) per Articulated Trailer',
+                  'Ex-Factory Kalambaina Plant Loading Bay Direct Issuance',
+                ]
+              ).map((feat: string, i: number) => (
                 <div key={i} className="flex items-start gap-2 text-xs text-slate-300">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
                   <span>{feat}</span>

@@ -642,22 +642,25 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
                   <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">
-                    Brand Sales Breakdown
+                    Product Grade Sales Breakdown
                   </h3>
                   <div className="space-y-3">
-                    {Object.entries(analytics.brandSales as Record<string, { bags: number; revenueNGN: number }>).map(
-                      ([brand, stats]) => (
-                        <div key={brand} className="p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center justify-between">
-                          <div>
-                            <span className="font-bold text-white block text-sm">{brand}</span>
-                            <span className="text-xs text-slate-400">{stats.bags} Bags Sold</span>
-                          </div>
-                          <span className="font-bold text-amber-400 font-mono text-sm">
-                            ₦{stats.revenueNGN.toLocaleString('en-NG')}
-                          </span>
+                    {Object.entries(
+                      (analytics.productSales || analytics.brandSales || {}) as Record<
+                        string,
+                        { bags: number; revenueNGN: number }
+                      >
+                    ).map(([brand, stats]) => (
+                      <div key={brand} className="p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center justify-between">
+                        <div>
+                          <span className="font-bold text-white block text-sm">{brand}</span>
+                          <span className="text-xs text-slate-400">{(stats?.bags || 0).toLocaleString()} Bags Sold</span>
                         </div>
-                      )
-                    )}
+                        <span className="font-bold text-amber-400 font-mono text-sm">
+                          ₦{(stats?.revenueNGN || 0).toLocaleString('en-NG')}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -667,15 +670,15 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                   </h3>
                   <div className="space-y-3">
                     {Object.entries(
-                      analytics.paymentMethodStats as Record<string, { count: number; totalNGN: number }>
+                      (analytics.paymentMethodStats || {}) as Record<string, { count: number; totalNGN: number }>
                     ).map(([method, stats]) => (
                       <div key={method} className="p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center justify-between">
                         <div>
                           <span className="font-bold text-white block text-sm">{method.replace('_', ' ')}</span>
-                          <span className="text-xs text-slate-400">{stats.count} Verified Transactions</span>
+                          <span className="text-xs text-slate-400">{stats?.count || 0} Verified Transactions</span>
                         </div>
                         <span className="font-bold text-emerald-400 font-mono text-sm">
-                          ₦{stats.totalNGN.toLocaleString('en-NG')}
+                          ₦{(stats?.totalNGN || 0).toLocaleString('en-NG')}
                         </span>
                       </div>
                     ))}
@@ -1176,17 +1179,17 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                     <div className="flex items-start justify-between">
                       <div>
                         <span className="text-[10px] font-bold uppercase text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                          {p.brand} • Grade {p.grade}
+                          Sokoto Cement • Grade {p.grade}
                         </span>
                         <h4 className="text-base font-bold text-white mt-1">{p.name}</h4>
                         <span className="text-xs text-slate-400 font-mono">{p.sku}</span>
                       </div>
                       <div className="text-right">
                         <span className="text-xl font-black text-emerald-400 font-mono block">
-                          ₦{p.pricePerTrailer.toLocaleString('en-NG')}
+                          ₦{(p.pricePerTrailer || 6510000).toLocaleString('en-NG')}
                         </span>
                         <span className="text-[10px] text-slate-400">
-                          (₦{p.pricePerBagEquivalent.toLocaleString('en-NG')}/bag eqv)
+                          (₦{(p.pricePerBag || (p as any).pricePerBagEquivalent || 10850).toLocaleString('en-NG')}/bag)
                         </span>
                       </div>
                     </div>
@@ -1195,16 +1198,16 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                       <div>
                         <span className="text-slate-400 block text-[10px]">Available Yard:</span>
                         <span className="font-bold text-white">{p.availableTrailers} trailers</span>
-                        <span className="text-[10px] text-slate-500 block">{(p.availableTrailers * p.bagsPerTrailer).toLocaleString()} bags</span>
+                        <span className="text-[10px] text-slate-500 block">{(p.availableTrailers * (p.bagsPerTrailer || 600)).toLocaleString()} bags</span>
                       </div>
                       <div>
                         <span className="text-slate-400 block text-[10px]">Reorder Threshold:</span>
-                        <span className="font-bold text-amber-400">{p.reorderLevelTrailers} trailers</span>
+                        <span className="font-bold text-amber-400">{p.reorderThresholdTrailers ?? (p as any).reorderLevelTrailers ?? 15} trailers</span>
                         <span className="text-[10px] text-slate-500 block">Depot trigger</span>
                       </div>
                       <div>
                         <span className="text-slate-400 block text-[10px]">Min Purchase:</span>
-                        <span className="font-bold text-emerald-400">{p.minOrderTrailers} trailer</span>
+                        <span className="font-bold text-emerald-400">{p.minimumOrderTrailers ?? (p as any).minOrderTrailers ?? 1} trailer</span>
                         <span className="text-[10px] text-slate-500 block">600 bags (30T)</span>
                       </div>
                     </div>
@@ -1228,7 +1231,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                             try {
                               await apiProducts.update(p.id, {
                                 pricePerTrailer: newPrice,
-                                pricePerBagEquivalent: Math.round(newPrice / p.bagsPerTrailer),
+                                pricePerBag: Math.round(newPrice / (p.bagsPerTrailer || 600)),
                               });
                               showNotification('success', `Trailer price updated for ${p.name} to ₦${newPrice.toLocaleString('en-NG')}`);
                               loadAllData();

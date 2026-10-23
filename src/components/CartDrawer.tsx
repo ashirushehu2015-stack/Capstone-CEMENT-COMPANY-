@@ -85,9 +85,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout }) =
               </div>
             ) : (
               items.map(({ product, trailerCount }) => {
-                const lineTotal = product.pricePerTrailer * trailerCount;
-                const lineBags = trailerCount * product.bagsPerTrailer;
-                const lineTonnes = trailerCount * product.tonnesPerTrailer;
+                const lineTotal = (product.pricePerTrailer || 6510000) * trailerCount;
+                const lineBags = trailerCount * (product.bagsPerTrailer || 600);
+                const lineTonnes = trailerCount * (product.trailerWeightTonnes || (product as any).tonnesPerTrailer || 30);
                 return (
                   <div
                     key={product.id}

@@ -63,6 +63,7 @@ router.get('/analytics', authenticate, requireRole('ADMIN', 'MANAGER', 'ASSISTAN
     success: true,
     metrics,
     productSales,
+    brandSales: productSales,
     paymentMethodStats,
     recentOrders: orders.slice(0, 10),
     recentPayments: payments.slice(0, 10),
