@@ -14,7 +14,7 @@ const createOrderSchema = z.object({
     })
   ).min(1, 'At least one Sokoto Cement grade trailer load is required'),
   companyName: z.string().optional(),
-  fulfillmentType: z.enum(['FACTORY_TRAILER_HAULAGE', 'FACTORY_GATE_COLLECTION']),
+  fulfillmentType: z.enum(['FACTORY_GATE_COLLECTION', 'FACTORY_TRAILER_HAULAGE']).default('FACTORY_GATE_COLLECTION'),
   deliveryDetails: z
     .object({
       recipientName: z.string().min(2),

@@ -43,16 +43,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [companyName, setCompanyName] = useState(user?.companyName || '');
   const [recipientName, setRecipientName] = useState(user?.fullName || '');
   const [recipientPhone, setRecipientPhone] = useState(user?.phone || '');
-  const [fulfillmentType, setFulfillmentType] = useState<'FACTORY_TRAILER_HAULAGE' | 'FACTORY_GATE_COLLECTION'>('FACTORY_TRAILER_HAULAGE');
+  const [fulfillmentType] = useState<'FACTORY_GATE_COLLECTION'>('FACTORY_GATE_COLLECTION');
 
-  // Delivery details
-  const [deliveryZoneId, setDeliveryZoneId] = useState<string>('zone_kano_katsina');
-  const [siteAddress, setSiteAddress] = useState(user?.address || '');
-  const [landmark, setLandmark] = useState('');
-  const [city, setCity] = useState(user?.city || 'Kano');
-  const [state, setState] = useState(user?.state || 'Kano');
-
-  // Factory Gate collection details
+  // Factory Gate collection details (Company does NOT handle delivery; customer provides transporter)
   const [plantDepotId, setPlantDepotId] = useState<string>('depot_kalambaina');
   const [transporterName, setTransporterName] = useState('Arewa Haulage Consortium');
   const [transporterPhone, setTransporterPhone] = useState(user?.phone || '');
@@ -81,10 +74,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     if (user) {
       if (user.companyName) setCompanyName(user.companyName);
       if (user.fullName) setRecipientName(user.fullName);
-      if (user.phone) setRecipientPhone(user.phone);
-      if (user.address) setSiteAddress(user.address);
-      if (user.city) setCity(user.city);
-      if (user.state) setState(user.state);
+      if (user.phone) {
+        setRecipientPhone(user.phone);
+        if (!transporterPhone) setTransporterPhone(user.phone);
+      }
     }
   }, [user]);
 
@@ -93,9 +86,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       try {
         const res = await apiReports.getSettings();
         setSettings(res.settings);
-        if (res.settings.interstateHaulageZones?.length > 0) {
-          setDeliveryZoneId(res.settings.interstateHaulageZones[0].id);
-        }
         if (res.settings.depots?.length > 0) {
           setPlantDepotId(res.settings.depots[0].id);
         }
@@ -110,19 +100,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Selected Zone calculation for trailers
-  const selectedZone = settings?.interstateHaulageZones?.find((z) => z.id === deliveryZoneId);
-  const haulageFee =
-    fulfillmentType === 'FACTORY_TRAILER_HAULAGE' && selectedZone
-      ? selectedZone.haulageFeePerTrailer * totalTrailers
-      : 0;
-
-  const offloadingFee =
-    fulfillmentType === 'FACTORY_TRAILER_HAULAGE' && settings
-      ? totalTrailers * settings.offloadingFeePerTrailer
-      : 0;
-
-  const grandTotal = subtotalNGN + haulageFee + offloadingFee;
+  // The company does NOT handle delivery. Haulage & offloading fees are strictly ₦0.
+  const haulageFee = 0;
+  const offloadingFee = 0;
+  const grandTotal = subtotalNGN;
 
   const handleCopyAccount = () => {
     if (settings?.bankAccount) {
@@ -149,24 +130,18 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     }
 
     if (!termsAccepted) {
-      setErrorMessage('Please accept the wholesale trailer delivery and demurrage terms to proceed.');
+      setErrorMessage('Please accept the Ex-Factory sales, customer haulage responsibility, and plant clearance policy to proceed.');
       return;
     }
 
-    if (fulfillmentType === 'FACTORY_TRAILER_HAULAGE') {
-      if (!siteAddress || siteAddress.trim().length < 5) {
-        setErrorMessage('Please enter the exact site or warehouse delivery address for articulated trailer access.');
-        return;
-      }
-      if (!recipientPhone || recipientPhone.trim().length < 10) {
-        setErrorMessage('Please enter a valid receiving phone number for haulage driver coordination.');
-        return;
-      }
-    } else {
-      if (!truckHeadReg || !trailerBedReg || !driverName) {
-        setErrorMessage('Please provide the Truck Head Reg, Trailer Bed Reg, and Driver Name for plant security gate clearance.');
-        return;
-      }
+    if (!truckHeadReg || !trailerBedReg || !driverName) {
+      setErrorMessage('Please provide the Truck Head Reg, Trailer Bed Reg, and Driver Name for Kalambaina plant security clearance.');
+      return;
+    }
+
+    if (!recipientPhone || recipientPhone.trim().length < 10) {
+      setErrorMessage('Please enter a valid telephone number for transporter dispatch coordination.');
+      return;
     }
 
     setIsSubmitting(true);
@@ -178,31 +153,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           trailerCount: it.trailerCount,
         })),
         companyName,
-        fulfillmentType,
-        deliveryDetails:
-          fulfillmentType === 'FACTORY_TRAILER_HAULAGE'
-            ? {
-                recipientName,
-                recipientPhone,
-                siteAddress,
-                landmark,
-                city,
-                state,
-                deliveryZoneId,
-              }
-            : undefined,
-        collectionDetails:
-          fulfillmentType === 'FACTORY_GATE_COLLECTION'
-            ? {
-                plantDepotId,
-                transporterName,
-                transporterPhone,
-                truckHeadReg,
-                trailerBedReg,
-                driverName,
-                driverLicenseNo,
-              }
-            : undefined,
+        fulfillmentType: 'FACTORY_GATE_COLLECTION',
+        collectionDetails: {
+          plantDepotId,
+          transporterName: transporterName || 'Customer Private Transporter',
+          transporterPhone: transporterPhone || recipientPhone,
+          truckHeadReg,
+          trailerBedReg,
+          driverName,
+          driverLicenseNo,
+        },
         paymentMethod,
         customerNotes,
       });
@@ -332,54 +292,23 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block mb-2">
               1. Fulfillment & Logistics Method
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setFulfillmentType('FACTORY_TRAILER_HAULAGE')}
-                className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 ${
-                  fulfillmentType === 'FACTORY_TRAILER_HAULAGE'
-                    ? 'bg-amber-600/15 border-amber-500 text-white shadow-md'
-                    : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:bg-slate-800/40'
-                }`}
-              >
-                <div
-                  className={`p-2 rounded-xl ${
-                    fulfillmentType === 'FACTORY_TRAILER_HAULAGE' ? 'bg-amber-600 text-white' : 'bg-slate-800 text-slate-400'
-                  }`}
-                >
-                  <Truck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Factory Direct Trailer Haulage</h4>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
-                    Full 30-Ton articulated multi-axle trailer dispatched from Kalambaina Plant directly to your project site.
-                  </p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setFulfillmentType('FACTORY_GATE_COLLECTION')}
-                className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 ${
-                  fulfillmentType === 'FACTORY_GATE_COLLECTION'
-                    ? 'bg-amber-600/15 border-amber-500 text-white shadow-md'
-                    : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:bg-slate-800/40'
-                }`}
-              >
-                <div
-                  className={`p-2 rounded-xl ${
-                    fulfillmentType === 'FACTORY_GATE_COLLECTION' ? 'bg-amber-600 text-white' : 'bg-slate-800 text-slate-400'
-                  }`}
-                >
+            <div className="p-4 bg-gradient-to-r from-amber-950/30 via-slate-900 to-slate-900 border border-amber-500/40 rounded-2xl space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
                   <Building className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white">Factory Gate Self-Collection (FREE)</h4>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
-                    Load directly onto your own transporter's articulated trailer at Kalambaina Plant gates with Gate Pass.
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-bold text-white">Factory Gate Collection (Customer-Arranged Transporter)</h4>
+                    <span className="bg-amber-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded uppercase">
+                      Ex-Factory Policy
+                    </span>
+                  </div>
+                  <p className="text-xs text-amber-200/90 mt-1 leading-relaxed">
+                    <strong>Notice:</strong> A.A. Master Nig. Limited sells strictly <strong>Ex-Factory / Kalambaina Plant Loading Bay</strong>. The company does <strong>NOT</strong> handle or arrange delivery. All buyers must dispatch their own articulated trailers or commercial transporters to the plant for loading by the issuing Agent.
                   </p>
                 </div>
-              </button>
+              </div>
             </div>
           </div>
 
@@ -411,7 +340,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="text-xs text-slate-400 block mb-1">Phone Number (WhatsApp for Driver Coordination)</label>
+                <label className="text-xs text-slate-400 block mb-1">Phone Number (WhatsApp for Driver & Plant Coordination)</label>
                 <input
                   type="tel"
                   required
@@ -424,136 +353,104 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </div>
           </div>
 
-          {/* Fulfillment Details Sub-Forms */}
-          {fulfillmentType === 'FACTORY_TRAILER_HAULAGE' ? (
-            <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-800 space-y-4">
-              <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider">
-                Interstate Haulage Destination
+          {/* Customer-Arranged Transporter Rig & Driver Details */}
+          <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                <Truck className="w-4 h-4" />
+                Customer Transporter &amp; Truck Clearance (Kalambaina Plant Security)
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="text-xs text-slate-400 block mb-1">Select Interstate Haulage Corridor</label>
-                  <select
-                    value={deliveryZoneId}
-                    onChange={(e) => setDeliveryZoneId(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white font-medium"
-                  >
-                    {settings?.interstateHaulageZones?.map((zone) => (
-                      <option key={zone.id} value={zone.id}>
-                        {zone.name} — ₦{zone.haulageFeePerTrailer.toLocaleString()}/Trailer ({zone.estimatedDeliveryDays})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="text-xs text-slate-400 block mb-1">Site Delivery Address (Articulated Truck Access Required)</label>
-                  <input
-                    type="text"
-                    required
-                    value={siteAddress}
-                    onChange={(e) => setSiteAddress(e.target.value)}
-                    placeholder="e.g. Plot 45, Western Bypass Commercial Estate, Kano"
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-400 block mb-1">Prominent Landmark for Driver</label>
-                  <input
-                    type="text"
-                    value={landmark}
-                    onChange={(e) => setLandmark(e.target.value)}
-                    placeholder="e.g. Opposite TotalEnergies Mega Station"
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-xs text-slate-400 block mb-1">City</label>
-                    <input
-                      type="text"
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-slate-400 block mb-1">Destination State</label>
-                    <input
-                      type="text"
-                      value={state}
-                      onChange={(e) => setState(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white"
-                    />
-                  </div>
-                </div>
+              <span className="text-[10px] text-slate-400 font-mono">Agent Gate Verification</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <label className="text-xs text-slate-400 block mb-1">Plant Loading Terminal (Issuing Agent Location)</label>
+                <select
+                  value={plantDepotId}
+                  onChange={(e) => setPlantDepotId(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white font-medium"
+                >
+                  {settings?.depots?.map((depot) => (
+                    <option key={depot.id} value={depot.id}>
+                      {depot.name} — {depot.address}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">Transporter / Haulage Company Name</label>
+                <input
+                  type="text"
+                  required
+                  value={transporterName}
+                  onChange={(e) => setTransporterName(e.target.value)}
+                  placeholder="e.g. Arewa Haulage Consortium"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">Transporter Dispatch Phone</label>
+                <input
+                  type="tel"
+                  required
+                  value={transporterPhone}
+                  onChange={(e) => setTransporterPhone(e.target.value)}
+                  placeholder="e.g. 0803 456 7890"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">Truck Tractor Head Reg (Arriving at Plant)</label>
+                <input
+                  type="text"
+                  required
+                  value={truckHeadReg}
+                  onChange={(e) => setTruckHeadReg(e.target.value)}
+                  placeholder="e.g. SKK-782-XA (Mack/DAF)"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono uppercase"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">Trailer Bed Reg (Flatbed 40ft / High Side)</label>
+                <input
+                  type="text"
+                  required
+                  value={trailerBedReg}
+                  onChange={(e) => setTrailerBedReg(e.target.value)}
+                  placeholder="e.g. T-904-SOK (Flatbed 40ft)"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono uppercase"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">Transporter Driver Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={driverName}
+                  onChange={(e) => setDriverName(e.target.value)}
+                  placeholder="e.g. Ibrahim Gusau"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">Driver License / National ID Number</label>
+                <input
+                  type="text"
+                  value={driverLicenseNo}
+                  onChange={(e) => setDriverLicenseNo(e.target.value)}
+                  placeholder="e.g. KBB-89104-AA"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono"
+                />
               </div>
             </div>
-          ) : (
-            <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-800 space-y-4">
-              <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider">
-                Transporter Truck Clearance (Kalambaina Plant Security)
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="text-xs text-slate-400 block mb-1">Plant Loading Terminal</label>
-                  <select
-                    value={plantDepotId}
-                    onChange={(e) => setPlantDepotId(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white font-medium"
-                  >
-                    {settings?.depots?.map((depot) => (
-                      <option key={depot.id} value={depot.id}>
-                        {depot.name} — {depot.address}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-slate-400 block mb-1">Truck Tractor Head Reg</label>
-                  <input
-                    type="text"
-                    required
-                    value={truckHeadReg}
-                    onChange={(e) => setTruckHeadReg(e.target.value)}
-                    placeholder="e.g. SKK-782-XA (Mack/DAF)"
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono uppercase"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-400 block mb-1">Trailer Bed Reg</label>
-                  <input
-                    type="text"
-                    required
-                    value={trailerBedReg}
-                    onChange={(e) => setTrailerBedReg(e.target.value)}
-                    placeholder="e.g. T-904-SOK (Flatbed 40ft)"
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono uppercase"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-400 block mb-1">Transporter Driver Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={driverName}
-                    onChange={(e) => setDriverName(e.target.value)}
-                    placeholder="e.g. Ibrahim Gusau"
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-400 block mb-1">Driver License / ID Number</label>
-                  <input
-                    type="text"
-                    value={driverLicenseNo}
-                    onChange={(e) => setDriverLicenseNo(e.target.value)}
-                    placeholder="e.g. KBB-89104-AA"
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+          </div>
 
           {/* Payment Method Selection */}
           <div>
@@ -669,27 +566,27 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
           {/* Price Breakdown */}
           <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2 text-xs">
-            <h4 className="font-bold text-white uppercase tracking-wider text-xs border-b border-slate-800 pb-2">
-              Authoritative Wholesale Financial Summary
+            <h4 className="font-bold text-white uppercase tracking-wider text-xs border-b border-slate-800 pb-2 flex items-center justify-between">
+              <span>Authoritative Ex-Factory Financial Summary</span>
+              <span className="text-[10px] text-amber-400 font-mono">Strict ₦10,850/Bag</span>
             </h4>
             <div className="flex justify-between text-slate-400">
               <span>{totalTrailers} Trailer(s) ({totalBags.toLocaleString()} bags / {totalWeightTonnes}T)</span>
               <span className="font-mono font-bold text-white">₦{subtotalNGN.toLocaleString('en-NG')}</span>
             </div>
             <div className="flex justify-between text-slate-400">
-              <span>Interstate Trailer Haulage</span>
-              <span className="font-mono font-bold text-white">
-                {fulfillmentType === 'FACTORY_TRAILER_HAULAGE' ? `₦${haulageFee.toLocaleString('en-NG')}` : '₦0 (Self-Collection)'}
+              <span className="flex items-center gap-1">
+                <span>Company Haulage / Delivery:</span>
+                <span className="text-[10px] text-amber-400/80">(Company does not handle delivery)</span>
               </span>
+              <span className="font-mono font-bold text-emerald-400">₦0 (Customer Haulage)</span>
             </div>
             <div className="flex justify-between text-slate-400">
-              <span>Porter Crew Offloading (per trailer)</span>
-              <span className="font-mono font-bold text-white">
-                {fulfillmentType === 'FACTORY_TRAILER_HAULAGE' ? `₦${offloadingFee.toLocaleString('en-NG')}` : '₦0'}
-              </span>
+              <span>Offloading Fee:</span>
+              <span className="font-mono font-bold text-emerald-400">₦0 (Transporter / Site Crew)</span>
             </div>
             <div className="flex justify-between text-sm font-black text-amber-400 border-t border-slate-800 pt-2">
-              <span>Total Payable Amount</span>
+              <span>Total Payable Amount (100% Upfront)</span>
               <span className="text-base font-black font-mono">₦{grandTotal.toLocaleString('en-NG')}</span>
             </div>
           </div>
@@ -703,7 +600,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               className="mt-0.5 rounded border-slate-700 text-amber-600 focus:ring-amber-500 bg-slate-950"
             />
             <span>
-              I accept the Sokoto Cement wholesale trailer sales, haulage demurrage (max 24 hours offloading at site), and plant collection clearance policy.
+              I understand and accept that <strong>A.A. Master Nig. Limited does not handle or arrange delivery</strong>. All orders are sold strictly Ex-Factory at the Kalambaina Plant. I agree to dispatch my own articulated trailer(s) for loading by the issuing Agent.
             </span>
           </label>
 

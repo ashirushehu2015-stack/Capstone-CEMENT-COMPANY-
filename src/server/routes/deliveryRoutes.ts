@@ -28,7 +28,7 @@ const confirmCollectionSchema = z.object({
 router.get('/', authenticate, requireRole('ADMIN', 'MANAGER', 'ASSISTANT_MANAGER', 'AGENT', 'STORE_MANAGER', 'SALES_OFFICER', 'DELIVERY_OFFICER'), (req: AuthenticatedRequest, res) => {
   const allOrders = db.getAllOrders();
   const deliveryOrders = allOrders.filter(
-    (o) => o.fulfillmentType === 'FACTORY_TRAILER_HAULAGE' && o.status !== 'CANCELLED'
+    (o) => o.status !== 'CANCELLED'
   );
 
   if (req.user!.role === 'DELIVERY_OFFICER') {

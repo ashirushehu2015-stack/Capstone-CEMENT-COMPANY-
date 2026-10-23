@@ -338,11 +338,11 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 </div>
 
                 <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight font-['Plus_Jakarta_Sans']">
-                  Wholesale Trailer Cement Haulage
+                  Wholesale Trailer Cement (Ex-Factory)
                 </h1>
 
                 <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl">
-                  Order articulated trailer loads (600 standard 50kg bags / 30 metric tonnes) direct from the Sokoto Cement Kalambaina Plant. Strict factory pricing of <strong className="text-amber-400">₦10,850 per bag</strong> (<strong>₦6,510,000 per trailer</strong>). Certified by the Standards Organisation of Nigeria (NIS 444-1).
+                  Order articulated trailer loads (600 standard 50kg bags / 30 metric tonnes) direct from the Sokoto Cement Kalambaina Plant. Strict factory pricing of <strong className="text-amber-400">₦10,850 per bag</strong> (<strong>₦6,510,000 per trailer</strong>). <span className="text-amber-300 font-semibold">The company does not handle delivery</span> — buyers dispatch their own articulated trailers to the plant for loading. Certified by SON (NIS 444-1).
                 </p>
 
                 {/* 3 Value Pillars */}
@@ -743,12 +743,10 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                             Fulfillment Mode
                           </span>
                           <strong className="text-sm text-amber-400 font-bold block">
-                            {order.fulfillmentType === 'FACTORY_TRAILER_HAULAGE' ? 'Factory Trailer Haulage' : 'Factory Gate Collection'}
+                            Ex-Factory Gate Collection
                           </strong>
                           <span className="text-slate-400 block truncate">
-                            {order.deliveryDetails
-                              ? `${order.deliveryDetails.siteAddress}, ${order.deliveryDetails.city}, ${order.deliveryDetails.state}`
-                              : order.collectionDetails?.plantDepotLocation || 'Kalambaina Loading Bay'}
+                            {order.collectionDetails?.plantDepotLocation || 'Kalambaina Main Plant Loading Terminal'}
                           </span>
                         </div>
 
@@ -760,8 +758,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                             ₦{order.totalAmount.toLocaleString('en-NG')}
                           </strong>
                           <span className="text-slate-400 block font-mono">
-                            Subtotal: ₦{order.subtotal.toLocaleString('en-NG')}
-                            {order.haulageFee > 0 && ` + Haulage: ₦${order.haulageFee.toLocaleString('en-NG')}`}
+                            {order.totalTrailers} Trailer(s) @ ₦6,510,000 • ₦0 Delivery Fee
                           </span>
                         </div>
                       </div>
@@ -812,15 +809,15 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
         {/* TAB 3: ORDERING WORKFLOW EXPLAINER */}
         {activeTab === 'how_it_works' && (
           <div className="bg-[#071329] rounded-3xl border border-blue-900/40 p-6 sm:p-10 space-y-8">
-            <div className="max-w-2xl space-y-2">
+            <div className="max-w-3xl space-y-2">
               <span className="text-amber-400 font-bold text-xs uppercase tracking-wider">
-                TRANSPARENT OPERATIONAL PROTOCOL
+                TRANSPARENT OPERATIONAL PROTOCOL • EX-FACTORY POLICY
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-white font-['Plus_Jakarta_Sans']">
-                How Sokoto Cement Trailer Ordering Works
+                How Sokoto Cement Ex-Factory Ordering Works
               </h2>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                A.A. Master Nig. Limited operates under strict separation of duties to protect contractor funds, guarantee factory-sealed quality, and prevent dispatch delays.
+                A.A. Master Nig. Limited operates strictly <strong>Ex-Factory / Kalambaina Plant Loading Bay</strong>. <span className="text-amber-300 font-bold">The company does not handle or arrange delivery.</span> All buyers dispatch their own articulated trailers or commercial transporters to the plant for loading by the issuing Agent under strict separation of duties.
               </p>
             </div>
 
@@ -830,9 +827,9 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 <span className="w-7 h-7 rounded-full bg-amber-500 text-slate-950 font-black text-xs flex items-center justify-center">
                   1
                 </span>
-                <strong className="text-xs text-white block font-bold">Buyer Placement</strong>
+                <strong className="text-xs text-white block font-bold">Order Placement</strong>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Contractor registers account and selects trailer quantities (minimum 1 full truck = 600 bags).
+                  Contractor registers account, selects trailers (600 bags each @ ₦10,850/bag), and registers transporter &amp; truck rig details.
                 </p>
               </div>
 
@@ -854,29 +851,29 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 </span>
                 <strong className="text-xs text-white block font-bold">Cashier Verification</strong>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Abubakar Garba verifies 100% upfront settlement into official company accounts. No credit sales.
+                  Abubakar Garba verifies 100% upfront settlement (₦6,510,000 per trailer, ₦0 delivery fee) into company accounts. No credit.
                 </p>
               </div>
 
               {/* Step 4 */}
               <div className="bg-[#081d45] border border-blue-700/40 rounded-2xl p-4 space-y-2 relative">
-                <span className="w-7 h-7 rounded-full bg-teal-600 text-white font-black text-xs flex items-center justify-center">
+                <span className="w-7 h-7 rounded-full bg-cyan-600 text-white font-black text-xs flex items-center justify-center">
                   4
                 </span>
-                <strong className="text-xs text-white block font-bold">Agent Issuance</strong>
+                <strong className="text-xs text-white block font-bold">Customer Dispatches Rig</strong>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Haruna Danladi physically inspects trailer rig at Kalambaina site, confirms driver, and deducts 600 bags.
+                  Buyer dispatches own 30-Ton articulated trailer or commercial transporter directly to Kalambaina Plant Loading Bay.
                 </p>
               </div>
 
               {/* Step 5 */}
               <div className="bg-[#081d45] border border-blue-700/40 rounded-2xl p-4 space-y-2 relative">
-                <span className="w-7 h-7 rounded-full bg-blue-600 text-white font-black text-xs flex items-center justify-center">
+                <span className="w-7 h-7 rounded-full bg-teal-600 text-white font-black text-xs flex items-center justify-center">
                   5
                 </span>
-                <strong className="text-xs text-white block font-bold">Gate Clearance Pass</strong>
+                <strong className="text-xs text-white block font-bold">Agent Gate Clearance</strong>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Driver receives security gate pass and official delivery waybill for direct haulage to buyer site.
+                  Haruna Danladi verifies arriving truck plates, inspects rig, physically loads 600 bags per truck, and issues gate pass.
                 </p>
               </div>
             </div>
@@ -884,8 +881,8 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
             <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3 text-xs text-amber-200">
               <ShieldCheck className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
               <div>
-                <strong className="font-bold text-amber-300 block">Strict Compliance Policy:</strong>
-                <span>Under no circumstances will cement be physically released without 100% full payment confirmation and verified Manager authorization.</span>
+                <strong className="font-bold text-amber-300 block">Strict Ex-Factory Haulage Policy:</strong>
+                <span>A.A. Master Nig. Limited operates exclusively on an Ex-Factory Loading Bay basis. The company does not handle or arrange haulage. All buyers are responsible for their own transportation arrangements.</span>
               </div>
             </div>
           </div>

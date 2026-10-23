@@ -1048,22 +1048,34 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-white">Logistics & Delivery Fleet Management</h2>
-                  <p className="text-xs text-slate-400">Assign haulage trucks, dispatch drivers, and record signed waybills</p>
+                  <h2 className="text-lg font-bold text-white">Agent Kalambaina Plant Gate Clearance &amp; Loading</h2>
+                  <p className="text-xs text-slate-400">Haruna Danladi physically inspects arriving customer rigs, verifies gate passes, and loads 600 bags per trailer</p>
                 </div>
+              </div>
+
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-200 flex items-center gap-2">
+                <Truck className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>
+                  <strong>Ex-Factory Policy:</strong> A.A. Master Nig. Limited does not handle delivery. All arriving rigs are customer-dispatched commercial transporters.
+                </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {deliveries.map((del) => {
-                  const isDispatched = del.status === 'DISPATCHED';
+                  const isDispatched = del.status === 'DISPATCHED' || del.status === 'FULLY_ISSUED';
                   const isDelivered = del.status === 'DELIVERED' || del.status === 'COMPLETED';
+                  const contactPerson = del.deliveryDetails?.recipientName || del.customerName;
+                  const contactPhone = del.deliveryDetails?.recipientPhone || del.customerPhone;
+                  const truckHead = del.collectionDetails?.truckHeadReg || del.deliveryDetails?.truckTractorHeadReg || 'PENDING';
+                  const trailerBed = del.collectionDetails?.trailerBedReg || del.deliveryDetails?.trailerBedReg || 'FLATBED';
+
                   return (
                     <div key={del.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
                       <div className="flex items-start justify-between">
                         <div>
                           <span className="font-mono text-xs font-bold text-amber-400 block">{del.orderNumber}</span>
-                          <span className="text-sm font-bold text-white">{del.deliveryDetails?.recipientName}</span>
-                          <span className="text-xs text-slate-400 block">{del.deliveryDetails?.recipientPhone}</span>
+                          <span className="text-sm font-bold text-white">{contactPerson}</span>
+                          <span className="text-xs text-slate-400 block">{contactPhone}</span>
                         </div>
                         <span
                           className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
@@ -1080,17 +1092,20 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
 
                       <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 text-xs space-y-1">
                         <p className="text-slate-300">
-                          <strong>Site Destination:</strong> {del.deliveryDetails?.siteAddress}, {del.deliveryDetails?.city}
+                          <strong>Loading Terminal:</strong> {del.collectionDetails?.plantDepotLocation || 'Kalambaina Main Plant Loading Terminal'}
                         </p>
-                        <p className="text-slate-400">
-                          <strong>Interstate Zone:</strong> {del.deliveryDetails?.deliveryZone}
+                        <p className="text-amber-400 font-mono font-bold">
+                          <strong>Gate Pass:</strong> {del.collectionDetails?.collectionPassCode || 'AAM-PASS-ACTIVE'}
                         </p>
                         <p className="text-emerald-400 font-bold">
-                          <strong>Trailer Payload:</strong> {del.totalTrailers} Trailer(s) • {del.totalBags.toLocaleString()} bags ({del.totalTonnes}T)
+                          <strong>Allocation:</strong> {del.totalTrailers} Trailer(s) • {del.totalBags.toLocaleString()} bags ({del.totalTonnes}T)
                         </p>
-                        {del.deliveryDetails?.truckTractorHeadReg && (
-                          <p className="text-amber-400 font-mono pt-1">
-                            <strong>Rig:</strong> {del.deliveryDetails.truckTractorHeadReg} | Bed: {del.deliveryDetails.trailerBedReg}
+                        <p className="text-slate-300 font-mono pt-1">
+                          <strong>Customer Rig:</strong> {truckHead} | {trailerBed}
+                        </p>
+                        {del.collectionDetails?.driverName && (
+                          <p className="text-slate-400">
+                            <strong>Driver:</strong> {del.collectionDetails.driverName} ({del.collectionDetails.transporterName})
                           </p>
                         )}
                       </div>

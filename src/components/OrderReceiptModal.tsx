@@ -90,34 +90,21 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
             </div>
             <div>
               <span className="text-[10px] uppercase font-bold text-slate-500 block">
-                Logistics: {order.fulfillmentType === 'FACTORY_TRAILER_HAULAGE' ? 'Factory Interstate Haulage' : 'Factory Gate Collection'}
+                Logistics: Ex-Factory Collection (Customer-Arranged Transporter)
               </span>
-              {order.fulfillmentType === 'FACTORY_TRAILER_HAULAGE' && order.deliveryDetails ? (
-                <>
-                  <p className="font-bold text-slate-900">{order.deliveryDetails.siteAddress}</p>
-                  <p className="text-slate-600">Landmark: {order.deliveryDetails.landmark || 'N/A'}</p>
-                  <p className="text-slate-600">Corridor: {order.deliveryDetails.deliveryZone}</p>
-                  {order.deliveryDetails.truckTractorHeadReg && (
-                    <p className="text-slate-900 font-mono font-bold mt-1">
-                      Tractor Head: {order.deliveryDetails.truckTractorHeadReg} | Trailer Bed: {order.deliveryDetails.trailerBedReg}
-                    </p>
-                  )}
-                  {order.deliveryDetails.deliveryOfficerName && (
-                    <p className="text-slate-700">Driver: {order.deliveryDetails.deliveryOfficerName} ({order.deliveryDetails.driverPhone})</p>
-                  )}
-                </>
-              ) : (
-                <>
-                  <p className="font-bold text-slate-900">{order.collectionDetails?.plantDepotLocation}</p>
-                  <p className="text-amber-800 font-mono font-bold text-sm">
-                    Gate Clearance Passcode: {order.collectionDetails?.collectionPassCode}
-                  </p>
-                  <p className="text-slate-700 font-mono">
-                    Truck Head: {order.collectionDetails?.truckHeadReg} | Bed: {order.collectionDetails?.trailerBedReg}
-                  </p>
-                  <p className="text-slate-600">Transporter Driver: {order.collectionDetails?.driverName}</p>
-                </>
-              )}
+              <p className="font-bold text-slate-900">{order.collectionDetails?.plantDepotLocation || 'Kalambaina Main Plant Loading Terminal'}</p>
+              <p className="text-amber-800 font-mono font-bold text-sm">
+                Gate Clearance Passcode: {order.collectionDetails?.collectionPassCode || 'AAM-PASS-ACTIVE'}
+              </p>
+              <p className="text-slate-700 font-mono">
+                Truck Head: <strong>{order.collectionDetails?.truckHeadReg || 'CUSTOMER RIG'}</strong> | Bed: <strong>{order.collectionDetails?.trailerBedReg || 'FLATBED'}</strong>
+              </p>
+              <p className="text-slate-600">
+                Transporter: {order.collectionDetails?.transporterName || 'Buyer Private Transporter'} {order.collectionDetails?.driverName ? `(Driver: ${order.collectionDetails.driverName})` : ''}
+              </p>
+              <p className="text-[10px] text-amber-900 italic mt-0.5">
+                *Notice: The company does not handle delivery. All transport is customer-arranged.
+              </p>
             </div>
           </div>
 
@@ -168,15 +155,15 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
                 <span className="font-mono text-slate-900">₦{order.subtotal.toLocaleString('en-NG')}</span>
               </div>
               <div className="flex justify-between text-slate-600">
-                <span>Interstate Freight / Haulage:</span>
-                <span className="font-mono text-slate-900">₦{order.haulageFee.toLocaleString('en-NG')}</span>
+                <span>Company Haulage / Delivery:</span>
+                <span className="font-mono font-bold text-emerald-700">₦0 (Customer-Arranged)</span>
               </div>
               <div className="flex justify-between text-slate-600">
-                <span>Porter Offloading Charge:</span>
-                <span className="font-mono text-slate-900">₦{order.offloadingFee.toLocaleString('en-NG')}</span>
+                <span>Porter Offloading:</span>
+                <span className="font-mono font-bold text-emerald-700">₦0 (Transporter Crew)</span>
               </div>
               <div className="flex justify-between text-sm font-black border-t-2 border-slate-900 pt-2 text-slate-950">
-                <span>Total Amount:</span>
+                <span>Total Amount Paid (100%):</span>
                 <span className="font-mono text-amber-800">₦{order.totalAmount.toLocaleString('en-NG')}</span>
               </div>
             </div>

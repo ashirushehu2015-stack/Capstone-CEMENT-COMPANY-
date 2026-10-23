@@ -262,7 +262,7 @@ export const CalculatorModal: React.FC<CalculatorModalProps> = ({ products, isOp
             <div className="flex items-center gap-2 text-xs text-amber-200/90 bg-amber-950/40 p-2.5 rounded-xl border border-amber-900/40">
               <Truck className="w-4 h-4 text-amber-400 shrink-0" />
               <span>
-                Dispatched via {recommendedTrailers} Articulated 30-Ton Multi-Axle Trailer(s) direct from Kalambaina Plant.
+                Ex-Factory at Kalambaina Plant ({recommendedTrailers} Articulated 30-Ton Trailers). The company does not handle delivery; all haulage is customer-arranged.
               </span>
             </div>
           </div>

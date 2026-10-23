@@ -32,7 +32,8 @@ import type {
   PaymentStatus,
   LedgerMovementType,
   TruckIssuanceAllocation,
-  AcceptanceTestResult
+  AcceptanceTestResult,
+  FactoryCollectionDetails,
 } from '../types/index.ts';
 
 interface DBUser extends User {
@@ -567,26 +568,19 @@ class DatabaseEngine {
       totalBags: 1200,
       totalTonnes: 60,
       subtotal: 13020000,
-      haulageFee: 760000, // 2 trucks * ₦380,000
-      offloadingFee: 120000, // 2 trucks * ₦60,000
-      totalAmount: 13900000, // 100% full payment
-      fulfillmentType: 'FACTORY_TRAILER_HAULAGE',
-      deliveryDetails: {
-        recipientName: 'Alhaji Mukhtar Dan-Kano',
-        recipientPhone: '+234 802 999 8877',
-        siteAddress: 'Dan-Kano Estate Project Site, Western Bypass, Kano',
-        city: 'Kano',
-        state: 'Kano',
-        deliveryZone: 'Kano & Katsina Mega Corridor',
-        haulageFeePerTrailer: 380000,
-        totalHaulageFee: 760000,
-        offloadingFeePerTrailer: 60000,
-        totalOffloadingFee: 120000,
-        truckTractorHeadReg: 'SKK-782-XA',
+      haulageFee: 0,
+      offloadingFee: 0,
+      totalAmount: 13020000, // Strictly 2 trucks @ ₦6,510,000 (Company does not handle delivery)
+      fulfillmentType: 'FACTORY_GATE_COLLECTION',
+      collectionDetails: {
+        plantDepotLocation: 'Kalambaina Main Plant Loading Terminal (Cement Works Expressway, Sokoto)',
+        collectionPassCode: 'AAM-PASS-8841',
+        transporterName: 'Arewa Haulage Consortium',
+        transporterPhone: '+234 812 555 6677',
+        truckHeadReg: 'SKK-782-XA',
         trailerBedReg: 'T-904-SOK',
-        driverPhone: '+234 812 555 6677',
-        deliveryOfficerId: 'usr_agent_001',
-        deliveryOfficerName: 'Haruna Danladi',
+        driverName: 'Musa Danladi',
+        driverLicenseNo: 'KBB-89104-AA',
       },
       status: 'PARTIALLY_ISSUED',
       paymentMethod: 'BANK_TRANSFER',
@@ -642,7 +636,7 @@ class DatabaseEngine {
         orderNumber: sampleOrder1.orderNumber,
         customerId: sampleOrder1.customerId,
         customerName: sampleOrder1.customerName,
-        amount: 13900000,
+        amount: 13020000,
         isFullPayment: true,
         paymentMethod: 'BANK_TRANSFER',
         paymentStatus: 'VERIFIED',
@@ -1269,47 +1263,36 @@ class DatabaseEngine {
     const totalTonnes = verifiedItems.reduce((acc, it) => acc + it.totalTonnes, 0);
     const subtotal = verifiedItems.reduce((acc, it) => acc + it.subtotal, 0);
 
-    let haulageFee = 0;
-    let offloadingFee = 0;
-    let finalDeliveryDetails;
-    let finalCollectionDetails;
+    // Company policy: The company does NOT handle delivery. All orders are strictly Ex-Factory collection at Kalambaina Plant.
+    const haulageFee = 0;
+    const offloadingFee = 0;
+    const totalAmount = subtotal; // Authoritative cement cost: totalTrailers * ₦6,510,000
 
-    if (orderData.fulfillmentType === 'FACTORY_TRAILER_HAULAGE') {
-      if (!orderData.deliveryDetails) throw new Error('Delivery address details required for site haulage');
-      const zone = this.data.settings.interstateHaulageZones.find((z) => z.id === orderData.deliveryDetails!.deliveryZoneId);
-      const zoneRate = zone ? zone.haulageFeePerTrailer : 380000;
-      haulageFee = zoneRate * totalTrailers;
-      offloadingFee = this.data.settings.offloadingFeePerTrailer * totalTrailers;
-
-      finalDeliveryDetails = {
-        recipientName: orderData.deliveryDetails.recipientName,
-        recipientPhone: orderData.deliveryDetails.recipientPhone,
-        siteAddress: orderData.deliveryDetails.siteAddress,
-        landmark: orderData.deliveryDetails.landmark,
-        city: orderData.deliveryDetails.city,
-        state: orderData.deliveryDetails.state,
-        deliveryZone: zone ? zone.name : 'Standard Interstate Zone',
-        haulageFeePerTrailer: zoneRate,
-        totalHaulageFee: haulageFee,
-        offloadingFeePerTrailer: this.data.settings.offloadingFeePerTrailer,
-        totalOffloadingFee: offloadingFee,
-      };
-    } else {
-      if (!orderData.collectionDetails) throw new Error('Transporter collection details required for factory gate pickup');
+    let finalCollectionDetails: FactoryCollectionDetails;
+    if (orderData.collectionDetails) {
       const depot = this.data.settings.depots.find((d) => d.id === orderData.collectionDetails!.plantDepotId);
       finalCollectionDetails = {
         plantDepotLocation: depot ? `${depot.name} (${depot.address})` : 'Kalambaina Main Plant Loading Terminal',
         collectionPassCode: 'AAM-PASS-' + Math.floor(10000 + Math.random() * 90000).toString(),
-        transporterName: orderData.collectionDetails.transporterName,
-        transporterPhone: orderData.collectionDetails.transporterPhone,
+        transporterName: orderData.collectionDetails.transporterName || 'Customer Transporter Fleet',
+        transporterPhone: orderData.collectionDetails.transporterPhone || orderData.customerPhone,
         truckHeadReg: orderData.collectionDetails.truckHeadReg,
         trailerBedReg: orderData.collectionDetails.trailerBedReg,
         driverName: orderData.collectionDetails.driverName,
         driverLicenseNo: orderData.collectionDetails.driverLicenseNo,
       };
+    } else {
+      finalCollectionDetails = {
+        plantDepotLocation: 'Kalambaina Main Plant Loading Terminal (Cement Works Expressway, Sokoto)',
+        collectionPassCode: 'AAM-PASS-' + Math.floor(10000 + Math.random() * 90000).toString(),
+        transporterName: orderData.companyName || 'Customer Transporter Fleet',
+        transporterPhone: orderData.customerPhone,
+        truckHeadReg: 'SKK-PENDING',
+        trailerBedReg: 'T-PENDING',
+        driverName: orderData.customerName,
+      };
     }
 
-    const totalAmount = subtotal + haulageFee + offloadingFee;
     const now = new Date().toISOString();
     const orderNumber = `AAM-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
@@ -1340,11 +1323,10 @@ class DatabaseEngine {
       totalBags,
       totalTonnes,
       subtotal,
-      haulageFee,
-      offloadingFee,
+      haulageFee: 0,
+      offloadingFee: 0,
       totalAmount,
-      fulfillmentType: orderData.fulfillmentType,
-      deliveryDetails: finalDeliveryDetails,
+      fulfillmentType: 'FACTORY_GATE_COLLECTION',
       collectionDetails: finalCollectionDetails,
       status: 'PENDING_APPROVAL', // Section 1 & 5: Requires Manager Approval first!
       paymentMethod: orderData.paymentMethod,

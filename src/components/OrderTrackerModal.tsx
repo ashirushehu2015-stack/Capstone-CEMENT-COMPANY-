@@ -97,28 +97,27 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({
   };
 
   const steps: { label: string; key: OrderStatus; desc: string }[] = [
-    { label: 'Order Placed', key: 'PENDING_PAYMENT', desc: 'Trailers reserved at plant' },
-    { label: 'Payment Verified', key: 'PAID', desc: 'Treasury verified settlement' },
-    { label: 'Loading & Staging', key: 'PROCESSING', desc: 'Articulated trailer loaded & strapped' },
-    {
-      label: order?.fulfillmentType === 'FACTORY_TRAILER_HAULAGE' ? 'Convoy Dispatched' : 'Gate Pass Ready',
-      key: order?.fulfillmentType === 'FACTORY_TRAILER_HAULAGE' ? 'DISPATCHED' : 'READY_FOR_COLLECTION',
-      desc: order?.fulfillmentType === 'FACTORY_TRAILER_HAULAGE' ? 'Truck on highway to site' : 'Staged at Kalambaina Gate',
-    },
-    { label: 'Delivered / Completed', key: 'COMPLETED', desc: 'Offloaded & signed off' },
+    { label: 'Order Placed', key: 'PENDING_APPROVAL', desc: 'Awaiting Manager review' },
+    { label: 'Payment Verified', key: 'PAID', desc: 'Cashier confirmed 100% wire' },
+    { label: 'Gate Pass Active', key: 'READY_FOR_COLLECTION', desc: 'Security pass issued' },
+    { label: 'Agent Issuance', key: 'PARTIALLY_ISSUED', desc: 'Loading 600 bags per truck' },
+    { label: 'Rig Collected', key: 'COMPLETED', desc: 'Customer trailer cleared' },
   ];
 
   const getStepIndex = (status: OrderStatus) => {
     switch (status) {
+      case 'PENDING_APPROVAL':
       case 'PENDING_PAYMENT':
       case 'PAYMENT_UNDER_VERIFICATION':
         return 0;
       case 'PAID':
-        return 1;
       case 'CONFIRMED':
+        return 1;
+      case 'READY_FOR_COLLECTION':
       case 'PROCESSING':
         return 2;
-      case 'READY_FOR_COLLECTION':
+      case 'PARTIALLY_ISSUED':
+      case 'FULLY_ISSUED':
       case 'DISPATCHED':
         return 3;
       case 'DELIVERED':
@@ -384,34 +383,27 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({
                 </div>
 
                 <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-2 text-xs">
-                  <h4 className="font-bold text-amber-400 uppercase tracking-wider text-[11px]">
-                    {order.fulfillmentType === 'FACTORY_TRAILER_HAULAGE' ? 'Articulated Haulage Info' : 'Factory Gate Clearance'}
+                  <h4 className="font-bold text-amber-400 uppercase tracking-wider text-[11px] flex items-center justify-between">
+                    <span>Ex-Factory Gate Clearance</span>
+                    <span className="text-[10px] text-slate-400">Customer Transport</span>
                   </h4>
-                  {order.fulfillmentType === 'FACTORY_TRAILER_HAULAGE' && order.deliveryDetails ? (
-                    <>
-                      <p className="text-white font-semibold">{order.deliveryDetails.siteAddress}</p>
-                      <p className="text-slate-400">Landmark: {order.deliveryDetails.landmark || 'N/A'}</p>
-                      <p className="text-slate-400">Corridor: {order.deliveryDetails.deliveryZone}</p>
-                      {order.deliveryDetails.truckTractorHeadReg && (
-                        <div className="p-2 bg-slate-900 rounded-lg border border-slate-700 text-amber-300 font-mono">
-                          Tractor: <strong>{order.deliveryDetails.truckTractorHeadReg}</strong> | Bed: {order.deliveryDetails.trailerBedReg}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-white font-semibold">{order.collectionDetails?.plantDepotLocation}</p>
-                      <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center">
-                        <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Kalambaina Security Gate Pass</span>
-                        <span className="text-xl font-black text-amber-400 font-mono tracking-widest">
-                          {order.collectionDetails?.collectionPassCode}
-                        </span>
-                      </div>
-                      <p className="text-slate-400">
-                        Truck: {order.collectionDetails?.truckHeadReg} (Driver: {order.collectionDetails?.driverName})
-                      </p>
-                    </>
-                  )}
+                  <p className="text-white font-semibold">{order.collectionDetails?.plantDepotLocation || 'Kalambaina Main Plant Loading Terminal'}</p>
+                  <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Kalambaina Security Gate Pass</span>
+                    <span className="text-xl font-black text-amber-400 font-mono tracking-widest">
+                      {order.collectionDetails?.collectionPassCode || 'AAM-PASS-ACTIVE'}
+                    </span>
+                  </div>
+                  <div className="space-y-1 text-slate-300">
+                    <p>Transporter: <strong>{order.collectionDetails?.transporterName || 'Customer Private Fleet'}</strong></p>
+                    <p className="font-mono text-amber-300">
+                      Tractor: <strong>{order.collectionDetails?.truckHeadReg || 'CUSTOMER RIG'}</strong> | Bed: {order.collectionDetails?.trailerBedReg || 'FLATBED'}
+                    </p>
+                    <p>Driver: {order.collectionDetails?.driverName || 'Designated Driver'}</p>
+                  </div>
+                  <p className="text-[10px] text-amber-300/80 italic pt-1 border-t border-slate-800">
+                    *The company does not handle delivery. Ensure your driver presents this pass at the Kalambaina loading bay.
+                  </p>
                 </div>
               </div>
 
