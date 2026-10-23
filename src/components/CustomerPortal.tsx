@@ -151,202 +151,102 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   return (
     <div className="min-h-screen bg-[#040914] text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-slate-950">
       
-      {/* 1. TOP PORTAL HEADER & LEFT-HAND SIDE HORIZONTAL MENU */}
-      <header className="sticky top-0 z-40 bg-[#060e1d]/95 backdrop-blur-md border-b border-blue-900/40">
-        {/* Top Row: Brand Identity (Left) + Customer Account & Hotline (Right) */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center justify-between py-3 gap-3 border-b border-blue-900/30">
-            
-            {/* Brand Logo & Name */}
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('catalogue')}>
-              <div className="w-10 h-10 rounded-full border-2 border-amber-400 bg-white p-1 shadow-md shrink-0 flex items-center justify-center overflow-hidden">
-                <img
-                  src="/assets/aistudio/image_8da756cd.png"
-                  alt="A.A. Master Logo"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-base sm:text-lg font-black tracking-tight text-white uppercase font-['Plus_Jakarta_Sans']">
-                    A.A. MASTER <span className="text-amber-400">NIG. LTD</span>
-                  </span>
-                  <span className="bg-blue-900/60 border border-blue-700/60 text-blue-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
-                    Customer Portal
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-400 hidden sm:block">
-                  Authorized Sokoto Cement Merchant • 600 Bags / 30-Ton Trailers
-                </p>
-              </div>
+      {/* 1. TOP PORTAL HEADER */}
+      <header className="sticky top-0 z-40 bg-[#060e1d]/95 backdrop-blur-md border-b border-blue-900/40 px-4 sm:px-6">
+        <div className="flex flex-wrap items-center justify-between py-3 gap-3">
+          
+          {/* Brand Logo & Name */}
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('catalogue')}>
+            <div className="w-10 h-10 rounded-full border-2 border-amber-400 bg-white p-1 shadow-md shrink-0 flex items-center justify-center overflow-hidden">
+              <img
+                src="/assets/aistudio/image_8da756cd.png"
+                alt="A.A. Master Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
-
-            {/* Right: Hotline, Home & Customer Account Controls */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              <a
-                href="tel:08036172280"
-                className="hidden sm:flex items-center gap-1.5 bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-colors"
-              >
-                <PhoneCall className="w-3.5 h-3.5 text-emerald-400" />
-                <span>080-36172280</span>
-              </a>
-
-              <button
-                onClick={onReturnToLanding}
-                className="bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors"
-              >
-                Home
-              </button>
-
-              {/* Customer Account Identity & Auth Controls */}
-              {customerUser ? (
-                <div className="flex items-center gap-2 bg-[#081b3d] border border-blue-700/60 px-2.5 py-1 sm:py-1.5 rounded-xl text-xs">
-                  <div className="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-xs uppercase">
-                    {customerUser.fullName.charAt(0)}
-                  </div>
-                  <div className="leading-tight text-left hidden sm:block">
-                    <span className="font-bold text-white block text-xs truncate max-w-[130px]">{customerUser.fullName}</span>
-                    <span className="text-[10px] text-blue-300 block truncate max-w-[130px]">
-                      {customerUser.companyName || customerUser.email}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => logout()}
-                    title="Sign Out of Customer Account"
-                    className="text-slate-400 hover:text-rose-400 p-1 rounded-lg hover:bg-slate-800 transition-colors ml-1"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => {
-                      setAuthModalTab('login');
-                      setIsAuthModalOpen(true);
-                    }}
-                    className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1 whitespace-nowrap"
-                  >
-                    <Lock className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Sign In</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAuthModalTab('register');
-                      setIsAuthModalOpen(true);
-                    }}
-                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs shadow-md transition-all active:scale-95 flex items-center gap-1 whitespace-nowrap"
-                  >
-                    <User className="w-3.5 h-3.5" />
-                    <span>Create Account</span>
-                  </button>
-                </div>
-              )}
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-base sm:text-lg font-black tracking-tight text-white uppercase font-['Plus_Jakarta_Sans']">
+                  A.A. MASTER <span className="text-amber-400">NIG. LTD</span>
+                </span>
+                <span className="bg-blue-900/60 border border-blue-700/60 text-blue-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
+                  Customer Portal
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 hidden sm:block">
+                Authorized Sokoto Cement Merchant • 600 Bags / 30-Ton Trailers
+              </p>
             </div>
           </div>
 
-          {/* Second Row: Left-Hand Side Horizontal Menu Bar */}
-          <nav
-            aria-label="Customer Portal Navigation"
-            className="flex flex-wrap items-center justify-start gap-2 py-2.5 text-xs font-semibold"
-          >
-            <button
-              onClick={() => setActiveTab('catalogue')}
-              className={`px-3.5 py-2 rounded-xl transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-                activeTab === 'catalogue'
-                  ? 'bg-amber-500 text-slate-950 font-black shadow-md'
-                  : 'bg-[#0b1f3f]/70 text-slate-200 hover:text-white hover:bg-[#122e5a] border border-blue-800/40'
-              }`}
+          {/* Right: Hotline, Home & Customer Account Controls */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <a
+              href="tel:08036172280"
+              className="hidden sm:flex items-center gap-1.5 bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-colors"
             >
-              <Layers className="w-3.5 h-3.5" />
-              <span>Cement Catalogue</span>
-            </button>
+              <PhoneCall className="w-3.5 h-3.5 text-emerald-400" />
+              <span>080-36172280</span>
+            </a>
 
             <button
-              onClick={() => setActiveTab('my_orders')}
-              className={`px-3.5 py-2 rounded-xl transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-                activeTab === 'my_orders'
-                  ? 'bg-amber-500 text-slate-950 font-black shadow-md'
-                  : 'bg-[#0b1f3f]/70 text-slate-200 hover:text-white hover:bg-[#122e5a] border border-blue-800/40'
-              }`}
+              onClick={onReturnToLanding}
+              className="bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors"
             >
-              <ShoppingBag className="w-3.5 h-3.5" />
-              <span>My Orders</span>
-              {customerUser && customerOrders.length > 0 && (
-                <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold leading-none">
-                  {customerOrders.length}
-                </span>
-              )}
+              Home
             </button>
 
-            <button
-              onClick={() => setActiveTab('how_it_works')}
-              className={`px-3.5 py-2 rounded-xl transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-                activeTab === 'how_it_works'
-                  ? 'bg-amber-500 text-slate-950 font-black shadow-md'
-                  : 'bg-[#0b1f3f]/70 text-slate-200 hover:text-white hover:bg-[#122e5a] border border-blue-800/40'
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Ordering Workflow</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('bank_details')}
-              className={`px-3.5 py-2 rounded-xl transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-                activeTab === 'bank_details'
-                  ? 'bg-amber-500 text-slate-950 font-black shadow-md'
-                  : 'bg-[#0b1f3f]/70 text-slate-200 hover:text-white hover:bg-[#122e5a] border border-blue-800/40'
-              }`}
-            >
-              <Building2 className="w-3.5 h-3.5" />
-              <span>Bank Accounts</span>
-            </button>
-
-            <button
-              onClick={onOpenTracker}
-              className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors whitespace-nowrap flex items-center gap-1.5"
-            >
-              <Search className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Track Waybill</span>
-            </button>
-
-            <button
-              onClick={onOpenCalculator}
-              className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors whitespace-nowrap flex items-center gap-1.5"
-            >
-              <Calculator className="w-3.5 h-3.5 text-amber-400" />
-              <span>Trailer Estimator</span>
-            </button>
-
-            <button
-              onClick={() => {
-                if (products[0]) handleOrderQuickTrailers(products[0], 1);
-              }}
-              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs shadow-md transition-all active:scale-95 whitespace-nowrap flex items-center gap-1.5"
-            >
-              <Truck className="w-3.5 h-3.5 text-slate-950" />
-              <span>Order Trailer (600 Bags)</span>
-            </button>
-
-            {totalTrailers > 0 && (
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs shadow-md transition-all active:scale-95 whitespace-nowrap flex items-center gap-1.5"
-              >
-                <ShoppingBag className="w-3.5 h-3.5 text-slate-950" />
-                <span>
-                  {totalTrailers} {totalTrailers === 1 ? 'Trailer' : 'Trailers'} (₦{subtotalNGN.toLocaleString('en-NG')})
-                </span>
-              </button>
+            {/* Customer Account Identity & Auth Controls */}
+            {customerUser ? (
+              <div className="flex items-center gap-2 bg-[#081b3d] border border-blue-700/60 px-2.5 py-1 sm:py-1.5 rounded-xl text-xs">
+                <div className="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-xs uppercase">
+                  {customerUser.fullName.charAt(0)}
+                </div>
+                <div className="leading-tight text-left hidden sm:block">
+                  <span className="font-bold text-white block text-xs truncate max-w-[130px]">{customerUser.fullName}</span>
+                  <span className="text-[10px] text-blue-300 block truncate max-w-[130px]">
+                    {customerUser.companyName || customerUser.email}
+                  </span>
+                </div>
+                <button
+                  onClick={() => logout()}
+                  title="Sign Out of Customer Account"
+                  className="text-slate-400 hover:text-rose-400 p-1 rounded-lg hover:bg-slate-800 transition-colors ml-1"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => {
+                    setAuthModalTab('login');
+                    setIsAuthModalOpen(true);
+                  }}
+                  className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1 whitespace-nowrap"
+                >
+                  <Lock className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Sign In</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setAuthModalTab('register');
+                    setIsAuthModalOpen(true);
+                  }}
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs shadow-md transition-all active:scale-95 flex items-center gap-1 whitespace-nowrap"
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>Create Account</span>
+                </button>
+              </div>
             )}
-          </nav>
+          </div>
         </div>
       </header>
 
       {/* 2. SUB-BAR NOTIFICATION */}
-      <div className="bg-[#0b1e3d] border-b border-blue-900/30 text-xs py-2 px-4 text-slate-300">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div className="bg-[#0b1e3d] border-b border-blue-900/30 text-xs py-2 px-4 sm:px-6 text-slate-300">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="font-bold text-white">Kalambaina Loading Terminal Active:</span>
@@ -360,8 +260,121 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
         </div>
       </div>
 
-      {/* 3. MAIN PORTAL BODY */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
+      {/* 3. MAIN WORKSPACE LAYOUT: LEFT-HAND SIDE NAVBAR + RIGHT CONTENT AREA */}
+      <div className="flex-1 flex flex-col lg:flex-row">
+        
+        {/* LEFT-HAND SIDE NAVBAR (Matches Staff Portal Left Sidebar Layout) */}
+        <aside
+          aria-label="Customer Portal Left Navigation"
+          className="w-full lg:w-64 shrink-0 bg-[#060e1d] border-b lg:border-b-0 lg:border-r border-blue-900/40 p-4 space-y-1.5"
+        >
+          <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-3 pb-1">
+            Portal Navigation
+          </div>
+
+          <button
+            onClick={() => setActiveTab('catalogue')}
+            className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+              activeTab === 'catalogue'
+                ? 'bg-amber-500 text-slate-950 font-black shadow-md'
+                : 'text-slate-300 hover:bg-[#0b1f3f] hover:text-white'
+            }`}
+          >
+            <Layers className="w-4 h-4 shrink-0" />
+            <span>Cement Catalogue</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('my_orders')}
+            className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+              activeTab === 'my_orders'
+                ? 'bg-amber-500 text-slate-950 font-black shadow-md'
+                : 'text-slate-300 hover:bg-[#0b1f3f] hover:text-white'
+            }`}
+          >
+            <ShoppingBag className="w-4 h-4 shrink-0" />
+            <span>My Orders</span>
+            {customerUser && customerOrders.length > 0 && (
+              <span className="ml-auto bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full font-black leading-none">
+                {customerOrders.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('how_it_works')}
+            className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+              activeTab === 'how_it_works'
+                ? 'bg-amber-500 text-slate-950 font-black shadow-md'
+                : 'text-slate-300 hover:bg-[#0b1f3f] hover:text-white'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4 shrink-0" />
+            <span>Ordering Workflow</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('bank_details')}
+            className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+              activeTab === 'bank_details'
+                ? 'bg-amber-500 text-slate-950 font-black shadow-md'
+                : 'text-slate-300 hover:bg-[#0b1f3f] hover:text-white'
+            }`}
+          >
+            <Building2 className="w-4 h-4 shrink-0" />
+            <span>Bank Accounts</span>
+          </button>
+
+          <div className="pt-3 mt-3 border-t border-blue-900/40 space-y-1.5">
+            <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-3 pb-1">
+              Quick Actions &amp; Tools
+            </div>
+
+            <button
+              onClick={onOpenTracker}
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-[#0b1f3f]/80 hover:bg-[#122e5a] text-blue-200 border border-blue-800/50 transition-all"
+            >
+              <Search className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Track Waybill</span>
+            </button>
+
+            <button
+              onClick={onOpenCalculator}
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-[#0b1f3f]/80 hover:bg-[#122e5a] text-blue-200 border border-blue-800/50 transition-all"
+            >
+              <Calculator className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>Trailer Estimator</span>
+            </button>
+
+            <button
+              onClick={() => {
+                if (products[0]) handleOrderQuickTrailers(products[0], 1);
+              }}
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md transition-all active:scale-95"
+            >
+              <Truck className="w-4 h-4 text-slate-950 shrink-0" />
+              <span>Order Trailer (600 Bags)</span>
+            </button>
+
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-black shadow-md transition-all active:scale-95 ${
+                totalTrailers > 0
+                  ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+                  : 'bg-[#0b1f3f] hover:bg-[#122e5a] text-slate-200 border border-blue-800/50'
+              }`}
+            >
+              <ShoppingBag className="w-4 h-4 shrink-0" />
+              <span>
+                {totalTrailers} {totalTrailers === 1 ? 'Trailer' : 'Trailers'}
+                {totalTrailers > 0 ? ` (₦${subtotalNGN.toLocaleString('en-NG')})` : ' in Cart'}
+              </span>
+            </button>
+          </div>
+        </aside>
+
+        {/* RIGHT MAIN PORTAL BODY */}
+        <main className="flex-1 min-w-0 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
         
         {/* TAB 1: PRODUCT CATALOGUE */}
         {activeTab === 'catalogue' && (
@@ -1024,7 +1037,8 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
             </div>
           </div>
         )}
-      </main>
+        </main>
+      </div>
 
       {/* 4. FOOTER */}
       <footer className="bg-[#030712] border-t border-blue-950 text-slate-400 text-xs py-6 px-4 sm:px-6 lg:px-8">
