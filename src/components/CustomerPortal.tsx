@@ -32,7 +32,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { useCart } from '../context/CartContext.tsx';
-import { ProductCard } from './ProductCard.tsx';
 import { apiOrders } from '../services/api.ts';
 import type { Product, Order, BusinessSettings } from '../types/index.ts';
 
@@ -68,8 +67,9 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   const [payerNameInput, setPayerNameInput] = useState('');
   const [claimSubmitting, setClaimSubmitting] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState<string | null>(null);
+  const [selectedGradeId, setSelectedGradeId] = useState<string>(products[0]?.id || '');
 
-  // Load customer order history
+  const activeProduct = products.find((p) => p.id === selectedGradeId) || products[0];
   const loadOrders = async () => {
     if (!user) return;
     setIsLoadingOrders(true);
@@ -351,46 +351,86 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
               </div>
             </div>
 
-            {/* Product Grid Section */}
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
+            {/* Authoritative Wholesale Trailer Procurement & Pricing Schedule */}
+            <div className="bg-[#071329] rounded-3xl border border-blue-900/40 p-6 sm:p-8 space-y-6 shadow-xl">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-blue-950 pb-5">
                 <div>
                   <h2 className="text-xl sm:text-2xl font-black text-white font-['Plus_Jakarta_Sans'] flex items-center gap-2">
-                    <Layers className="w-6 h-6 text-amber-400" />
-                    <span>Sokoto Cement Grades &amp; Trailer Inventory</span>
+                    <Receipt className="w-6 h-6 text-amber-400" />
+                    <span>Authoritative Wholesale Trailer Pricing Schedule</span>
                   </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Select your preferred Portland cement grade. All loads are packaged in standard 50kg bags (600 bags / 30 tonnes per trailer).
+                  <p className="text-xs text-slate-400 mt-1">
+                    Fixed factory price: <strong className="text-emerald-400">₦10,850 per bag</strong> (<strong>₦6,510,000 per 600-bag trailer load / 30 metric tonnes</strong>). 100% upfront settlement required.
                   </p>
+                </div>
+
+                {/* Grade Selection Tabs */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {products.map((p) => {
+                    const isSelected = (selectedGradeId || products[0]?.id) === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => setSelectedGradeId(p.id)}
+                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border ${
+                          isSelected
+                            ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md ring-1 ring-amber-400'
+                            : 'bg-[#091d3f] text-slate-300 border-blue-800/60 hover:bg-[#0d2754] hover:text-white'
+                        }`}
+                      >
+                        <ShieldCheck className={`w-3.5 h-3.5 ${isSelected ? 'text-slate-950' : 'text-amber-400'}`} />
+                        <span>Grade {p.grade}</span>
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
+                          isSelected ? 'bg-slate-950 text-amber-300' : 'bg-blue-950 text-slate-400'
+                        }`}>
+                          {p.availableTrailers} Trucks
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onViewSpecs={onViewSpecs}
-                  />
-                ))}
-              </div>
-            </div>
+              {/* Active Selected Grade Summary Box */}
+              {activeProduct && (
+                <div className="bg-[#050f24] border border-blue-900/60 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 text-xs">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-amber-400 text-[11px] font-bold">Grade {activeProduct.grade}</span>
+                      <span className="text-slate-500">•</span>
+                      <strong className="text-white text-sm font-bold">{activeProduct.name}</strong>
+                    </div>
+                    <p className="text-slate-400 text-[11px] max-w-xl">
+                      {activeProduct.description}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">
+                        Plant Inventory Available
+                      </span>
+                      <strong className="text-emerald-400 text-sm font-mono font-bold block">
+                        {activeProduct.availableTrailers} Full Trucks ({(activeProduct.availableTrailers * 600).toLocaleString()} Bags)
+                      </strong>
+                    </div>
+                    <button
+                      onClick={() => handleOrderQuickTrailers(activeProduct, 1)}
+                      className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs shadow-md transition-all active:scale-95 flex items-center gap-1.5"
+                    >
+                      <Truck className="w-3.5 h-3.5" />
+                      <span>Order 1 Truck Now</span>
+                    </button>
+                  </div>
+                </div>
+              )}
 
-            {/* Transparent Pricing Table */}
-            <div className="bg-[#071329] rounded-3xl border border-blue-900/40 p-6 sm:p-8 space-y-4">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Receipt className="w-5 h-5 text-amber-400" />
-                <span>Authoritative Wholesale Trailer Pricing Schedule</span>
-              </h3>
-              <p className="text-xs text-slate-400">
-                Authoritative price fixed at ₦10,850 per bag. Orders must be placed in whole trailer units (600 bags each).
-              </p>
-
+              {/* Pricing Schedule Table */}
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-[#0b214a] text-blue-200 font-bold border-b border-blue-800">
                     <tr>
                       <th className="py-3 px-4">Trailer Quantity</th>
+                      <th className="py-3 px-4">Selected Grade</th>
                       <th className="py-3 px-4">Standard 50kg Bags</th>
                       <th className="py-3 px-4">Metric Weight</th>
                       <th className="py-3 px-4">Price Per Bag</th>
@@ -405,20 +445,23 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                       const totalNGN = truckCount * 6510000;
                       return (
                         <tr key={truckCount} className="hover:bg-blue-950/40 transition-colors">
-                          <td className="py-3 px-4 font-bold text-white flex items-center gap-1.5">
+                          <td className="py-3.5 px-4 font-bold text-white flex items-center gap-1.5">
                             <Truck className="w-3.5 h-3.5 text-amber-400" />
                             <span>{truckCount} {truckCount === 1 ? 'Trailer' : 'Trailers'}</span>
                           </td>
-                          <td className="py-3 px-4">{bags.toLocaleString()} Bags</td>
-                          <td className="py-3 px-4">{tonnes} Tonnes</td>
-                          <td className="py-3 px-4 text-emerald-400">₦10,850</td>
-                          <td className="py-3 px-4 font-black text-amber-300">₦{totalNGN.toLocaleString('en-NG')}</td>
-                          <td className="py-3 px-4 text-right">
+                          <td className="py-3.5 px-4 text-amber-300 font-sans font-semibold">
+                            Grade {activeProduct?.grade || '42.5R'}
+                          </td>
+                          <td className="py-3.5 px-4">{bags.toLocaleString()} Bags</td>
+                          <td className="py-3.5 px-4">{tonnes} Tonnes</td>
+                          <td className="py-3.5 px-4 text-emerald-400">₦10,850</td>
+                          <td className="py-3.5 px-4 font-black text-amber-300">₦{totalNGN.toLocaleString('en-NG')}</td>
+                          <td className="py-3.5 px-4 text-right">
                             <button
                               onClick={() => {
-                                if (products[0]) handleOrderQuickTrailers(products[0], truckCount);
+                                if (activeProduct) handleOrderQuickTrailers(activeProduct, truckCount);
                               }}
-                              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1 rounded-lg text-[11px] transition-all"
+                              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3.5 py-1.5 rounded-lg text-[11px] shadow transition-all active:scale-95"
                             >
                               Order Now &rarr;
                             </button>
