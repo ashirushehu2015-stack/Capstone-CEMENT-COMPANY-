@@ -47,15 +47,24 @@ router.post('/submit-transfer-claim', authenticate, (req: AuthenticatedRequest, 
     return res.status(403).json({ success: false, error: 'Access denied' });
   }
 
-  if (order.status !== 'PENDING_PAYMENT') {
+  const allowedClaimStatuses = [
+    'PENDING_APPROVAL',
+    'APPROVED_AWAITING_PAYMENT',
+    'PENDING_PAYMENT',
+    'PAYMENT_UNDER_VERIFICATION',
+  ];
+  if (!allowedClaimStatuses.includes(order.status)) {
     return res.status(400).json({ success: false, error: `Cannot submit claim for order in ${order.status} state` });
   }
 
-  // Update order status to PAYMENT_UNDER_VERIFICATION
+  // Keep PENDING_APPROVAL if Manager hasn't approved yet so Manager still sees Approve button; otherwise set PAYMENT_UNDER_VERIFICATION
+  const targetStatus =
+    order.managerApprovalStatus === 'APPROVED' ? 'PAYMENT_UNDER_VERIFICATION' : order.status;
+
   const updatedOrder = db.updateOrderStatus({
     orderId: order.id,
-    newStatus: 'PAYMENT_UNDER_VERIFICATION',
-    notes: `Customer claimed bank transfer. Ref: ${parsed.data.bankTransferReference}, Payer: ${parsed.data.payerName}`,
+    newStatus: targetStatus,
+    notes: `Customer submitted bank transfer proof — Ref: ${parsed.data.bankTransferReference} (Payer: ${parsed.data.payerName})`,
     user: {
       id: req.user!.userId,
       name: req.user!.fullName,
@@ -66,7 +75,7 @@ router.post('/submit-transfer-claim', authenticate, (req: AuthenticatedRequest, 
   return res.json({
     success: true,
     order: updatedOrder,
-    message: 'Bank transfer claim submitted. Our accounts team will reconcile and confirm shortly.',
+    message: 'Bank transfer proof submitted. Cashier and Manager have been notified for reconciliation.',
   });
 });
 

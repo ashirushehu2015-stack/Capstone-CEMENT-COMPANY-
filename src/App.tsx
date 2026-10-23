@@ -41,13 +41,69 @@ import { CustomerPortal } from './components/CustomerPortal.tsx';
 import { apiProducts, apiReports } from './services/api.ts';
 import type { Product, Order, BusinessSettings, UserRole } from './types/index.ts';
 
+const FALLBACK_PRODUCTS: Product[] = [
+  {
+    id: 'prod_sokoto_425r',
+    sku: 'SKT-CEM-425R-50KG',
+    name: 'Sokoto Cement — Portland Limestone Cement (42.5R)',
+    grade: '42.5R',
+    bagWeightKg: 50,
+    bagsPerTrailer: 600,
+    trailerWeightTonnes: 30,
+    pricePerBag: 10850,
+    pricePerTrailer: 6510000,
+    availableTrailers: 85,
+    reservedTrailers: 0,
+    reorderThresholdTrailers: 15,
+    minimumOrderTrailers: 1,
+    description:
+      'High early-strength 42.5R rapid-hardening grade ideal for multi-story structural columns, bridges, concrete decking, and heavy civil engineering works. Supplied in full 30-tonne (600-bag) articulated factory trailer loads.',
+    applications: [
+      'High-Rise Structural Columns & Beams',
+      'Reinforced Concrete Decking & Slabs',
+      'Bridge & Highway Culvert Construction',
+      'Heavy Pre-cast Concrete & Block Molding',
+    ],
+    certification: 'SON Mandatory Conformity Assessment Programme (MANCAP) — NIS 444-1:2014 Certified',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'prod_sokoto_325r',
+    sku: 'SKT-CEM-325R-50KG',
+    name: 'Sokoto Cement — General Purpose Block & Masonry (32.5R)',
+    grade: '32.5R',
+    bagWeightKg: 50,
+    bagsPerTrailer: 600,
+    trailerWeightTonnes: 30,
+    pricePerBag: 10850,
+    pricePerTrailer: 6510000,
+    availableTrailers: 50,
+    reservedTrailers: 0,
+    reorderThresholdTrailers: 10,
+    minimumOrderTrailers: 1,
+    description:
+      'Reliable multipurpose 32.5R cement formulated for smooth plastering, rendering, block laying, and residential floor screeding with superior workability. Supplied in full 30-tonne (600-bag) articulated factory trailer loads.',
+    applications: [
+      'Brick & Hollow Block Laying',
+      'Internal & External Wall Plastering',
+      'Floor Screeding & Residential Foundations',
+      'General Masonry & Rendering',
+    ],
+    certification: 'SON Mandatory Conformity Assessment Programme (MANCAP) — NIS 444-1:2014 Certified',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  },
+];
+
 function StorefrontContent() {
   const { user, login, register, logout, switchUserRoleDemo, isStaff } = useAuth();
   const { addItem, totalTrailers, setIsCartOpen } = useCart();
 
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>(FALLBACK_PRODUCTS);
   const [settings, setSettings] = useState<BusinessSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [orderRefreshKey, setOrderRefreshKey] = useState(0);
 
   // Modals
   const [viewSpecsProduct, setViewSpecsProduct] = useState<Product | null>(null);
@@ -98,7 +154,9 @@ function StorefrontContent() {
         apiProducts.getAll(),
         apiReports.getSettings().catch(() => ({ settings: null })),
       ]);
-      setProducts(prodRes.products);
+      if (prodRes?.products && prodRes.products.length > 0) {
+        setProducts(prodRes.products);
+      }
       if (settingsRes?.settings) setSettings(settingsRes.settings);
     } catch (e) {
       console.error('Failed to load initial data', e);
@@ -209,95 +267,77 @@ function StorefrontContent() {
   return (
     <div className={`w-screen ${activeView === 'landing' ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-[#040914] text-slate-100 font-sans flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950`}>
       
-      {/* 1. TOP STATUS & NAVIGATION BAR (Dark navy with amber operational badge) */}
-      <header className="bg-[#060e1d] border-b border-blue-900/40 text-xs py-2 px-4 sm:px-6 shrink-0 z-30">
-        <div className="max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-3">
-          
-          {/* Left: Operational Status & System Version & Address */}
-          <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-            <span className="bg-amber-500 text-slate-950 font-black text-[11px] px-2.5 py-0.5 rounded tracking-wider uppercase flex items-center gap-1.5 shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-pulse" />
-              OPERATIONAL 24/7
-            </span>
-            <span className="font-extrabold text-white text-xs tracking-wide">
-              A.A. MASTER NIG. LTD V4.2
-            </span>
-            <span className="text-slate-400 hidden lg:inline">|</span>
-            <span className="text-slate-300 hidden md:flex items-center gap-1 text-[11px]">
-              <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              P. O. Box 746, Canteen Area, Gusau, Zamfara State
-            </span>
-          </div>
+      {/* 1. TOP STATUS & NAVIGATION BAR (Only on Landing Screen so Customer Portal & Staff Dashboard have no duplicate header) */}
+      {activeView === 'landing' && (
+        <header className="bg-[#060e1d] border-b border-blue-900/40 text-xs py-2 px-4 sm:px-6 shrink-0 z-30">
+          <div className="max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-3">
+            
+            {/* Left: Operational Status & System Version & Address */}
+            <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+              <span className="bg-amber-500 text-slate-950 font-black text-[11px] px-2.5 py-0.5 rounded tracking-wider uppercase flex items-center gap-1.5 shadow-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-pulse" />
+                OPERATIONAL 24/7
+              </span>
+              <span className="font-extrabold text-white text-xs tracking-wide">
+                A.A. MASTER NIG. LTD V4.2
+              </span>
+              <span className="text-slate-400 hidden lg:inline">|</span>
+              <span className="text-slate-300 hidden md:flex items-center gap-1 text-[11px]">
+                <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                P. O. Box 746, Canteen Area, Gusau, Zamfara State
+              </span>
+            </div>
 
-          {/* Right: Hotline, Utility Shortcuts, Live Clock */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-            <a
-              href="tel:08036172280"
-              className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-mono font-bold transition-colors"
-            >
-              <PhoneCall className="w-3 h-3 text-emerald-400" />
-              <span>080-36172280</span>
-            </a>
-
-            <button
-              onClick={handleOpenCustomerPortal}
-              className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition-colors ${
-                activeView === 'customer_portal'
-                  ? 'bg-amber-500 text-slate-950 font-bold border border-amber-400'
-                  : 'bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50'
-              }`}
-            >
-              <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Customer Portal</span>
-            </button>
-
-            {activeView !== 'landing' && (
-              <button
-                onClick={() => setActiveView('landing')}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-semibold"
+            {/* Right: Hotline, Utility Shortcuts, Live Clock */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <a
+                href="tel:08036172280"
+                className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-mono font-bold transition-colors"
               >
-                <Lock className="w-3.5 h-3.5 text-amber-400" />
-                <span className="hidden sm:inline">Staff Terminal / Landing</span>
+                <PhoneCall className="w-3 h-3 text-emerald-400" />
+                <span>080-36172280</span>
+              </a>
+
+              <button
+                onClick={handleOpenCustomerPortal}
+                className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition-colors"
+              >
+                <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Customer Portal</span>
               </button>
-            )}
 
-            <button
-              onClick={() => setIsCalculatorOpen(true)}
-              className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-colors"
-            >
-              <Calculator className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline">Trailer Estimator</span>
-            </button>
+              <button
+                onClick={() => setIsCalculatorOpen(true)}
+                className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-colors"
+              >
+                <Calculator className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Trailer Estimator</span>
+              </button>
 
-            <button
-              onClick={() => setIsTrackerOpen(true)}
-              className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-colors"
-            >
-              <Search className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="hidden sm:inline">Track Waybill</span>
-            </button>
+              <button
+                onClick={() => setIsTrackerOpen(true)}
+                className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-colors"
+              >
+                <Search className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="hidden sm:inline">Track Waybill</span>
+              </button>
 
-            <button
-              onClick={() => {
-                if (activeView !== 'customer_portal') {
-                  handleOpenCustomerPortal();
-                } else {
-                  handleQuickOrderDirect();
-                }
-              }}
-              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3 py-1 rounded-lg flex items-center gap-1.5 text-xs shadow-md transition-all active:scale-95"
-            >
-              <Truck className="w-3.5 h-3.5 text-slate-950" />
-              <span>Order Trailer (600 Bags)</span>
-            </button>
+              <button
+                onClick={handleOpenCustomerPortal}
+                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3 py-1 rounded-lg flex items-center gap-1.5 text-xs shadow-md transition-all active:scale-95"
+              >
+                <Truck className="w-3.5 h-3.5 text-slate-950" />
+                <span>Order Trailer (600 Bags)</span>
+              </button>
 
-            <div className="text-slate-300 font-mono text-xs flex items-center gap-1 pl-1 border-l border-slate-700/60">
-              <Clock className="w-3.5 h-3.5 text-amber-400" />
-              <span>{currentTime}</span>
+              <div className="text-slate-300 font-mono text-xs flex items-center gap-1 pl-1 border-l border-slate-700/60">
+                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                <span>{currentTime}</span>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* RENDER VIEW: STAFF LOGISTICS PORTAL, CUSTOMER FACING PORTAL, OR SPLIT LANDING PAGE */}
       {activeView === 'dashboard' && isStaff ? (
@@ -312,6 +352,7 @@ function StorefrontContent() {
           <CustomerPortal
             products={products}
             settings={settings}
+            orderRefreshKey={orderRefreshKey}
             onOpenCheckout={() => setIsCheckoutOpen(true)}
             onOpenCalculator={() => setIsCalculatorOpen(true)}
             onOpenTracker={() => setIsTrackerOpen(true)}
@@ -896,37 +937,40 @@ function StorefrontContent() {
         </main>
       )}
 
-      {/* 3. SUB-FOOTER BAR (Addresses & Corporate Contacts) */}
-      <div className="bg-[#060e1d] border-t border-blue-950 text-slate-400 text-xs py-2 px-4 sm:px-6 shrink-0 z-30">
-        <div className="max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-2 text-[11px]">
-          <div className="flex items-center gap-2">
-            <Building2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-            <span className="font-bold text-white uppercase">NO. 746, CANTEEN AREA, GUSAU, ZAMFARA STATE</span>
+      {/* 3. SUB-FOOTER BAR & BOTTOM FOOTER (Only on Landing Screen) */}
+      {activeView === 'landing' && (
+        <>
+          <div className="bg-[#060e1d] border-t border-blue-950 text-slate-400 text-xs py-2 px-4 sm:px-6 shrink-0 z-30">
+            <div className="max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-2 text-[11px]">
+              <div className="flex items-center gap-2">
+                <Building2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="font-bold text-white uppercase">NO. 746, CANTEEN AREA, GUSAU, ZAMFARA STATE</span>
+              </div>
+              <div className="flex items-center gap-3 text-slate-300 font-mono text-[11px]">
+                <span className="flex items-center gap-1">
+                  <PhoneCall className="w-3 h-3 text-emerald-400" /> 080-36172280
+                </span>
+                <span>•</span>
+                <span>080-82111063</span>
+                <span>•</span>
+                <span>080-68806113</span>
+              </div>
+              <div className="text-slate-400 text-[11px]">
+                Kalambaina Plant Kiln Line Direct • Sokoto State
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-3 text-slate-300 font-mono text-[11px]">
-            <span className="flex items-center gap-1">
-              <PhoneCall className="w-3 h-3 text-emerald-400" /> 080-36172280
-            </span>
-            <span>•</span>
-            <span>080-82111063</span>
-            <span>•</span>
-            <span>080-68806113</span>
-          </div>
-          <div className="text-slate-400 text-[11px]">
-            Kalambaina Plant Kiln Line Direct • Sokoto State
-          </div>
-        </div>
-      </div>
 
-      {/* 4. VERY BOTTOM FOOTER STRIP */}
-      <footer className="bg-[#03060d] text-[10px] text-slate-400 py-1.5 px-4 sm:px-6 shrink-0 border-t border-slate-900 flex flex-wrap items-center justify-between gap-2">
-        <span>&copy; {new Date().getFullYear()} A. A. MASTER NIG. LIMITED - All rights reserved.</span>
-        <div className="flex items-center gap-3">
-          <span className="text-amber-400 font-bold">Wholesale Sokoto Cement Haulage</span>
-          <span>|</span>
-          <span className="text-emerald-400 font-mono">600 Bags (30 Metric Tonnes) Per Trailer</span>
-        </div>
-      </footer>
+          <footer className="bg-[#03060d] text-[10px] text-slate-400 py-1.5 px-4 sm:px-6 shrink-0 border-t border-slate-900 flex flex-wrap items-center justify-between gap-2">
+            <span>&copy; {new Date().getFullYear()} A. A. MASTER NIG. LIMITED - All rights reserved.</span>
+            <div className="flex items-center gap-3">
+              <span className="text-amber-400 font-bold">Wholesale Sokoto Cement Haulage</span>
+              <span>|</span>
+              <span className="text-emerald-400 font-mono">600 Bags (30 Metric Tonnes) Per Trailer</span>
+            </div>
+          </footer>
+        </>
+      )}
 
       {/* Global Modals & Drawers */}
       <CartDrawer
@@ -938,6 +982,7 @@ function StorefrontContent() {
         onClose={() => setIsCheckoutOpen(false)}
         onOrderSuccess={(order) => {
           setReceiptOrder(order);
+          setOrderRefreshKey((k) => k + 1);
         }}
       />
 

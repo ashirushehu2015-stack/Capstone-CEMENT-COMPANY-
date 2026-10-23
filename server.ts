@@ -9,14 +9,27 @@ const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 3000;
 const distPath = path.resolve(__dirname, 'dist');
 
-// Serve static build assets if available
-app.use(express.static(distPath));
+// Serve static build assets (JS, CSS, images)
+app.use(
+  express.static(distPath, {
+    index: false,
+    maxAge: '1h',
+  })
+);
 
-// Fallback all SPA navigation routes to index.html
+// Return 404 for missing static asset files instead of falling through to index.html
+app.use('/assets/*', (_req, res) => {
+  res.status(404).send('Static asset not found');
+});
+
+// Fallback all SPA navigation routes to index.html with no-cache headers
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) {
     return next();
   }
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.sendFile(path.join(distPath, 'index.html'), (err) => {
     if (err) {
       // In development or if not yet built, return simple message

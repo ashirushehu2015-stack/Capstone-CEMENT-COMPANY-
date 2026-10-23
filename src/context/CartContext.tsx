@@ -28,7 +28,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [items, setItems] = useState<CartItem[]>(() => {
     try {
       const stored = localStorage.getItem(CART_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(
+        (it) =>
+          it &&
+          it.product &&
+          typeof it.product.id === 'string' &&
+          typeof it.product.pricePerTrailer === 'number' &&
+          typeof it.trailerCount === 'number' &&
+          it.trailerCount > 0
+      );
     } catch {
       return [];
     }
@@ -45,6 +56,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [items]);
 
   const addItem = (product: Product, trailers = 1) => {
+    if (!product || !product.id) return;
     const validTrailers = Math.max(1, trailers);
     setItems((prev) => {
       const existing = prev.find((it) => it.product.id === product.id);
@@ -78,10 +90,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setItems([]);
   };
 
-  const totalTrailers = items.reduce((acc, it) => acc + it.trailerCount, 0);
-  const totalBags = items.reduce((acc, it) => acc + it.trailerCount * it.product.bagsPerTrailer, 0);
+  const totalTrailers = items.reduce((acc, it) => acc + (it?.trailerCount || 0), 0);
+  const totalBags = items.reduce(
+    (acc, it) => acc + (it?.trailerCount || 0) * (it?.product?.bagsPerTrailer || 600),
+    0
+  );
   const totalWeightTonnes = totalTrailers * 30; // 30 Metric Tonnes per trailer
-  const subtotalNGN = items.reduce((acc, it) => acc + it.product.pricePerTrailer * it.trailerCount, 0);
+  const subtotalNGN = items.reduce(
+    (acc, it) => acc + (it?.product?.pricePerTrailer || 6510000) * (it?.trailerCount || 0),
+    0
+  );
 
   return (
     <CartContext.Provider

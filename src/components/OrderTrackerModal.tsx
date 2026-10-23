@@ -185,22 +185,18 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({
                 <button
                   type="button"
                   onClick={() => {
-                    setSearchQuery('SKT-202610-1001');
-                    apiOrders.getById('SKT-202610-1001').then((res) => setOrder(res.order));
+                    setSearchQuery('AAM-202610-1001');
+                    setError('');
+                    setIsLoading(true);
+                    apiOrders
+                      .getById('AAM-202610-1001')
+                      .then((res) => setOrder(res.order))
+                      .catch((err: any) => setError(err.message || 'Order not found'))
+                      .finally(() => setIsLoading(false));
                   }}
                   className="text-xs bg-slate-800 hover:bg-slate-700 text-amber-300 font-mono px-3 py-1.5 rounded-lg border border-slate-700"
                 >
-                  SKT-202610-1001 (2 Trailers - 1,200 Bags to Kano - Processing)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchQuery('SKT-202610-1002');
-                    apiOrders.getById('SKT-202610-1002').then((res) => setOrder(res.order));
-                  }}
-                  className="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-300 font-mono px-3 py-1.5 rounded-lg border border-slate-700"
-                >
-                  SKT-202610-1002 (1 Trailer - Gate Pickup - Pass Ready)
+                  AAM-202610-1001 (2 Trailers - 1,200 Bags - Ex-Factory Kalambaina)
                 </button>
               </div>
             </div>

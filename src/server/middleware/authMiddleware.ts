@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { verifySessionToken, type SessionTokenPayload } from '../auth.ts';
+import { db } from '../db.ts';
 import type { UserRole } from '../../types/index.ts';
 
 export interface AuthenticatedRequest extends Request {
@@ -18,7 +19,11 @@ export function authenticate(req: AuthenticatedRequest, res: Response, next: Nex
     return res.status(401).json({ success: false, error: 'Session expired or invalid. Please log in again.' });
   }
 
-  req.user = session;
+  const syncedUser = db.ensureUserFromSession(session);
+  req.user = {
+    ...session,
+    userId: syncedUser.id,
+  };
   next();
 }
 
@@ -28,7 +33,11 @@ export function optionalAuthenticate(req: AuthenticatedRequest, _res: Response, 
     const token = authHeader.split(' ')[1];
     const session = verifySessionToken(token);
     if (session) {
-      req.user = session;
+      const syncedUser = db.ensureUserFromSession(session);
+      req.user = {
+        ...session,
+        userId: syncedUser.id,
+      };
     }
   }
   next();

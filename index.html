@@ -13,8 +13,26 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   </head>
-  <body>
+  <body class="bg-[#040914] text-slate-100" style="background-color: #040914; color: #f1f5f9; margin: 0;">
     <div id="root"></div>
+    <script>
+      window.addEventListener('vite:preloadError', function () {
+        window.location.reload();
+      });
+      window.addEventListener(
+        'error',
+        function (e) {
+          if (e && e.target && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
+            var reloaded = sessionStorage.getItem('aam_asset_reload');
+            if (!reloaded) {
+              sessionStorage.setItem('aam_asset_reload', '1');
+              window.location.reload();
+            }
+          }
+        },
+        true
+      );
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

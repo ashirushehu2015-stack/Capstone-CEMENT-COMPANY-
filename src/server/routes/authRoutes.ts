@@ -63,6 +63,9 @@ router.post('/register', (req, res) => {
     email: newUser.email,
     fullName: newUser.fullName,
     role: newUser.role,
+    phone: newUser.phone,
+    companyName: newUser.companyName,
+    address: newUser.address,
   });
 
   return res.status(201).json({
@@ -96,6 +99,9 @@ router.post('/login', (req, res) => {
     email: user.email,
     fullName: user.fullName,
     role: user.role,
+    phone: user.phone,
+    companyName: user.companyName,
+    address: user.address,
   });
 
   const { passwordHash, passwordSalt, ...sanitized } = user;

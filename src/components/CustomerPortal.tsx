@@ -32,13 +32,14 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { useCart } from '../context/CartContext.tsx';
-import { apiOrders } from '../services/api.ts';
+import { apiOrders, apiPayments } from '../services/api.ts';
 import { CustomerAuthModal } from './CustomerAuthModal.tsx';
 import type { Product, Order, BusinessSettings } from '../types/index.ts';
 
 interface CustomerPortalProps {
   products: Product[];
   settings: BusinessSettings | null;
+  orderRefreshKey?: number;
   onOpenCheckout: () => void;
   onOpenCalculator: () => void;
   onOpenTracker: () => void;
@@ -50,6 +51,7 @@ interface CustomerPortalProps {
 export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   products,
   settings,
+  orderRefreshKey = 0,
   onOpenCheckout,
   onOpenCalculator,
   onOpenTracker,
@@ -58,6 +60,8 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   onReturnToLanding,
 }) => {
   const { user, logout } = useAuth();
+  // Strictly isolate Customer Portal from Staff sessions so staff accounts/orders never leak here
+  const customerUser = user?.role === 'CUSTOMER' ? user : null;
   const { addItem, totalTrailers, totalBags, totalWeightTonnes, subtotalNGN, setIsCartOpen } = useCart();
 
   const [activeTab, setActiveTab] = useState<'catalogue' | 'my_orders' | 'how_it_works' | 'bank_details'>('catalogue');
@@ -76,7 +80,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
 
   const activeProduct = products.find((p) => p.id === selectedGradeId) || products[0];
   const loadOrders = async () => {
-    if (!user) {
+    if (!customerUser) {
       setCustomerOrders([]);
       setIsLoadingOrders(false);
       return;
@@ -93,10 +97,12 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   };
 
   useEffect(() => {
-    if (activeTab === 'my_orders' || user) {
+    if (activeTab === 'my_orders' || customerUser) {
       loadOrders();
+    } else {
+      setCustomerOrders([]);
     }
-  }, [activeTab, user]);
+  }, [activeTab, customerUser?.id, orderRefreshKey]);
 
   const handleOrderQuickTrailers = (product: Product, trailersCount: number) => {
     addItem(product, trailersCount);
@@ -109,9 +115,9 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
     setClaimSubmitting(true);
     setClaimSuccess(null);
     try {
-      await apiOrders.updateStatus(claimOrderId, {
-        status: 'PAYMENT_UNDER_VERIFICATION',
-        notes: `Customer submitted payment reference: ${bankRefInput} (Payer: ${payerNameInput})`,
+      await apiPayments.submitTransferClaim(claimOrderId, {
+        referenceNumber: bankRefInput.trim(),
+        payerName: payerNameInput.trim(),
       });
       setClaimSuccess(`Payment proof submitted for order. Cashier will reconcile shortly.`);
       setClaimOrderId(null);
@@ -145,14 +151,15 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   return (
     <div className="min-h-screen bg-[#040914] text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-slate-950">
       
-      {/* 1. TOP PORTAL HEADER */}
+      {/* 1. TOP PORTAL HEADER & LEFT-HAND SIDE HORIZONTAL MENU */}
       <header className="sticky top-0 z-40 bg-[#060e1d]/95 backdrop-blur-md border-b border-blue-900/40">
+        {/* Top Row: Brand Identity (Left) + Customer Account & Hotline (Right) */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-20 gap-3">
+          <div className="flex flex-wrap items-center justify-between py-3 gap-3 border-b border-blue-900/30">
             
             {/* Brand Logo & Name */}
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('catalogue')}>
-              <div className="w-11 h-11 rounded-full border-2 border-amber-400 bg-white p-1 shadow-md shrink-0 flex items-center justify-center overflow-hidden">
+              <div className="w-10 h-10 rounded-full border-2 border-amber-400 bg-white p-1 shadow-md shrink-0 flex items-center justify-center overflow-hidden">
                 <img
                   src="/assets/aistudio/image_8da756cd.png"
                   alt="A.A. Master Logo"
@@ -164,8 +171,8 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                   <span className="text-base sm:text-lg font-black tracking-tight text-white uppercase font-['Plus_Jakarta_Sans']">
                     A.A. MASTER <span className="text-amber-400">NIG. LTD</span>
                   </span>
-                  <span className="hidden sm:inline-block bg-blue-900/60 border border-blue-700/60 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    CUSTOMER PORTAL
+                  <span className="bg-blue-900/60 border border-blue-700/60 text-blue-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
+                    Customer Portal
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 hidden sm:block">
@@ -174,89 +181,33 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
               </div>
             </div>
 
-            {/* Middle Nav Tabs */}
-            <nav className="hidden md:flex items-center gap-1 text-xs font-semibold">
-              <button
-                onClick={() => setActiveTab('catalogue')}
-                className={`px-3 py-1.5 rounded-lg transition-colors ${
-                  activeTab === 'catalogue' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                }`}
-              >
-                Cement Catalogue
-              </button>
-              <button
-                onClick={() => setActiveTab('my_orders')}
-                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
-                  activeTab === 'my_orders' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                }`}
-              >
-                <span>My Orders</span>
-                {customerOrders.length > 0 && (
-                  <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
-                    {customerOrders.length}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => setActiveTab('how_it_works')}
-                className={`px-3 py-1.5 rounded-lg transition-colors ${
-                  activeTab === 'how_it_works' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                }`}
-              >
-                Ordering Workflow
-              </button>
-              <button
-                onClick={() => setActiveTab('bank_details')}
-                className={`px-3 py-1.5 rounded-lg transition-colors ${
-                  activeTab === 'bank_details' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                }`}
-              >
-                Bank Accounts
-              </button>
-            </nav>
-
-            {/* Right Action Buttons */}
+            {/* Right: Hotline, Home & Customer Account Controls */}
             <div className="flex items-center gap-2 sm:gap-3">
-              <button
-                onClick={onOpenTracker}
-                className="hidden lg:flex items-center gap-1.5 bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors"
+              <a
+                href="tel:08036172280"
+                className="hidden sm:flex items-center gap-1.5 bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-colors"
               >
-                <Search className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Track Waybill</span>
-              </button>
+                <PhoneCall className="w-3.5 h-3.5 text-emerald-400" />
+                <span>080-36172280</span>
+              </a>
 
               <button
-                onClick={onOpenCalculator}
-                className="hidden lg:flex items-center gap-1.5 bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors"
+                onClick={onReturnToLanding}
+                className="bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors"
               >
-                <Calculator className="w-3.5 h-3.5 text-amber-400" />
-                <span>Trailer Estimator</span>
-              </button>
-
-              {/* Cart Drawer Trigger */}
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="relative bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs flex items-center gap-2 shadow-lg transition-all active:scale-95"
-              >
-                <ShoppingBag className="w-4 h-4 text-slate-950" />
-                <span>{totalTrailers} {totalTrailers === 1 ? 'Trailer' : 'Trailers'}</span>
-                {totalTrailers > 0 && (
-                  <span className="hidden sm:inline font-mono font-bold">
-                    (₦{subtotalNGN.toLocaleString('en-NG')})
-                  </span>
-                )}
+                Home
               </button>
 
               {/* Customer Account Identity & Auth Controls */}
-              {user ? (
+              {customerUser ? (
                 <div className="flex items-center gap-2 bg-[#081b3d] border border-blue-700/60 px-2.5 py-1 sm:py-1.5 rounded-xl text-xs">
                   <div className="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-xs uppercase">
-                    {user.fullName.charAt(0)}
+                    {customerUser.fullName.charAt(0)}
                   </div>
                   <div className="leading-tight text-left hidden sm:block">
-                    <span className="font-bold text-white block text-xs truncate max-w-[130px]">{user.fullName}</span>
+                    <span className="font-bold text-white block text-xs truncate max-w-[130px]">{customerUser.fullName}</span>
                     <span className="text-[10px] text-blue-300 block truncate max-w-[130px]">
-                      {user.companyName || user.email}
+                      {customerUser.companyName || customerUser.email}
                     </span>
                   </div>
                   <button
@@ -274,7 +225,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                       setAuthModalTab('login');
                       setIsAuthModalOpen(true);
                     }}
-                    className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1"
+                    className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1 whitespace-nowrap"
                   >
                     <Lock className="w-3.5 h-3.5 text-amber-400" />
                     <span>Sign In</span>
@@ -284,7 +235,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                       setAuthModalTab('register');
                       setIsAuthModalOpen(true);
                     }}
-                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs shadow-md transition-all active:scale-95 flex items-center gap-1"
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs shadow-md transition-all active:scale-95 flex items-center gap-1 whitespace-nowrap"
                   >
                     <User className="w-3.5 h-3.5" />
                     <span>Create Account</span>
@@ -293,6 +244,103 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
               )}
             </div>
           </div>
+
+          {/* Second Row: Left-Hand Side Horizontal Menu Bar */}
+          <nav
+            aria-label="Customer Portal Navigation"
+            className="flex flex-wrap items-center justify-start gap-2 py-2.5 text-xs font-semibold"
+          >
+            <button
+              onClick={() => setActiveTab('catalogue')}
+              className={`px-3.5 py-2 rounded-xl transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+                activeTab === 'catalogue'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-md'
+                  : 'bg-[#0b1f3f]/70 text-slate-200 hover:text-white hover:bg-[#122e5a] border border-blue-800/40'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Cement Catalogue</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('my_orders')}
+              className={`px-3.5 py-2 rounded-xl transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+                activeTab === 'my_orders'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-md'
+                  : 'bg-[#0b1f3f]/70 text-slate-200 hover:text-white hover:bg-[#122e5a] border border-blue-800/40'
+              }`}
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>My Orders</span>
+              {customerUser && customerOrders.length > 0 && (
+                <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold leading-none">
+                  {customerOrders.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab('how_it_works')}
+              className={`px-3.5 py-2 rounded-xl transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+                activeTab === 'how_it_works'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-md'
+                  : 'bg-[#0b1f3f]/70 text-slate-200 hover:text-white hover:bg-[#122e5a] border border-blue-800/40'
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Ordering Workflow</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('bank_details')}
+              className={`px-3.5 py-2 rounded-xl transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+                activeTab === 'bank_details'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-md'
+                  : 'bg-[#0b1f3f]/70 text-slate-200 hover:text-white hover:bg-[#122e5a] border border-blue-800/40'
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Bank Accounts</span>
+            </button>
+
+            <button
+              onClick={onOpenTracker}
+              className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors whitespace-nowrap flex items-center gap-1.5"
+            >
+              <Search className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Track Waybill</span>
+            </button>
+
+            <button
+              onClick={onOpenCalculator}
+              className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors whitespace-nowrap flex items-center gap-1.5"
+            >
+              <Calculator className="w-3.5 h-3.5 text-amber-400" />
+              <span>Trailer Estimator</span>
+            </button>
+
+            <button
+              onClick={() => {
+                if (products[0]) handleOrderQuickTrailers(products[0], 1);
+              }}
+              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs shadow-md transition-all active:scale-95 whitespace-nowrap flex items-center gap-1.5"
+            >
+              <Truck className="w-3.5 h-3.5 text-slate-950" />
+              <span>Order Trailer (600 Bags)</span>
+            </button>
+
+            {totalTrailers > 0 && (
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs shadow-md transition-all active:scale-95 whitespace-nowrap flex items-center gap-1.5"
+              >
+                <ShoppingBag className="w-3.5 h-3.5 text-slate-950" />
+                <span>
+                  {totalTrailers} {totalTrailers === 1 ? 'Trailer' : 'Trailers'} (₦{subtotalNGN.toLocaleString('en-NG')})
+                </span>
+              </button>
+            )}
+          </nav>
         </div>
       </header>
 
@@ -613,7 +661,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
               </div>
             )}
 
-            {!user ? (
+            {!customerUser ? (
               <div className="bg-[#071329] rounded-3xl border border-blue-900/40 p-8 sm:p-12 text-center space-y-4 max-w-xl mx-auto shadow-2xl">
                 <div className="w-14 h-14 rounded-full bg-blue-900/40 border border-blue-600/50 flex items-center justify-center mx-auto text-amber-400">
                   <Lock className="w-7 h-7" />
@@ -654,7 +702,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 <ShoppingBag className="w-12 h-12 text-slate-600 mx-auto" />
                 <h3 className="text-lg font-bold text-white">No Wholesale Trailer Orders Yet</h3>
                 <p className="text-xs text-slate-400 max-w-md mx-auto">
-                  {user.companyName ? `No orders placed yet for ${user.companyName}.` : 'You have not placed any orders under this buyer account.'} Explore our cement grades and place your first 600-bag trailer order.
+                  {customerUser.companyName ? `No orders placed yet for ${customerUser.companyName}.` : 'You have not placed any orders under this buyer account.'} Explore our cement grades and place your first 600-bag trailer order.
                 </p>
                 <button
                   onClick={() => setActiveTab('catalogue')}
@@ -702,7 +750,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                             <span>View Waybill Receipt</span>
                           </button>
 
-                          {(order.status === 'APPROVED_AWAITING_PAYMENT' || order.status === 'PENDING_PAYMENT') && (
+                          {(order.status === 'PENDING_APPROVAL' || order.status === 'APPROVED_AWAITING_PAYMENT' || order.status === 'PENDING_PAYMENT') && (
                             <button
                               onClick={() => setClaimOrderId(order.id)}
                               className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3 py-1.5 rounded-xl transition-all shadow-md flex items-center gap-1"

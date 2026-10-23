@@ -749,6 +749,49 @@ class DatabaseEngine {
     return sanitized;
   }
 
+  public ensureUserFromSession(session: {
+    userId: string;
+    email: string;
+    fullName: string;
+    role: UserRole;
+    phone?: string;
+    companyName?: string;
+    address?: string;
+  }): User {
+    const byId = this.findUserById(session.userId);
+    if (byId) {
+      const { passwordHash, passwordSalt, ...sanitized } = byId;
+      return sanitized;
+    }
+
+    const byEmail = this.findUserByEmail(session.email);
+    if (byEmail) {
+      const { passwordHash, passwordSalt, ...sanitized } = byEmail;
+      return sanitized;
+    }
+
+    const fallbackPass = hashPassword('CustomerSessionRestore123!');
+    const now = new Date().toISOString();
+    const restoredUser: DBUser = {
+      id: session.userId || 'usr_' + Date.now(),
+      email: session.email,
+      fullName: session.fullName || 'Verified Customer',
+      phone: session.phone || '+234 800 000 0000',
+      companyName: session.companyName || '',
+      address: session.address,
+      role: session.role || 'CUSTOMER',
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+      passwordHash: fallbackPass.hash,
+      passwordSalt: fallbackPass.salt,
+    };
+    this.data.users.push(restoredUser);
+    this.save();
+    const { passwordHash, passwordSalt, ...sanitized } = restoredUser;
+    return sanitized;
+  }
+
   // --- Product Repository Methods ---
   public getAllProducts(): Product[] {
     return this.data.products;
@@ -1443,16 +1486,21 @@ class DatabaseEngine {
     order.approvedByManagerId = user.id;
     order.approvedByManagerName = user.name;
     order.approvedAt = now;
-    order.status = 'APPROVED_AWAITING_PAYMENT';
+    const nextStatus: OrderStatus = order.paymentStatus === 'VERIFIED' ? 'PAID' : 'APPROVED_AWAITING_PAYMENT';
+    order.status = nextStatus;
     order.updatedAt = now;
 
     order.statusHistory.push({
-      status: 'APPROVED_AWAITING_PAYMENT',
+      status: nextStatus,
       timestamp: now,
       updatedByUserId: user.id,
       updatedByName: user.name,
       role: user.role,
-      notes: params.notes || `Order approved by Manager ${user.name}. Stock reserved. Awaiting 100% full payment.`,
+      notes:
+        params.notes ||
+        (nextStatus === 'PAID'
+          ? `Order approved by Manager ${user.name}. Stock reserved and 100% upfront payment already verified — ready for Agent issuance.`
+          : `Order approved by Manager ${user.name}. Stock reserved. Awaiting 100% full payment.`),
     });
 
     this.appendAuditLog({
@@ -2576,15 +2624,65 @@ class DatabaseEngine {
     gatewayReference: string;
     user: { id: string; name: string; role: UserRole };
   }): PaymentRecord {
-    const { payment } = this.recordPayment({
-      orderId: params.orderId,
+    const order = this.data.orders.find((o) => o.id === params.orderId);
+    if (!order) throw new Error('Order not found');
+
+    if (params.amount < order.totalAmount) {
+      throw new Error(
+        `Partial payment rejected. Required full 100% amount: ₦${order.totalAmount.toLocaleString('en-NG')}.`
+      );
+    }
+
+    const now = new Date().toISOString();
+    const newPayment: PaymentRecord = {
+      id: 'pay_' + Date.now(),
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      customerId: order.customerId,
+      customerName: order.customerName,
       amount: params.amount,
+      isFullPayment: true,
       paymentMethod: 'PAYSTACK_CARD',
-      referenceNumber: params.gatewayReference,
-      notes: `Online Paystack payment verified: ${params.gatewayReference}`,
-      user: params.user,
+      paymentStatus: 'VERIFIED',
+      gatewayReference: params.gatewayReference,
+      bankTransferReference: params.gatewayReference,
+      bankPayerName: order.customerName,
+      destinationAccount: 'Paystack Gateway - Zenith Settlement',
+      verifiedByStaffId: params.user.id,
+      verifiedByStaffName: params.user.name,
+      verificationNotes: `Online Paystack 100% upfront payment verified (${params.gatewayReference}).`,
+      verifiedAt: now,
+      createdAt: now,
+    };
+
+    this.data.payments.unshift(newPayment);
+    order.paymentStatus = 'VERIFIED';
+    if (order.managerApprovalStatus === 'APPROVED') {
+      order.status = 'PAID';
+    }
+    order.updatedAt = now;
+
+    order.statusHistory.push({
+      status: order.status,
+      timestamp: now,
+      updatedByUserId: params.user.id,
+      updatedByName: params.user.name,
+      role: params.user.role,
+      notes: `100% online Paystack payment of ₦${params.amount.toLocaleString('en-NG')} verified (Ref: ${params.gatewayReference}).`,
     });
-    return payment;
+
+    this.appendAuditLog({
+      userId: params.user.id,
+      userName: params.user.name,
+      userRole: params.user.role,
+      action: 'RECORD_100_PERCENT_PAYMENT',
+      entityType: 'PAYMENT',
+      entityId: newPayment.id,
+      details: `Verified 100% Paystack payment of ₦${params.amount.toLocaleString('en-NG')} for Order ${order.orderNumber}.`,
+    });
+
+    this.save();
+    return newPayment;
   }
 
   public recordOfflinePayment(params: {

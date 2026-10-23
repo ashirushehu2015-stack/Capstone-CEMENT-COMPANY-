@@ -790,13 +790,14 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                           )}
 
                           {/* Section 1 & 6: 100% Full Payment Verification */}
-                          {(o.status === 'APPROVED_AWAITING_PAYMENT' || o.status === 'PENDING_PAYMENT') && (isAdmin || isCashier || isManager || isStoreManager) && (
+                          {(o.status === 'APPROVED_AWAITING_PAYMENT' || o.status === 'PENDING_PAYMENT' || o.status === 'PAYMENT_UNDER_VERIFICATION') && (isAdmin || isCashier || isManager || isStoreManager) && (
                             <button
                               onClick={() => {
                                 setPaymentForm((prev) => ({
                                   ...prev,
                                   orderId: o.id,
                                   amount: o.totalAmount,
+                                  payerName: o.customerName || prev.payerName,
                                   referenceNumber: 'ZEN-REF-' + Math.floor(100000 + Math.random() * 900000),
                                 }));
                                 setShowRecordPaymentModal(true);
