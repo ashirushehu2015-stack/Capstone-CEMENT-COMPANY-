@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { User, UserRole } from '../types/index.ts';
-import { apiAuth, getStoredToken } from '../services/api.ts';
+import { apiAuth, getStoredToken, clearStoredToken } from '../services/api.ts';
 
 interface AuthContextType {
   user: User | null;
@@ -12,6 +12,7 @@ interface AuthContextType {
     password: string;
     fullName: string;
     phone: string;
+    companyName?: string;
     address?: string;
     city?: string;
     state?: string;
@@ -52,25 +53,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(getStoredToken());
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Initialize or fetch me
   useEffect(() => {
     async function initAuth() {
       const stored = getStoredToken();
       if (!stored) {
-        // Auto-login default customer for smooth initial test experience
-        try {
-          const res = await apiAuth.login({
-            email: DEMO_ACCOUNTS.CUSTOMER.email,
-            password: DEMO_ACCOUNTS.CUSTOMER.pass,
-          });
-          setUser(res.user);
-          setToken(res.token);
-        } catch {
-          // If login fails, proceed as guest
-          setUser(null);
-        } finally {
-          setIsLoading(false);
-        }
+        setUser(null);
+        setToken(null);
+        setIsLoading(false);
         return;
       }
 
@@ -81,6 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch {
         setUser(null);
         setToken(null);
+        clearStoredToken();
       } finally {
         setIsLoading(false);
       }

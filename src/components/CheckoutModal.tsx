@@ -11,12 +11,14 @@ import {
   Loader2,
   Copy,
   Check,
-  ArrowRight
+  ArrowRight,
+  User
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useCart } from '../context/CartContext.tsx';
 import { useAuth } from '../context/AuthContext.tsx';
 import { apiOrders, apiReports, apiPayments } from '../services/api.ts';
+import { CustomerAuthModal } from './CustomerAuthModal.tsx';
 import type { BusinessSettings, Order } from '../types/index.ts';
 
 interface CheckoutModalProps {
@@ -70,6 +72,22 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [isPaystackProcessing, setIsPaystackProcessing] = useState(false);
   const [copiedBank, setCopiedBank] = useState(false);
 
+  // Customer Auth modal inside checkout
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState<'register' | 'login'>('register');
+
+  // Synchronize when user logs in or registers
+  useEffect(() => {
+    if (user) {
+      if (user.companyName) setCompanyName(user.companyName);
+      if (user.fullName) setRecipientName(user.fullName);
+      if (user.phone) setRecipientPhone(user.phone);
+      if (user.address) setSiteAddress(user.address);
+      if (user.city) setCity(user.city);
+      if (user.state) setState(user.state);
+    }
+  }, [user]);
+
   useEffect(() => {
     async function loadSettings() {
       try {
@@ -117,6 +135,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    if (!user) {
+      setErrorMessage('A registered customer account is required so plant loading gate passes can be issued. Please sign in or create an account.');
+      setAuthModalTab('register');
+      setIsAuthModalOpen(true);
+      return;
+    }
 
     if (totalTrailers < 1) {
       setErrorMessage('You must select at least 1 Trailer (600 bags / 30 tonnes).');
@@ -243,6 +268,58 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
         {/* Modal Body Form */}
         <form onSubmit={handleSubmitOrder} className="p-6 overflow-y-auto space-y-6 flex-1 text-slate-200">
+          
+          {/* Customer Account Indicator / Login Prompt */}
+          {!user ? (
+            <div className="p-4 bg-gradient-to-r from-blue-950/80 to-[#07173b] border border-blue-700/60 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs shadow-md">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-400 shrink-0">
+                  <User className="w-4 h-4" />
+                </div>
+                <div>
+                  <strong className="text-white font-bold block">Guest Checkout Detected</strong>
+                  <span className="text-slate-300 text-[11px]">
+                    Create an account or sign in to attach this wholesale order to your contractor account.
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthModalTab('login');
+                    setIsAuthModalOpen(true);
+                  }}
+                  className="bg-[#0b214a] hover:bg-[#112d63] text-blue-200 border border-blue-600/50 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors"
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthModalTab('register');
+                    setIsAuthModalOpen(true);
+                  }}
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs shadow-md transition-all active:scale-95"
+                >
+                  Create Account
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="p-3 bg-blue-950/40 border border-blue-900/60 rounded-2xl flex items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span className="text-slate-300">
+                  Ordering as: <strong className="text-white">{user.fullName}</strong> {user.companyName ? `(${user.companyName})` : ''}
+                </span>
+              </div>
+              <span className="bg-emerald-950/80 border border-emerald-700/80 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                Contractor Verified
+              </span>
+            </div>
+          )}
+
           {errorMessage && (
             <div className="p-4 bg-rose-950/50 border border-rose-800 rounded-2xl flex items-start gap-3 text-rose-300 text-xs">
               <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
@@ -661,6 +738,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </button>
           </div>
         </form>
+
+        {/* Customer Auth Modal for Guest Checkouts */}
+        <CustomerAuthModal
+          isOpen={isAuthModalOpen}
+          initialTab={authModalTab}
+          onClose={() => setIsAuthModalOpen(false)}
+        />
       </div>
     </div>
   );

@@ -33,6 +33,7 @@ import {
 import { useAuth } from '../context/AuthContext.tsx';
 import { useCart } from '../context/CartContext.tsx';
 import { apiOrders } from '../services/api.ts';
+import { CustomerAuthModal } from './CustomerAuthModal.tsx';
 import type { Product, Order, BusinessSettings } from '../types/index.ts';
 
 interface CustomerPortalProps {
@@ -69,9 +70,17 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   const [claimSuccess, setClaimSuccess] = useState<string | null>(null);
   const [selectedGradeId, setSelectedGradeId] = useState<string>(products[0]?.id || '');
 
+  // Independent Customer Auth Modal State
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState<'register' | 'login'>('register');
+
   const activeProduct = products.find((p) => p.id === selectedGradeId) || products[0];
   const loadOrders = async () => {
-    if (!user) return;
+    if (!user) {
+      setCustomerOrders([]);
+      setIsLoadingOrders(false);
+      return;
+    }
     setIsLoadingOrders(true);
     try {
       const res = await apiOrders.getAll();
@@ -237,6 +246,51 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                   </span>
                 )}
               </button>
+
+              {/* Customer Account Identity & Auth Controls */}
+              {user ? (
+                <div className="flex items-center gap-2 bg-[#081b3d] border border-blue-700/60 px-2.5 py-1 sm:py-1.5 rounded-xl text-xs">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-xs uppercase">
+                    {user.fullName.charAt(0)}
+                  </div>
+                  <div className="leading-tight text-left hidden sm:block">
+                    <span className="font-bold text-white block text-xs truncate max-w-[130px]">{user.fullName}</span>
+                    <span className="text-[10px] text-blue-300 block truncate max-w-[130px]">
+                      {user.companyName || user.email}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => logout()}
+                    title="Sign Out of Customer Account"
+                    className="text-slate-400 hover:text-rose-400 p-1 rounded-lg hover:bg-slate-800 transition-colors ml-1"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => {
+                      setAuthModalTab('login');
+                      setIsAuthModalOpen(true);
+                    }}
+                    className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1"
+                  >
+                    <Lock className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Sign In</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAuthModalTab('register');
+                      setIsAuthModalOpen(true);
+                    }}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs shadow-md transition-all active:scale-95 flex items-center gap-1"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>Create Account</span>
+                  </button>
+                </div>
+              )}
 
               {/* Staff Terminal or Back to Landing */}
               <button
@@ -569,7 +623,39 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
               </div>
             )}
 
-            {isLoadingOrders ? (
+            {!user ? (
+              <div className="bg-[#071329] rounded-3xl border border-blue-900/40 p-8 sm:p-12 text-center space-y-4 max-w-xl mx-auto shadow-2xl">
+                <div className="w-14 h-14 rounded-full bg-blue-900/40 border border-blue-600/50 flex items-center justify-center mx-auto text-amber-400">
+                  <Lock className="w-7 h-7" />
+                </div>
+                <h3 className="text-xl font-bold text-white">Wholesale Customer Account Required</h3>
+                <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
+                  Sign in or create your independent contractor account to access your live trailer order queue, 100% upfront payment status, and Kalambaina plant security gate passes.
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                  <button
+                    onClick={() => {
+                      setAuthModalTab('register');
+                      setIsAuthModalOpen(true);
+                    }}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs shadow-md transition-all active:scale-95 flex items-center gap-1.5"
+                  >
+                    <User className="w-4 h-4" />
+                    <span>Create Customer Account</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAuthModalTab('login');
+                      setIsAuthModalOpen(true);
+                    }}
+                    className="bg-[#0b214a] hover:bg-[#112d63] text-blue-200 border border-blue-700/60 font-semibold px-4 py-2.5 rounded-xl text-xs transition-colors flex items-center gap-1.5"
+                  >
+                    <Lock className="w-4 h-4 text-amber-400" />
+                    <span>Customer Sign In</span>
+                  </button>
+                </div>
+              </div>
+            ) : isLoadingOrders ? (
               <div className="p-12 text-center text-slate-400 text-xs">
                 Loading wholesale orders...
               </div>
@@ -578,7 +664,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 <ShoppingBag className="w-12 h-12 text-slate-600 mx-auto" />
                 <h3 className="text-lg font-bold text-white">No Wholesale Trailer Orders Yet</h3>
                 <p className="text-xs text-slate-400 max-w-md mx-auto">
-                  You have not placed any orders under this buyer account. Explore our cement grades and place your first 600-bag trailer order.
+                  {user.companyName ? `No orders placed yet for ${user.companyName}.` : 'You have not placed any orders under this buyer account.'} Explore our cement grades and place your first 600-bag trailer order.
                 </p>
                 <button
                   onClick={() => setActiveTab('catalogue')}
@@ -932,6 +1018,14 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
           </div>
         </div>
       </footer>
+
+      {/* Customer Registration and Login Modal */}
+      <CustomerAuthModal
+        isOpen={isAuthModalOpen}
+        initialTab={authModalTab}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={() => loadOrders()}
+      />
     </div>
   );
 };

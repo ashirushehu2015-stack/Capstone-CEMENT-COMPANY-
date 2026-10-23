@@ -11,6 +11,7 @@ const registerSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
   fullName: z.string().min(2, 'Full name required'),
   phone: z.string().min(10, 'Valid Nigerian phone number required'),
+  companyName: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
@@ -36,7 +37,7 @@ router.post('/register', (req, res) => {
     return res.status(400).json({ success: false, error: parsed.error.issues[0].message });
   }
 
-  const { email, password, fullName, phone, address, city, state } = parsed.data;
+  const { email, password, fullName, phone, companyName, address, city, state } = parsed.data;
   const existing = db.findUserByEmail(email);
   if (existing) {
     return res.status(409).json({ success: false, error: 'An account with this email already exists' });
@@ -47,6 +48,7 @@ router.post('/register', (req, res) => {
     email,
     fullName,
     phone,
+    companyName: companyName || '',
     role: 'CUSTOMER',
     isActive: true,
     address,

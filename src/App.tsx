@@ -42,7 +42,7 @@ import { apiProducts, apiReports } from './services/api.ts';
 import type { Product, Order, BusinessSettings, UserRole } from './types/index.ts';
 
 function StorefrontContent() {
-  const { user, login, logout, switchUserRoleDemo, isStaff } = useAuth();
+  const { user, login, register, logout, switchUserRoleDemo, isStaff } = useAuth();
   const { addItem, totalTrailers, setIsCartOpen } = useCart();
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -59,12 +59,27 @@ function StorefrontContent() {
   // View state: 'landing' (single unscrollable), 'customer_portal' (full buyer experience), or 'dashboard' (staff logistics)
   const [activeView, setActiveView] = useState<'landing' | 'customer_portal' | 'dashboard'>('landing');
 
+  // Landing Card Portal & Auth state
+  const [landingCardPortalType, setLandingCardPortalType] = useState<'customer' | 'staff'>('customer');
+  const [customerAuthMode, setCustomerAuthMode] = useState<'login' | 'register'>('login');
+
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Customer Registration Form State
+  const [regFullName, setRegFullName] = useState('');
+  const [regCompanyName, setRegCompanyName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [regCity, setRegCity] = useState('');
+  const [regState, setRegState] = useState('Sokoto');
+  const [regAddress, setRegAddress] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
 
   // Live clock
   const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString());
@@ -110,6 +125,57 @@ function StorefrontContent() {
     }
   };
 
+  const handleCustomerLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setIsSubmitting(true);
+    try {
+      await login(loginEmail, loginPassword);
+      setActiveView('customer_portal');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Invalid customer credentials. Please try again.';
+      setLoginError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCustomerRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    if (regPassword.length < 6) {
+      setLoginError('Password must be at least 6 characters long.');
+      return;
+    }
+    if (regPassword !== regConfirmPassword) {
+      setLoginError('Passwords do not match.');
+      return;
+    }
+    if (regPhone.trim().length < 10) {
+      setLoginError('Please enter a valid Nigerian telephone number (min 10 digits).');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await register({
+        fullName: regFullName.trim(),
+        companyName: regCompanyName.trim() || undefined,
+        email: regEmail.trim(),
+        phone: regPhone.trim(),
+        city: regCity.trim() || undefined,
+        state: regState.trim() || undefined,
+        address: regAddress.trim() || undefined,
+        password: regPassword,
+      });
+      setActiveView('customer_portal');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Registration failed. Please check your details.';
+      setLoginError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleQuickRoleSelect = async (role: UserRole) => {
     setLoginError('');
     setIsSubmitting(true);
@@ -136,10 +202,7 @@ function StorefrontContent() {
     }
   };
 
-  const handleOpenCustomerPortal = async () => {
-    if (!user || user.role !== 'CUSTOMER') {
-      await handleQuickRoleSelect('CUSTOMER');
-    }
+  const handleOpenCustomerPortal = () => {
     setActiveView('customer_portal');
   };
 
@@ -357,31 +420,66 @@ function StorefrontContent() {
           </div>
 
           {/* ======================================================== */}
-          {/* RIGHT COLUMN: Light Background with Centered Login Card   */}
+          {/* RIGHT COLUMN: Light Background with Centered Auth Card    */}
           {/* ======================================================== */}
-          <div className="lg:col-span-5 bg-[#eef3f9] p-4 sm:p-6 lg:p-8 flex items-center justify-center overflow-y-auto">
-            <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col justify-between">
+          <div className="lg:col-span-5 bg-[#eef3f9] p-3 sm:p-4 lg:p-6 flex items-center justify-center overflow-y-auto">
+            <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col justify-between max-h-[calc(100vh-120px)]">
               
               {/* Card Header (Deep Blue with live badge) */}
-              <div className="bg-[#0b224d] text-white p-4 sm:p-5">
+              <div className="bg-[#0b224d] text-white p-3.5 sm:p-4">
                 <div className="flex items-center justify-between text-[11px] text-blue-200 font-semibold mb-1">
                   <span className="flex items-center gap-1.5 text-amber-400 uppercase tracking-wider font-bold">
-                    <ShieldCheck className="w-4 h-4 text-amber-400" /> AUTHORIZED STAFF TERMINAL
+                    <ShieldCheck className="w-4 h-4 text-amber-400" />
+                    {landingCardPortalType === 'customer' ? 'CUSTOMER PORTAL & REGISTRATION' : 'AUTHORIZED STAFF TERMINAL'}
                   </span>
-                  <span className="font-mono text-slate-300 flex items-center gap-1">
+                  <span className="font-mono text-slate-300 flex items-center gap-1 text-[10px]">
                     <Clock className="w-3.5 h-3.5 text-blue-300" /> {currentTime}
                   </span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white font-['Plus_Jakarta_Sans']">
-                  Sign In to Logistics Portal
+                <h2 className="text-lg sm:text-xl font-black tracking-tight text-white font-['Plus_Jakarta_Sans']">
+                  {landingCardPortalType === 'customer' ? 'Wholesale Customer Portal' : 'Logistics Management Portal'}
                 </h2>
-                <p className="text-xs text-blue-200/80 mt-0.5">
-                  A.A. Master Nig. Limited Management &amp; Dispatch System
+                <p className="text-[11px] text-blue-200/80 mt-0.5">
+                  A.A. Master Nig. Limited • Sokoto Cement Haulage
                 </p>
               </div>
 
-              {/* Card Content Form */}
-              <div className="p-5 sm:p-6 space-y-4">
+              {/* Top Segmented Portal Selector (Customer vs Staff) */}
+              <div className="grid grid-cols-2 p-1.5 bg-[#071738] text-xs font-bold border-b border-blue-900/40">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLandingCardPortalType('customer');
+                    setLoginError('');
+                  }}
+                  className={`py-1.5 px-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 ${
+                    landingCardPortalType === 'customer'
+                      ? 'bg-amber-500 text-slate-950 font-black shadow'
+                      : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  <span>Customer Portal</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLandingCardPortalType('staff');
+                    setLoginError('');
+                  }}
+                  className={`py-1.5 px-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 ${
+                    landingCardPortalType === 'staff'
+                      ? 'bg-[#0052cc] text-white font-black shadow'
+                      : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Staff Terminal (4 Roles)</span>
+                </button>
+              </div>
+
+              {/* Card Content Form Area */}
+              <div className="p-4 sm:p-5 space-y-3 overflow-y-auto flex-1">
                 
                 {loginError && (
                   <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-center gap-2">
@@ -404,6 +502,9 @@ function StorefrontContent() {
                       </div>
                       <div>
                         <strong className="text-sm text-slate-900 block font-bold">{user.fullName}</strong>
+                        {user.companyName && (
+                          <span className="text-xs text-blue-800 font-medium block">{user.companyName}</span>
+                        )}
                         <span className="text-xs text-slate-600 font-mono">{user.email}</span>
                       </div>
                     </div>
@@ -411,7 +512,7 @@ function StorefrontContent() {
                     {isStaff ? (
                       <button
                         onClick={() => setActiveView('dashboard')}
-                        className="w-full bg-[#0052cc] hover:bg-[#0043a8] text-white font-bold py-3 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm transition-all active:scale-95"
+                        className="w-full bg-[#0052cc] hover:bg-[#0043a8] text-white font-bold py-2.5 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-xs sm:text-sm transition-all active:scale-95"
                       >
                         <Layers className="w-4 h-4" />
                         <span>Enter Staff Logistics Portal ({user.role})</span>
@@ -421,7 +522,7 @@ function StorefrontContent() {
                       <div className="space-y-2">
                         <button
                           onClick={() => setActiveView('customer_portal')}
-                          className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm transition-all active:scale-95"
+                          className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-xs sm:text-sm transition-all active:scale-95"
                         >
                           <ShoppingBag className="w-4 h-4" />
                           <span>Enter Customer Facing Portal</span>
@@ -445,157 +546,361 @@ function StorefrontContent() {
                         <LogOut className="w-3.5 h-3.5" /> Sign Out
                       </button>
                       <button
-                        onClick={() => handleQuickRoleSelect('CUSTOMER')}
+                        onClick={() => handleOpenCustomerPortal()}
                         className="text-xs text-blue-600 hover:underline font-semibold"
                       >
-                        Switch to Buyer View
+                        Open Customer Portal &rarr;
+                      </button>
+                    </div>
+                  </div>
+                ) : landingCardPortalType === 'customer' ? (
+                  /* ================= CUSTOMER PORTAL AUTH ================= */
+                  <div className="space-y-3">
+                    {/* Sub-tabs: Customer Login vs Customer Register */}
+                    <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-xl text-xs font-bold border border-slate-200">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomerAuthMode('login');
+                          setLoginError('');
+                        }}
+                        className={`py-1.5 rounded-lg transition-all ${
+                          customerAuthMode === 'login'
+                            ? 'bg-white text-slate-900 shadow-sm font-extrabold'
+                            : 'text-slate-500 hover:text-slate-800'
+                        }`}
+                      >
+                        Customer Sign In
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomerAuthMode('register');
+                          setLoginError('');
+                        }}
+                        className={`py-1.5 rounded-lg transition-all ${
+                          customerAuthMode === 'register'
+                            ? 'bg-amber-500 text-slate-950 shadow-sm font-extrabold'
+                            : 'text-slate-500 hover:text-slate-800'
+                        }`}
+                      >
+                        Create Account
+                      </button>
+                    </div>
+
+                    {customerAuthMode === 'register' ? (
+                      /* Customer Registration Form */
+                      <form onSubmit={handleCustomerRegister} className="space-y-2.5">
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-700 block mb-0.5">
+                            Full Name / Contractor Contact <span className="text-amber-600">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={regFullName}
+                            onChange={(e) => setRegFullName(e.target.value)}
+                            placeholder="e.g. Alhaji Ibrahim Bello"
+                            required
+                            className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 font-medium"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-700 block mb-0.5">
+                            Company / Site Name
+                          </label>
+                          <input
+                            type="text"
+                            value={regCompanyName}
+                            onChange={(e) => setRegCompanyName(e.target.value)}
+                            placeholder="e.g. Bello Foundations &amp; Civil Works Ltd"
+                            className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 font-medium"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[11px] font-bold text-slate-700 block mb-0.5">
+                              Email (Login ID) <span className="text-amber-600">*</span>
+                            </label>
+                            <input
+                              type="email"
+                              value={regEmail}
+                              onChange={(e) => setRegEmail(e.target.value)}
+                              placeholder="contractor@domain.ng"
+                              required
+                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 font-medium"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-[11px] font-bold text-slate-700 block mb-0.5">
+                              Phone Number <span className="text-amber-600">*</span>
+                            </label>
+                            <input
+                              type="tel"
+                              value={regPhone}
+                              onChange={(e) => setRegPhone(e.target.value)}
+                              placeholder="0803 123 4567"
+                              required
+                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[11px] font-bold text-slate-700 block mb-0.5">Delivery State</label>
+                            <select
+                              value={regState}
+                              onChange={(e) => setRegState(e.target.value)}
+                              className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500"
+                            >
+                              <option value="Sokoto">Sokoto State</option>
+                              <option value="Zamfara">Zamfara State</option>
+                              <option value="Kebbi">Kebbi State</option>
+                              <option value="Kano">Kano State</option>
+                              <option value="Katsina">Katsina State</option>
+                              <option value="Kaduna">Kaduna State</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-bold text-slate-700 block mb-0.5">City / Delivery Town</label>
+                            <input
+                              type="text"
+                              value={regCity}
+                              onChange={(e) => setRegCity(e.target.value)}
+                              placeholder="e.g. Gusau / Sokoto"
+                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[11px] font-bold text-slate-700 block mb-0.5">
+                              Password (min 6) <span className="text-amber-600">*</span>
+                            </label>
+                            <input
+                              type={showPassword ? 'text' : 'password'}
+                              value={regPassword}
+                              onChange={(e) => setRegPassword(e.target.value)}
+                              placeholder="••••••••"
+                              required
+                              minLength={6}
+                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-bold text-slate-700 block mb-0.5">
+                              Confirm Password <span className="text-amber-600">*</span>
+                            </label>
+                            <input
+                              type={showPassword ? 'text' : 'password'}
+                              value={regConfirmPassword}
+                              onChange={(e) => setRegConfirmPassword(e.target.value)}
+                              placeholder="••••••••"
+                              required
+                              minLength={6}
+                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500"
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>{isSubmitting ? 'Creating Account...' : 'Create Wholesale Account & Enter Portal'}</span>
+                        </button>
+                      </form>
+                    ) : (
+                      /* Customer Sign In Form */
+                      <form onSubmit={handleCustomerLogin} className="space-y-3">
+                        <div>
+                          <label className="text-xs font-bold text-slate-700 block mb-1">
+                            Customer Email Address
+                          </label>
+                          <input
+                            type="email"
+                            value={loginEmail}
+                            onChange={(e) => setLoginEmail(e.target.value)}
+                            placeholder="contractor@domain.ng"
+                            required
+                            className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 font-medium"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-xs font-bold text-slate-700">Password</label>
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="text-xs text-blue-700 hover:underline flex items-center gap-1 font-semibold"
+                            >
+                              {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                              <span>{showPassword ? 'Hide' : 'Show'}</span>
+                            </button>
+                          </div>
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            value={loginPassword}
+                            onChange={(e) => setLoginPassword(e.target.value)}
+                            placeholder="••••••••••••"
+                            required
+                            className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 font-medium"
+                          />
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+                        >
+                          <Lock className="w-4 h-4" />
+                          <span>{isSubmitting ? 'Authenticating...' : 'Sign In as Customer'}</span>
+                        </button>
+
+                        {/* Quick fill demo customer */}
+                        <div className="pt-2 border-t border-slate-200 text-center">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setLoginEmail(DEMO_ACCOUNTS.CUSTOMER.email);
+                              setLoginPassword(DEMO_ACCOUNTS.CUSTOMER.pass);
+                            }}
+                            className="w-full bg-slate-50 hover:bg-blue-50/60 text-blue-900 border border-slate-200 font-semibold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors"
+                          >
+                            <User className="w-3.5 h-3.5 text-amber-500" />
+                            <span>Fill Demo Account: Alhaji Mukhtar Dan-Kano</span>
+                          </button>
+                        </div>
+                      </form>
+                    )}
+
+                    <div className="pt-1 text-center">
+                      <button
+                        onClick={handleOpenCustomerPortal}
+                        className="text-xs text-slate-600 hover:text-blue-700 font-semibold underline"
+                      >
+                        Enter Customer Portal as Guest &rarr;
                       </button>
                     </div>
                   </div>
                 ) : (
-                  /* Form Inputs */
-                  <form onSubmit={handleManualLogin} className="space-y-3">
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block mb-1">
-                        Staff Username or Account Email
-                      </label>
-                      <input
-                        type="text"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        placeholder="manager@aamaster.ng"
-                        required
-                        className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-medium"
-                      />
-                    </div>
+                  /* ================= STAFF TERMINAL ================= */
+                  <div className="space-y-3">
+                    <form onSubmit={handleManualLogin} className="space-y-2.5">
+                      <div>
+                        <label className="text-xs font-bold text-slate-700 block mb-1">
+                          Staff Username or Account Email
+                        </label>
+                        <input
+                          type="text"
+                          value={loginEmail}
+                          onChange={(e) => setLoginEmail(e.target.value)}
+                          placeholder="manager@aamaster.ng"
+                          required
+                          className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-medium"
+                        />
+                      </div>
 
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="text-xs font-bold text-slate-700">Password</label>
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-xs font-bold text-slate-700">Password</label>
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="text-xs text-blue-700 hover:underline flex items-center gap-1 font-semibold"
+                          >
+                            {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                            <span>{showPassword ? 'Hide' : 'Show'}</span>
+                          </button>
+                        </div>
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
+                          placeholder="••••••••••••"
+                          required
+                          className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-medium"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full bg-[#0052cc] hover:bg-[#0043a8] disabled:opacity-50 text-white font-extrabold py-2.5 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+                      >
+                        <Lock className="w-4 h-4" />
+                        <span>{isSubmitting ? 'Authenticating...' : 'Sign In to Logistics System'}</span>
+                      </button>
+                    </form>
+
+                    {/* Exactly 4 Staff Roles: Manager, Assistant Manager, Cashier, Agent */}
+                    <div className="pt-2 border-t border-slate-200 space-y-1.5">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="font-bold text-slate-700 flex items-center gap-1 uppercase tracking-wider">
+                          <User className="w-3 h-3 text-blue-700" /> SYSTEM STAFF ROLES (CLICK TO FILL)
+                        </span>
+                        <span className="font-mono text-slate-400">Production Site &amp; Desk</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-1.5 text-left">
+                        {/* 1. MANAGER */}
                         <button
                           type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="text-xs text-blue-700 hover:underline flex items-center gap-1 font-semibold"
+                          onClick={() => handleQuickRoleSelect('MANAGER')}
+                          className="p-2 rounded-xl border text-left transition-all bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800"
                         >
-                          {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                          <span>{showPassword ? 'Hide' : 'Show'}</span>
+                          <strong className="text-[11px] text-slate-900 block font-bold leading-tight">
+                            Engr. Sanusi Kalambaina
+                          </strong>
+                          <span className="text-[9px] text-blue-700 font-semibold block mt-0.5">1. Manager (Approval)</span>
+                        </button>
+
+                        {/* 2. ASSISTANT MANAGER */}
+                        <button
+                          type="button"
+                          onClick={() => handleQuickRoleSelect('ASSISTANT_MANAGER')}
+                          className="p-2 rounded-xl border text-left transition-all bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800"
+                        >
+                          <strong className="text-[11px] text-slate-900 block font-bold leading-tight">
+                            Fatima Aliyu
+                          </strong>
+                          <span className="text-[9px] text-blue-700 font-semibold block mt-0.5">2. Assistant Manager</span>
+                        </button>
+
+                        {/* 3. CASHIER */}
+                        <button
+                          type="button"
+                          onClick={() => handleQuickRoleSelect('CASHIER')}
+                          className="p-2 rounded-xl border text-left transition-all bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800"
+                        >
+                          <strong className="text-[11px] text-slate-900 block font-bold leading-tight">
+                            Abubakar Garba
+                          </strong>
+                          <span className="text-[9px] text-blue-700 font-semibold block mt-0.5">3. Cashier (Accounts)</span>
+                        </button>
+
+                        {/* 4. AGENT (Production Site) */}
+                        <button
+                          type="button"
+                          onClick={() => handleQuickRoleSelect('AGENT')}
+                          className="p-2 rounded-xl border text-left transition-all bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800"
+                        >
+                          <strong className="text-[11px] text-slate-900 block font-bold leading-tight">
+                            Haruna Danladi
+                          </strong>
+                          <span className="text-[9px] text-blue-700 font-semibold block mt-0.5">4. Agent (Issuance)</span>
                         </button>
                       </div>
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        placeholder="••••••••••••"
-                        required
-                        className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-medium"
-                      />
                     </div>
-
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full bg-[#0052cc] hover:bg-[#0043a8] disabled:opacity-50 text-white font-extrabold py-3 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
-                    >
-                      <Lock className="w-4 h-4" />
-                      <span>{isSubmitting ? 'Authenticating...' : 'Sign In to Logistics System'}</span>
-                    </button>
-                  </form>
+                  </div>
                 )}
-
-                {/* Exactly 4 Staff Roles: Manager, Assistant Manager, Cashier, Agent (Production Site) */}
-                <div className="pt-2 border-t border-slate-200 space-y-2">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-bold text-slate-700 flex items-center gap-1 uppercase tracking-wider text-[10px]">
-                      <User className="w-3.5 h-3.5 text-blue-700" /> SYSTEM STAFF ROLES (CLICK TO FILL)
-                    </span>
-                    <span className="font-mono text-slate-400 text-[10px]">Production Site &amp; Desk</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-left">
-                    {/* 1. MANAGER */}
-                    <button
-                      onClick={() => handleQuickRoleSelect('MANAGER')}
-                      className={`p-2.5 rounded-xl border text-left transition-all ${
-                        user?.role === 'MANAGER'
-                          ? 'bg-blue-50 border-blue-600 text-blue-900 ring-1 ring-blue-500'
-                          : 'bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800'
-                      }`}
-                    >
-                      <strong className="text-xs text-slate-900 block font-bold leading-tight flex items-center justify-between">
-                        <span>Engr. Sanusi Kalambaina</span>
-                        {user?.role === 'MANAGER' && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
-                      </strong>
-                      <span className="text-[10px] text-blue-700 font-semibold block mt-0.5">1. Manager (Approval)</span>
-                      <span className="text-[9px] text-slate-500 block">Overall stock approval &amp; reservation</span>
-                    </button>
-
-                    {/* 2. ASSISTANT MANAGER */}
-                    <button
-                      onClick={() => handleQuickRoleSelect('ASSISTANT_MANAGER')}
-                      className={`p-2.5 rounded-xl border text-left transition-all ${
-                        user?.role === 'ASSISTANT_MANAGER'
-                          ? 'bg-blue-50 border-blue-600 text-blue-900 ring-1 ring-blue-500'
-                          : 'bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800'
-                      }`}
-                    >
-                      <strong className="text-xs text-slate-900 block font-bold leading-tight flex items-center justify-between">
-                        <span>Fatima Aliyu</span>
-                        {user?.role === 'ASSISTANT_MANAGER' && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
-                      </strong>
-                      <span className="text-[10px] text-blue-700 font-semibold block mt-0.5">2. Assistant Manager</span>
-                      <span className="text-[9px] text-slate-500 block">Queue &amp; document verification</span>
-                    </button>
-
-                    {/* 3. CASHIER */}
-                    <button
-                      onClick={() => handleQuickRoleSelect('CASHIER')}
-                      className={`p-2.5 rounded-xl border text-left transition-all ${
-                        user?.role === 'CASHIER'
-                          ? 'bg-blue-50 border-blue-600 text-blue-900 ring-1 ring-blue-500'
-                          : 'bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800'
-                      }`}
-                    >
-                      <strong className="text-xs text-slate-900 block font-bold leading-tight flex items-center justify-between">
-                        <span>Abubakar Garba</span>
-                        {user?.role === 'CASHIER' && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
-                      </strong>
-                      <span className="text-[10px] text-blue-700 font-semibold block mt-0.5">3. Cashier (Accounts)</span>
-                      <span className="text-[9px] text-slate-500 block">100% upfront bank reconciliation</span>
-                    </button>
-
-                    {/* 4. AGENT (Production Site) */}
-                    <button
-                      onClick={() => handleQuickRoleSelect('AGENT')}
-                      className={`p-2.5 rounded-xl border text-left transition-all ${
-                        user?.role === 'AGENT'
-                          ? 'bg-blue-50 border-blue-600 text-blue-900 ring-1 ring-blue-500'
-                          : 'bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800'
-                      }`}
-                    >
-                      <strong className="text-xs text-slate-900 block font-bold leading-tight flex items-center justify-between">
-                        <span>Haruna Danladi</span>
-                        {user?.role === 'AGENT' && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
-                      </strong>
-                      <span className="text-[10px] text-blue-700 font-semibold block mt-0.5">4. Agent (Production Site)</span>
-                      <span className="text-[9px] text-slate-500 block">Physical stock issuance &amp; gate pass</span>
-                    </button>
-                  </div>
-
-                  {/* Customer Facing Portal Option */}
-                  <div className="pt-1.5 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-[10px] text-slate-500 font-medium">Ordering Cement as a Contractor?</span>
-                    <button
-                      onClick={handleOpenCustomerPortal}
-                      className={`text-xs font-bold px-3 py-1 rounded-lg border transition-all ${
-                        user?.role === 'CUSTOMER'
-                          ? 'bg-emerald-50 border-emerald-500 text-emerald-800 ring-1 ring-emerald-500'
-                          : 'bg-slate-100 hover:bg-emerald-50 text-slate-700 border-slate-200'
-                      }`}
-                    >
-                      Customer Facing Portal &rarr;
-                    </button>
-                  </div>
-                </div>
 
                 {/* Protected Badge Note */}
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 text-center text-[10px] text-slate-500 flex items-center justify-center gap-1.5">
