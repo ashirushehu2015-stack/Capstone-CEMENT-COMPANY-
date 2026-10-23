@@ -585,7 +585,7 @@ function StorefrontContent() {
                   <div className="pt-1.5 border-t border-slate-100 flex items-center justify-between">
                     <span className="text-[10px] text-slate-500 font-medium">Ordering Cement as a Contractor?</span>
                     <button
-                      onClick={() => handleQuickRoleSelect('CUSTOMER')}
+                      onClick={handleOpenCustomerPortal}
                       className={`text-xs font-bold px-3 py-1 rounded-lg border transition-all ${
                         user?.role === 'CUSTOMER'
                           ? 'bg-emerald-50 border-emerald-500 text-emerald-800 ring-1 ring-emerald-500'
