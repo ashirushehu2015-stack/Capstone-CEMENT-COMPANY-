@@ -291,16 +291,6 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                   </button>
                 </div>
               )}
-
-              {/* Staff Terminal or Back to Landing */}
-              <button
-                onClick={onReturnToLanding}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl font-semibold transition-colors flex items-center gap-1"
-                title="Return to Main Landing & Staff Terminal"
-              >
-                <Lock className="w-3.5 h-3.5 text-blue-400" />
-                <span className="hidden sm:inline">Staff Terminal</span>
-              </button>
             </div>
           </div>
         </div>
