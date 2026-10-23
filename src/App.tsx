@@ -648,32 +648,15 @@ function StorefrontContent() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="text-[11px] font-bold text-slate-700 block mb-0.5">Delivery State</label>
-                            <select
-                              value={regState}
-                              onChange={(e) => setRegState(e.target.value)}
-                              className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500"
-                            >
-                              <option value="Sokoto">Sokoto State</option>
-                              <option value="Zamfara">Zamfara State</option>
-                              <option value="Kebbi">Kebbi State</option>
-                              <option value="Kano">Kano State</option>
-                              <option value="Katsina">Katsina State</option>
-                              <option value="Kaduna">Kaduna State</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-bold text-slate-700 block mb-0.5">City / Delivery Town</label>
-                            <input
-                              type="text"
-                              value={regCity}
-                              onChange={(e) => setRegCity(e.target.value)}
-                              placeholder="e.g. Gusau / Sokoto"
-                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500"
-                            />
-                          </div>
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-700 block mb-0.5">Address</label>
+                          <input
+                            type="text"
+                            value={regAddress}
+                            onChange={(e) => setRegAddress(e.target.value)}
+                            placeholder="e.g. No. 12 Canteen Area, Gusau, Zamfara State"
+                            className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 font-medium"
+                          />
                         </div>
 
                         <div className="grid grid-cols-2 gap-2">

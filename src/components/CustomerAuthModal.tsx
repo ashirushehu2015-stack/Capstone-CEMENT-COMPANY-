@@ -254,50 +254,18 @@ export const CustomerAuthModal: React.FC<CustomerAuthModalProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">Delivery State</label>
-                  <select
-                    value={state}
-                    onChange={(e) => setState(e.target.value)}
-                    className="w-full bg-[#040914] border border-blue-900/70 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400"
-                  >
-                    <option value="Sokoto">Sokoto State</option>
-                    <option value="Zamfara">Zamfara State (Gusau)</option>
-                    <option value="Kebbi">Kebbi State (Birnin Kebbi)</option>
-                    <option value="Katsina">Katsina State</option>
-                    <option value="Kano">Kano State</option>
-                    <option value="Kaduna">Kaduna State</option>
-                    <option value="Jigawa">Jigawa State</option>
-                    <option value="Niger">Niger State</option>
-                    <option value="FCT">Abuja FCT</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">City / Delivery Town</label>
-                  <div className="relative">
-                    <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                    <input
-                      type="text"
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      placeholder="e.g. Sokoto Central / Gusau"
-                      className="w-full bg-[#040914] border border-blue-900/70 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-400"
-                    />
-                  </div>
-                </div>
-              </div>
-
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">Site / Warehouse Address</label>
-                <input
-                  type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="e.g. Plot 12, Heavy Industrial Layout, Bypass"
-                  className="w-full bg-[#040914] border border-blue-900/70 rounded-xl px-3 py-2.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-400"
-                />
+                <label className="text-xs font-bold text-slate-300 block mb-1">Address</label>
+                <div className="relative">
+                  <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                  <input
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="e.g. No. 12 Canteen Area, Gusau, Zamfara State"
+                    className="w-full bg-[#040914] border border-blue-900/70 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
