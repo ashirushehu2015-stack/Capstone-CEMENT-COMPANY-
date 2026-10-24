@@ -58,7 +58,7 @@ interface StaffDashboardProps {
 }
 
 export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewOrderReceipt }) => {
-  const { user, isAdmin, isManager, isAssistantManager, isAgent, isStoreManager, isSalesOfficer, isCashier, isDeliveryOfficer } = useAuth();
+  const { user, isAdmin, isManager, isAssistantManager, isAgent, isStoreManager, isSalesOfficer, isDeliveryOfficer } = useAuth();
 
   // Active Tab
   type TabType =
@@ -77,7 +77,6 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
 
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     if (isDeliveryOfficer) return 'deliveries';
-    if (isCashier) return 'payments';
     return 'overview';
   });
 
@@ -191,12 +190,12 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
         }
       }
 
-      if (isAdmin || isStoreManager || isSalesOfficer || isCashier || isManager || isAssistantManager) {
+      if (isAdmin || isStoreManager || isSalesOfficer || isManager || isAssistantManager) {
         const movRes = await apiInventory.getMovements().catch(() => ({ movements: [] }));
         setStockMovements(movRes.movements);
       }
 
-      if (isAdmin || isCashier || isStoreManager || isManager) {
+      if (isAdmin || isStoreManager || isManager) {
         const payRes = await apiPayments.getAll().catch(() => ({ payments: [] }));
         setPayments(payRes.payments);
       }
@@ -383,9 +382,8 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
               <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-600/30 text-blue-300 border border-blue-500/40">
                 {user?.role === 'MANAGER' && 'Manager (Approval Authority)'}
                 {user?.role === 'ASSISTANT_MANAGER' && 'Assistant Manager (Queue Review)'}
-                {user?.role === 'CASHIER' && 'Cashier (Payment Reconciliation)'}
                 {user?.role === 'AGENT' && 'Agent (Production Site Stock Issuance)'}
-                {!['MANAGER', 'ASSISTANT_MANAGER', 'CASHIER', 'AGENT'].includes(user?.role || '') && user?.role.replace('_', ' ')}
+                {!['MANAGER', 'ASSISTANT_MANAGER', 'AGENT'].includes(user?.role || '') && user?.role.replace('_', ' ')}
               </span>
             </div>
             <p className="text-xs text-slate-400">
@@ -429,7 +427,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar Nav */}
         <aside className="w-64 bg-slate-900/60 border-r border-slate-800/80 p-4 space-y-1 overflow-y-auto">
-          {(isAdmin || isManager || isStoreManager || isCashier) && (
+          {(isAdmin || isManager || isStoreManager) && (
             <button
               onClick={() => setActiveTab('overview')}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -516,7 +514,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
             <ShieldCheck className="w-4 h-4" /> 16 Acceptance Tests
           </button>
 
-          {(isAdmin || isCashier || isStoreManager || isManager) && (
+          {(isAdmin || isStoreManager || isManager) && (
             <button
               onClick={() => setActiveTab('payments')}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -525,7 +523,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                   : 'text-slate-400 hover:bg-slate-800 hover:text-white'
               }`}
             >
-              <CreditCard className="w-4 h-4" /> Cashier: Payment Reconciliations
+              <CreditCard className="w-4 h-4" /> Manager: Payment Reconciliations
             </button>
           )}
 
@@ -793,7 +791,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                           )}
 
                           {/* Section 1 & 6: 100% Full Payment Verification */}
-                          {(o.status === 'APPROVED_AWAITING_PAYMENT' || o.status === 'PENDING_PAYMENT' || o.status === 'PAYMENT_UNDER_VERIFICATION') && (isAdmin || isCashier || isManager || isStoreManager) && (
+                          {(o.status === 'APPROVED_AWAITING_PAYMENT' || o.status === 'PENDING_PAYMENT' || o.status === 'PAYMENT_UNDER_VERIFICATION') && (isAdmin || isManager || isStoreManager) && (
                             <button
                               onClick={() => {
                                 setPaymentForm((prev) => ({
@@ -991,12 +989,12 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
             </div>
           )}
 
-          {/* TAB 4: PAYMENTS & CASHIER DESK */}
+          {/* TAB 4: PAYMENTS & TREASURY DESK */}
           {activeTab === 'payments' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-white">Cashier & Accounts Payment Reconciliation</h2>
+                  <h2 className="text-lg font-bold text-white">Manager Payment Reconciliation & Treasury</h2>
                   <p className="text-xs text-slate-400">Reconcile bank transfers, POS slips, and online Paystack settlements</p>
                 </div>
               </div>
@@ -1257,7 +1255,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-bold text-white">Staff Accounts & RBAC Directory</h2>
-                  <p className="text-xs text-slate-400">Manage store managers, sales officers, cashiers, and drivers</p>
+                  <p className="text-xs text-slate-400">Manage plant managers, assistant managers, and issuing agents</p>
                 </div>
                 <button
                   onClick={() => setShowCreateStaffModal(true)}
@@ -1566,13 +1564,13 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
         </div>
       )}
 
-      {/* MODAL 3: CASHIER PAYMENT VERIFICATION */}
+      {/* MODAL 3: MANAGER PAYMENT VERIFICATION */}
       {showRecordPaymentModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
           <div className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl space-y-4 text-xs">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-emerald-400" /> Cashier Payment Verification
+                <CreditCard className="w-5 h-5 text-emerald-400" /> Manager Payment Verification
               </h3>
               <button onClick={() => setShowRecordPaymentModal(false)} className="text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
@@ -1808,10 +1806,9 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                     onChange={(e) => setNewStaffForm({ ...newStaffForm, role: e.target.value as any })}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold"
                   >
-                    <option value="STORE_MANAGER">Store Manager</option>
-                    <option value="SALES_OFFICER">Sales Officer</option>
-                    <option value="CASHIER">Cashier / Accounts Officer</option>
-                    <option value="DELIVERY_OFFICER">Delivery Officer / Driver</option>
+                    <option value="MANAGER">Depot Manager</option>
+                    <option value="ASSISTANT_MANAGER">Assistant Manager</option>
+                    <option value="AGENT">Issuing Agent</option>
                     <option value="ADMIN">System Administrator</option>
                   </select>
                 </div>

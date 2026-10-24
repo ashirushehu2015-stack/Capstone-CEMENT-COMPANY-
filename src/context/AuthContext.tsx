@@ -29,7 +29,6 @@ interface AuthContextType {
   isAgent: boolean;
   isStoreManager: boolean;
   isSalesOfficer: boolean;
-  isCashier: boolean;
   isDeliveryOfficer: boolean;
   isStaff: boolean;
 }
@@ -127,7 +126,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isAgent = role === 'AGENT' || role === 'DELIVERY_OFFICER';
   const isStoreManager = role === 'STORE_MANAGER' || role === 'MANAGER';
   const isSalesOfficer = role === 'SALES_OFFICER' || role === 'ASSISTANT_MANAGER';
-  const isCashier = false;
   const isDeliveryOfficer = role === 'DELIVERY_OFFICER' || role === 'AGENT';
   const isStaff = !isCustomer && !!user;
 
@@ -148,7 +146,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAgent,
         isStoreManager,
         isSalesOfficer,
-        isCashier,
         isDeliveryOfficer,
         isStaff,
       }}

@@ -501,7 +501,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     <Building className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                     <div>
                       <span className="text-[11px] font-bold text-white block leading-tight">Bank Draft / Treasury</span>
-                      <span className="text-[10px] text-slate-400 leading-tight block mt-0.5">Certified draft at Cashier</span>
+                      <span className="text-[10px] text-slate-400 leading-tight block mt-0.5">Certified draft at Kalambaina Plant Management Desk</span>
                     </div>
                   </button>
 

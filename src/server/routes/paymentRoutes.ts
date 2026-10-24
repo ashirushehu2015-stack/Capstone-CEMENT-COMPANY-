@@ -75,7 +75,7 @@ router.post('/submit-transfer-claim', authenticate, (req: AuthenticatedRequest, 
   return res.json({
     success: true,
     order: updatedOrder,
-    message: 'Bank transfer proof submitted. Cashier and Manager have been notified for reconciliation.',
+    message: 'Bank transfer proof submitted. Depot Manager has been notified for payment verification.',
   });
 });
 

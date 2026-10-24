@@ -66,8 +66,12 @@ export interface Product {
   availableTrailers: number; // availableStockBags / 600
   reservedTrailers: number; // reservedStockBags / 600
   reorderLevelTrailers: number; // Minimum truck threshold
+  reorderThresholdTrailers?: number;
   minOrderTrailers: number; // Minimum 1 full truck (600 bags)
+  minimumOrderTrailers?: number;
   maxOrderTrailers?: number;
+  trailerWeightTonnes?: number;
+  certification?: string;
   description: string;
   applications: string[];
   features: string[];

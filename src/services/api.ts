@@ -452,15 +452,49 @@ export const apiPayments = {
     return request<{ success: boolean; payments: PaymentRecord[] }>('/api/payments');
   },
 
-  submitTransferClaim: async (data: {
-    orderId: string;
-    bankTransferReference: string;
-    payerName: string;
-    destinationAccount?: string;
-  }) => {
+  submitTransferClaim: async (
+    dataOrOrderId:
+      | string
+      | {
+          orderId: string;
+          bankTransferReference?: string;
+          referenceNumber?: string;
+          payerName: string;
+          destinationAccount?: string;
+        },
+    optionalData?: {
+      referenceNumber?: string;
+      bankTransferReference?: string;
+      payerName: string;
+      destinationAccount?: string;
+    }
+  ) => {
+    let payload: {
+      orderId: string;
+      bankTransferReference: string;
+      payerName: string;
+      destinationAccount?: string;
+    };
+
+    if (typeof dataOrOrderId === 'string') {
+      payload = {
+        orderId: dataOrOrderId,
+        bankTransferReference: optionalData?.bankTransferReference || optionalData?.referenceNumber || '',
+        payerName: optionalData?.payerName || '',
+        destinationAccount: optionalData?.destinationAccount,
+      };
+    } else {
+      payload = {
+        orderId: dataOrOrderId.orderId,
+        bankTransferReference: dataOrOrderId.bankTransferReference || dataOrOrderId.referenceNumber || '',
+        payerName: dataOrOrderId.payerName,
+        destinationAccount: dataOrOrderId.destinationAccount,
+      };
+    }
+
     return request<{ success: boolean; order: Order; message: string }>('/api/payments/submit-transfer-claim', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
   },
 

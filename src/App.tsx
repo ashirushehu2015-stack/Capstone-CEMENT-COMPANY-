@@ -46,16 +46,28 @@ const FALLBACK_PRODUCTS: Product[] = [
     id: 'prod_sokoto_425r',
     sku: 'SKT-CEM-425R-50KG',
     name: 'Sokoto Cement — Portland Limestone Cement (42.5R)',
+    brand: 'Sokoto Cement',
     grade: '42.5R',
     bagWeightKg: 50,
     bagsPerTrailer: 600,
+    tonnesPerTrailer: 30,
     trailerWeightTonnes: 30,
     pricePerBag: 10850,
     pricePerTrailer: 6510000,
-    availableTrailers: 85,
-    reservedTrailers: 0,
-    reorderThresholdTrailers: 15,
+    pricePerBagEquivalent: 10850,
+    costPerBagBasis: 9500,
+    costPerTrailerBasis: 5700000,
+    physicalStockBags: 30000,
+    reservedStockBags: 1800,
+    stockOnHoldBags: 0,
+    availableStockBags: 28200,
+    availableTrailers: 47,
+    reservedTrailers: 3,
+    reorderLevelTrailers: 10,
+    reorderThresholdTrailers: 10,
+    minOrderTrailers: 1,
     minimumOrderTrailers: 1,
+    maxOrderTrailers: 100,
     description:
       'High early-strength 42.5R rapid-hardening grade ideal for multi-story structural columns, bridges, concrete decking, and heavy civil engineering works. Supplied in full 30-tonne (600-bag) articulated factory trailer loads.',
     applications: [
@@ -64,24 +76,44 @@ const FALLBACK_PRODUCTS: Product[] = [
       'Bridge & Highway Culvert Construction',
       'Heavy Pre-cast Concrete & Block Molding',
     ],
+    features: [
+      'Direct from Kalambaina Plant Kiln Line',
+      '30 Metric Tonnes net payload (600 standard 50kg bags)',
+      '28-day target compressive strength exceeds 42.5 MPa',
+      'Official NIS 444-1:2018 Certified with SON Quality Mark',
+    ],
+    imageUrl: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80',
     certification: 'SON Mandatory Conformity Assessment Programme (MANCAP) — NIS 444-1:2014 Certified',
     isActive: true,
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: 'prod_sokoto_325r',
     sku: 'SKT-CEM-325R-50KG',
     name: 'Sokoto Cement — General Purpose Block & Masonry (32.5R)',
+    brand: 'Sokoto Cement',
     grade: '32.5R',
     bagWeightKg: 50,
     bagsPerTrailer: 600,
+    tonnesPerTrailer: 30,
     trailerWeightTonnes: 30,
     pricePerBag: 10850,
     pricePerTrailer: 6510000,
-    availableTrailers: 50,
-    reservedTrailers: 0,
-    reorderThresholdTrailers: 10,
+    pricePerBagEquivalent: 10850,
+    costPerBagBasis: 9500,
+    costPerTrailerBasis: 5700000,
+    physicalStockBags: 18000,
+    reservedStockBags: 1200,
+    stockOnHoldBags: 0,
+    availableStockBags: 16800,
+    availableTrailers: 28,
+    reservedTrailers: 2,
+    reorderLevelTrailers: 8,
+    reorderThresholdTrailers: 8,
+    minOrderTrailers: 1,
     minimumOrderTrailers: 1,
+    maxOrderTrailers: 100,
     description:
       'Reliable multipurpose 32.5R cement formulated for smooth plastering, rendering, block laying, and residential floor screeding with superior workability. Supplied in full 30-tonne (600-bag) articulated factory trailer loads.',
     applications: [
@@ -90,9 +122,17 @@ const FALLBACK_PRODUCTS: Product[] = [
       'Floor Screeding & Residential Foundations',
       'General Masonry & Rendering',
     ],
+    features: [
+      'Direct from Kalambaina Plant Kiln Line',
+      '30 Metric Tonnes net payload (600 standard 50kg bags)',
+      'Smooth finish & easy workability',
+      'Official NIS 444-1:2018 Certified with SON Quality Mark',
+    ],
+    imageUrl: 'https://images.unsplash.com/photo-1590069261209-f8e9b8642343?auto=format&fit=crop&w=800&q=80',
     certification: 'SON Mandatory Conformity Assessment Programme (MANCAP) — NIS 444-1:2014 Certified',
     isActive: true,
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ];
 
@@ -409,7 +449,7 @@ function StorefrontContent() {
 
               {/* Description */}
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-lg">
-                Exclusive Authorized Merchant for authentic <strong className="text-white">Sokoto Cement (Kalambaina Plant)</strong> trailers (600 standard 50kg bags / 30 metric tonnes). Orders placed via the <strong className="text-amber-400">Customer Facing Portal</strong>, verified by the <strong className="text-white">Cashier</strong>, checked by the <strong className="text-white">Assistant Manager</strong>, authorized by the <strong className="text-white">Manager</strong>, and physically issued at the production site by the <strong className="text-white">Agent</strong>.
+                Exclusive Authorized Merchant for authentic <strong className="text-white">Sokoto Cement (Kalambaina Plant)</strong> trailers (600 standard 50kg bags / 30 metric tonnes). Orders placed via the <strong className="text-amber-400">Customer Facing Portal</strong>, checked by the <strong className="text-white">Assistant Manager</strong>, authorized & payment-verified by the <strong className="text-white">Manager</strong>, and physically issued at the production site by the <strong className="text-white">Issuing Agent</strong>.
               </p>
 
               {/* 3 Key Metric Highlight Cards */}
@@ -445,13 +485,13 @@ function StorefrontContent() {
               {/* Feature Pills showing the exact system workflow */}
               <div className="flex flex-wrap items-center justify-center gap-1.5 text-[11px] max-w-lg pt-1">
                 <span className="bg-[#0d2857]/80 text-blue-200 border border-blue-600/40 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                  <DollarSign className="w-3.5 h-3.5 text-emerald-400" /> Cashier: 100% Upfront Settlement
+                  <DollarSign className="w-3.5 h-3.5 text-emerald-400" /> 100% Upfront Wire / Settlement
                 </span>
                 <span className="bg-[#0d2857]/80 text-blue-200 border border-blue-600/40 px-2.5 py-1 rounded-lg flex items-center gap-1">
                   <FileCheck2 className="w-3.5 h-3.5 text-indigo-400" /> Asst. Mgr: Queue Verification
                 </span>
                 <span className="bg-[#0d2857]/80 text-blue-200 border border-blue-600/40 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-purple-400" /> Manager: Order Approval
+                  <ShieldCheck className="w-3.5 h-3.5 text-purple-400" /> Manager: Approval & Verification
                 </span>
                 <span className="bg-[#0d2857]/80 text-blue-200 border border-blue-600/40 px-2.5 py-1 rounded-lg flex items-center gap-1">
                   <Truck className="w-3.5 h-3.5 text-teal-400" /> Agent: Production Site Issuance
@@ -515,7 +555,7 @@ function StorefrontContent() {
                   }`}
                 >
                   <Lock className="w-3.5 h-3.5" />
-                  <span>Staff Terminal (4 Roles)</span>
+                  <span>Staff Terminal (3 Operational Roles)</span>
                 </button>
               </div>
 
@@ -864,7 +904,7 @@ function StorefrontContent() {
                       </button>
                     </form>
 
-                    {/* Exactly 4 Staff Roles: Manager, Assistant Manager, Cashier, Agent */}
+                    {/* Exactly 3 Operational Staff Roles: Manager, Assistant Manager, Issuing Agent */}
                     <div className="pt-2 border-t border-slate-200 space-y-1.5">
                       <div className="flex items-center justify-between text-[10px]">
                         <span className="font-bold text-slate-700 flex items-center gap-1 uppercase tracking-wider">
@@ -873,14 +913,14 @@ function StorefrontContent() {
                         <span className="font-mono text-slate-400">Production Site &amp; Desk</span>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-1.5 text-left">
+                      <div className="grid grid-cols-3 gap-1.5 text-left">
                         {/* 1. MANAGER */}
                         <button
                           type="button"
                           onClick={() => handleQuickRoleSelect('MANAGER')}
                           className="p-2 rounded-xl border text-left transition-all bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800"
                         >
-                          <strong className="text-[11px] text-slate-900 block font-bold leading-tight">
+                          <strong className="text-[11px] text-slate-900 block font-bold leading-tight truncate">
                             Engr. Sanusi Kalambaina
                           </strong>
                           <span className="text-[9px] text-blue-700 font-semibold block mt-0.5">1. Manager (Approval)</span>
@@ -892,34 +932,22 @@ function StorefrontContent() {
                           onClick={() => handleQuickRoleSelect('ASSISTANT_MANAGER')}
                           className="p-2 rounded-xl border text-left transition-all bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800"
                         >
-                          <strong className="text-[11px] text-slate-900 block font-bold leading-tight">
+                          <strong className="text-[11px] text-slate-900 block font-bold leading-tight truncate">
                             Fatima Aliyu
                           </strong>
                           <span className="text-[9px] text-blue-700 font-semibold block mt-0.5">2. Assistant Manager</span>
                         </button>
 
-                        {/* 3. CASHIER */}
-                        <button
-                          type="button"
-                          onClick={() => handleQuickRoleSelect('CASHIER')}
-                          className="p-2 rounded-xl border text-left transition-all bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800"
-                        >
-                          <strong className="text-[11px] text-slate-900 block font-bold leading-tight">
-                            Abubakar Garba
-                          </strong>
-                          <span className="text-[9px] text-blue-700 font-semibold block mt-0.5">3. Cashier (Accounts)</span>
-                        </button>
-
-                        {/* 4. AGENT (Production Site) */}
+                        {/* 3. AGENT (Production Site) */}
                         <button
                           type="button"
                           onClick={() => handleQuickRoleSelect('AGENT')}
                           className="p-2 rounded-xl border text-left transition-all bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800"
                         >
-                          <strong className="text-[11px] text-slate-900 block font-bold leading-tight">
+                          <strong className="text-[11px] text-slate-900 block font-bold leading-tight truncate">
                             Haruna Danladi
                           </strong>
-                          <span className="text-[9px] text-blue-700 font-semibold block mt-0.5">4. Agent (Issuance)</span>
+                          <span className="text-[9px] text-blue-700 font-semibold block mt-0.5">3. Issuing Agent</span>
                         </button>
                       </div>
                     </div>
