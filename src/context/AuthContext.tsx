@@ -13,6 +13,8 @@ interface AuthContextType {
     fullName: string;
     phone: string;
     companyName?: string;
+    officeAddress?: string;
+    homeAddress?: string;
     address?: string;
     city?: string;
     state?: string;
@@ -34,12 +36,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Quick Demo accounts mapping for A.A. Master Nig. Limited
+// Quick Demo accounts mapping for A.A. Master Nig. Limited (Manager, Asst. Manager, Agent, Customer)
 export const DEMO_ACCOUNTS: Record<UserRole, { email: string; pass: string; label: string; role: UserRole }> = {
   CUSTOMER: { email: 'buyer@aamaster.ng', pass: 'Buyer123!', label: 'Customer Facing Portal (Alhaji Mukhtar Dan-Kano)', role: 'CUSTOMER' },
-  MANAGER: { email: 'manager@aamaster.ng', pass: 'Manager123!', label: 'Manager (Engr. Sanusi Kalambaina — Approval Authority)', role: 'MANAGER' },
+  MANAGER: { email: 'manager@aamaster.ng', pass: 'Manager123!', label: 'Manager (Engr. Sanusi Kalambaina — Approval & Payment Verification)', role: 'MANAGER' },
   ASSISTANT_MANAGER: { email: 'asstmanager@aamaster.ng', pass: 'AsstManager123!', label: 'Assistant Manager (Fatima Aliyu — Queue Verification)', role: 'ASSISTANT_MANAGER' },
-  CASHIER: { email: 'cashier@aamaster.ng', pass: 'Cashier123!', label: 'Cashier (Abubakar Garba — 100% Upfront Payment Reconciliation)', role: 'CASHIER' },
   AGENT: { email: 'agent@aamaster.ng', pass: 'Agent123!', label: 'Agent (Haruna Danladi — Production Site Stock Issuance)', role: 'AGENT' },
   // Legacy compatibility fallbacks
   ADMIN: { email: 'manager@aamaster.ng', pass: 'Manager123!', label: 'Manager (Engr. Sanusi Kalambaina)', role: 'ADMIN' },
@@ -126,7 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isAgent = role === 'AGENT' || role === 'DELIVERY_OFFICER';
   const isStoreManager = role === 'STORE_MANAGER' || role === 'MANAGER';
   const isSalesOfficer = role === 'SALES_OFFICER' || role === 'ASSISTANT_MANAGER';
-  const isCashier = role === 'CASHIER';
+  const isCashier = false;
   const isDeliveryOfficer = role === 'DELIVERY_OFFICER' || role === 'AGENT';
   const isStaff = !isCustomer && !!user;
 

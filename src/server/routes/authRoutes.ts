@@ -12,6 +12,8 @@ const registerSchema = z.object({
   fullName: z.string().min(2, 'Full name required'),
   phone: z.string().min(10, 'Valid Nigerian phone number required'),
   companyName: z.string().optional(),
+  officeAddress: z.string().optional(),
+  homeAddress: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
@@ -27,7 +29,7 @@ const createStaffSchema = z.object({
   password: z.string().min(6),
   fullName: z.string().min(2),
   phone: z.string().min(10),
-  role: z.enum(['MANAGER', 'ASSISTANT_MANAGER', 'CASHIER', 'AGENT', 'ADMIN', 'STORE_MANAGER', 'SALES_OFFICER', 'DELIVERY_OFFICER']),
+  role: z.enum(['MANAGER', 'ASSISTANT_MANAGER', 'AGENT', 'ADMIN', 'STORE_MANAGER', 'SALES_OFFICER', 'DELIVERY_OFFICER']),
 });
 
 // POST /api/auth/register
@@ -37,7 +39,7 @@ router.post('/register', (req, res) => {
     return res.status(400).json({ success: false, error: parsed.error.issues[0].message });
   }
 
-  const { email, password, fullName, phone, companyName, address, city, state } = parsed.data;
+  const { email, password, fullName, phone, companyName, officeAddress, homeAddress, address, city, state } = parsed.data;
   const existing = db.findUserByEmail(email);
   if (existing) {
     return res.status(409).json({ success: false, error: 'An account with this email already exists' });
@@ -51,7 +53,9 @@ router.post('/register', (req, res) => {
     companyName: companyName || '',
     role: 'CUSTOMER',
     isActive: true,
-    address,
+    officeAddress: officeAddress || address,
+    homeAddress: homeAddress,
+    address: officeAddress || address,
     city,
     state,
     passwordHash: hash,

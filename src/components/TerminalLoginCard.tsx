@@ -37,7 +37,6 @@ export const TerminalLoginCard: React.FC<TerminalLoginCardProps> = ({
     MANAGER: { badge: 'bg-purple-900/60 text-purple-300 border-purple-700', text: 'Order & Stock Approval Authority', bg: 'from-purple-950/40' },
     ASSISTANT_MANAGER: { badge: 'bg-indigo-900/60 text-indigo-300 border-indigo-700', text: 'Queue Verification & Pricing Review', bg: 'from-indigo-950/40' },
     AGENT: { badge: 'bg-teal-900/60 text-teal-300 border-teal-700', text: 'Physical Loading & Gate Pass Clearance', bg: 'from-teal-950/40' },
-    CASHIER: { badge: 'bg-blue-900/60 text-blue-300 border-blue-700', text: 'Bank Reconciliation & Receipt Issuance', bg: 'from-blue-950/40' },
     ADMIN: { badge: 'bg-rose-900/60 text-rose-300 border-rose-700', text: 'Full Administrative Authority', bg: 'from-rose-950/40' },
     CUSTOMER: { badge: 'bg-emerald-900/60 text-emerald-300 border-emerald-700', text: 'Wholesale Trailer Buyer', bg: 'from-emerald-950/40' },
     STORE_MANAGER: { badge: 'bg-amber-900/60 text-amber-300 border-amber-700', text: 'Depot Stock Operations', bg: 'from-amber-950/40' },
@@ -181,16 +180,6 @@ export const TerminalLoginCard: React.FC<TerminalLoginCardProps> = ({
                 >
                   📋 Asst. Manager
                 </button>
-                <button
-                  onClick={() => handleQuickSwitch('CASHIER')}
-                  className={`text-[11px] font-bold p-1.5 rounded-lg border text-left transition-all ${
-                    user.role === 'CASHIER'
-                      ? 'bg-blue-900/60 text-blue-200 border-blue-500'
-                      : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800'
-                  }`}
-                >
-                  💰 Cashier (Reconciliation)
-                </button>
               </div>
             </div>
           </div>
@@ -258,24 +247,12 @@ export const TerminalLoginCard: React.FC<TerminalLoginCardProps> = ({
                   </button>
 
                   <button
-                    onClick={() => handleQuickSwitch('CASHIER')}
-                    disabled={isSubmitting}
-                    className="w-full text-left p-2 rounded-xl bg-slate-950 hover:bg-blue-950/40 border border-slate-800 hover:border-blue-600 text-xs flex items-center justify-between group transition-all"
-                  >
-                    <div>
-                      <strong className="text-white block group-hover:text-blue-300">3. Cashier Terminal</strong>
-                      <span className="text-[10px] text-slate-400">Abubakar Garba (100% Upfront Bank Reconciliation)</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-blue-400">&rarr;</span>
-                  </button>
-
-                  <button
                     onClick={() => handleQuickSwitch('AGENT')}
                     disabled={isSubmitting}
                     className="w-full text-left p-2 rounded-xl bg-slate-950 hover:bg-teal-950/40 border border-slate-800 hover:border-teal-600 text-xs flex items-center justify-between group transition-all"
                   >
                     <div>
-                      <strong className="text-white block group-hover:text-teal-300">4. Agent (Production Site)</strong>
+                      <strong className="text-white block group-hover:text-teal-300">3. Agent (Production Site)</strong>
                       <span className="text-[10px] text-slate-400">Haruna Danladi (Truck Issuance &amp; Gate Pass)</span>
                     </div>
                     <span className="text-[10px] font-bold text-teal-400">&rarr;</span>
@@ -287,7 +264,7 @@ export const TerminalLoginCard: React.FC<TerminalLoginCardProps> = ({
                     className="w-full text-left p-2 rounded-xl bg-slate-950 hover:bg-emerald-950/40 border border-slate-800 hover:border-emerald-600 text-xs flex items-center justify-between group transition-all"
                   >
                     <div>
-                      <strong className="text-white block group-hover:text-emerald-300">5. Customer Facing Portal</strong>
+                      <strong className="text-white block group-hover:text-emerald-300">4. Customer Facing Portal</strong>
                       <span className="text-[10px] text-slate-400">Alhaji Mukhtar Dan-Kano (Wholesale Buyer)</span>
                     </div>
                     <span className="text-[10px] font-bold text-emerald-400">&rarr;</span>

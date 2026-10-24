@@ -119,7 +119,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
         referenceNumber: bankRefInput.trim(),
         payerName: payerNameInput.trim(),
       });
-      setClaimSuccess(`Payment proof submitted for order. Cashier will reconcile shortly.`);
+      setClaimSuccess(`Payment proof submitted for order. Manager will reconcile and confirm shortly.`);
       setClaimOrderId(null);
       setBankRefInput('');
       setPayerNameInput('');
@@ -136,7 +136,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
     REJECTED_BY_MANAGER: { bg: 'bg-rose-950/80 border-rose-800 text-rose-300', text: 'text-rose-400', label: 'Rejected by Manager' },
     APPROVED_AWAITING_PAYMENT: { bg: 'bg-blue-950/80 border-blue-800 text-blue-300', text: 'text-blue-400', label: '2. Approved — Awaiting 100% Payment' },
     PENDING_PAYMENT: { bg: 'bg-blue-950/80 border-blue-800 text-blue-300', text: 'text-blue-400', label: '2. Approved — Awaiting 100% Payment' },
-    PAYMENT_UNDER_VERIFICATION: { bg: 'bg-purple-950/80 border-purple-800 text-purple-300', text: 'text-purple-400', label: '3. Payment Under Cashier Verification' },
+    PAYMENT_UNDER_VERIFICATION: { bg: 'bg-purple-950/80 border-purple-800 text-purple-300', text: 'text-purple-400', label: '3. Payment Under Manager Verification' },
     PAID: { bg: 'bg-emerald-950/80 border-emerald-800 text-emerald-300', text: 'text-emerald-400', label: '4. 100% Paid — Ready for Agent Issuance' },
     CONFIRMED: { bg: 'bg-emerald-950/80 border-emerald-800 text-emerald-300', text: 'text-emerald-400', label: '4. 100% Paid — Processing' },
     PARTIALLY_ISSUED: { bg: 'bg-teal-950/80 border-teal-800 text-teal-300', text: 'text-teal-400', label: '5. Partially Issued by Agent' },
@@ -624,7 +624,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                     </button>
                   </div>
                   <p className="text-xs text-slate-300">
-                    Enter the bank payment transaction reference/teller number so our Cashier can reconcile and mark your order as PAID.
+                    Enter the bank payment transaction reference/teller number so our Manager can reconcile and mark your order as PAID.
                   </p>
                   <form onSubmit={handleClaimBankTransfer} className="space-y-3">
                     <div>
@@ -659,7 +659,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                         disabled={claimSubmitting}
                         className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-colors"
                       >
-                        {claimSubmitting ? 'Submitting...' : 'Submit Proof to Cashier'}
+                        {claimSubmitting ? 'Submitting...' : 'Submit Proof of Payment'}
                       </button>
                       <button
                         type="button"
@@ -900,9 +900,9 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 <span className="w-7 h-7 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center">
                   3
                 </span>
-                <strong className="text-xs text-white block font-bold">Cashier Verification</strong>
+                <strong className="text-xs text-white block font-bold">Manager Payment Verification</strong>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Abubakar Garba verifies 100% upfront settlement (₦6,510,000 per trailer, ₦0 delivery fee) into company accounts. No credit.
+                  Engr. Sanusi Kalambaina verifies 100% upfront settlement (₦6,510,000 per trailer, ₦0 delivery fee) into company accounts. No credit.
                 </p>
               </div>
 
@@ -1032,7 +1032,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 1. Always include your <strong>Order Number (e.g. AAM-202610-XXXX)</strong> as the transaction description or payment reference.
               </p>
               <p>
-                2. After completing your transfer, navigate to <strong className="text-white">"My Orders"</strong> and click <strong className="text-emerald-400">"Submit Payment Reference"</strong> so Abubakar Garba (Cashier) can immediately verify and reconcile your funds.
+                2. After completing your transfer, navigate to <strong className="text-white">"My Orders"</strong> and click <strong className="text-emerald-400">"Submit Payment Reference"</strong> so our Manager can immediately verify and reconcile your funds.
               </p>
             </div>
           </div>

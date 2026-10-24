@@ -4,8 +4,8 @@ import { authenticate, requireRole, type AuthenticatedRequest } from '../middlew
 
 const router = Router();
 
-// GET /api/reports/analytics (Admin, Store Manager, Cashier)
-router.get('/analytics', authenticate, requireRole('ADMIN', 'MANAGER', 'ASSISTANT_MANAGER', 'STORE_MANAGER', 'CASHIER'), (_req, res) => {
+// GET /api/reports/analytics (Admin, Manager, Assistant Manager)
+router.get('/analytics', authenticate, requireRole('ADMIN', 'MANAGER', 'ASSISTANT_MANAGER', 'STORE_MANAGER'), (_req, res) => {
   const stockMetrics = db.getAuthoritativeMetrics();
   const orders = db.getAllOrders();
   const payments = db.getAllPayments();

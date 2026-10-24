@@ -75,6 +75,8 @@ export const apiAuth = {
     fullName: string;
     phone: string;
     companyName?: string;
+    officeAddress?: string;
+    homeAddress?: string;
     address?: string;
     city?: string;
     state?: string;

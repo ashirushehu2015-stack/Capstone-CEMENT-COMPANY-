@@ -62,7 +62,7 @@ const adjustStockSchema = z.object({
 router.get(
   '/dashboard-metrics',
   authenticate,
-  requireRole('ADMIN', 'MANAGER', 'ASSISTANT_MANAGER', 'STORE_MANAGER', 'CASHIER'),
+  requireRole('ADMIN', 'MANAGER', 'ASSISTANT_MANAGER', 'STORE_MANAGER'),
   (_req, res) => {
     try {
       const metrics = db.getStockDashboardMetrics();
@@ -303,7 +303,7 @@ router.post(
 router.get(
   '/movements',
   authenticate,
-  requireRole('ADMIN', 'MANAGER', 'ASSISTANT_MANAGER', 'STORE_MANAGER', 'SALES_OFFICER', 'CASHIER', 'AGENT', 'DELIVERY_OFFICER'),
+  requireRole('ADMIN', 'MANAGER', 'ASSISTANT_MANAGER', 'STORE_MANAGER', 'SALES_OFFICER', 'AGENT', 'DELIVERY_OFFICER'),
   (_req, res) => {
     const movements = db.getAllStockMovements();
     return res.json({ success: true, movements });
@@ -314,7 +314,7 @@ router.get(
 router.get(
   '/stock-summary',
   authenticate,
-  requireRole('ADMIN', 'MANAGER', 'ASSISTANT_MANAGER', 'STORE_MANAGER', 'SALES_OFFICER', 'CASHIER', 'AGENT'),
+  requireRole('ADMIN', 'MANAGER', 'ASSISTANT_MANAGER', 'STORE_MANAGER', 'SALES_OFFICER', 'AGENT'),
   (_req, res) => {
     const products = db.getAllProducts();
     const summary = products.map((p) => ({

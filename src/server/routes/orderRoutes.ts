@@ -264,8 +264,8 @@ router.post('/:id/reject-manager', authenticate, requireRole('MANAGER', 'ADMIN',
   }
 });
 
-// POST /api/orders/:id/record-payment (Record 100% Full Payment - Section 1 & 6: Cashier or Manager)
-router.post('/:id/record-payment', authenticate, requireRole('CASHIER', 'MANAGER', 'ADMIN'), (req: AuthenticatedRequest, res) => {
+// POST /api/orders/:id/record-payment (Record 100% Full Payment - Section 1 & 6: Manager or Admin)
+router.post('/:id/record-payment', authenticate, requireRole('MANAGER', 'ADMIN'), (req: AuthenticatedRequest, res) => {
   const { amount, paymentMethod, referenceNumber, payerName, destinationAccount, notes } = req.body;
   if (!amount || typeof amount !== 'number') {
     return res.status(400).json({ success: false, error: 'Valid payment amount is required.' });

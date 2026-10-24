@@ -45,7 +45,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     ADMIN: 'bg-rose-900/40 text-rose-300 border-rose-700/50',
     STORE_MANAGER: 'bg-amber-900/40 text-amber-300 border-amber-700/50',
     SALES_OFFICER: 'bg-emerald-900/40 text-emerald-300 border-emerald-700/50',
-    CASHIER: 'bg-blue-900/40 text-blue-300 border-blue-700/50',
     DELIVERY_OFFICER: 'bg-orange-900/40 text-orange-300 border-orange-700/50',
     CUSTOMER: 'bg-slate-800 text-slate-300 border-slate-700',
   };
@@ -182,7 +181,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </p>
                   </div>
                   <div className="py-1 space-y-1">
-                    {(['MANAGER', 'ASSISTANT_MANAGER', 'CASHIER', 'AGENT', 'CUSTOMER'] as UserRole[]).map((r) => {
+                    {(['MANAGER', 'ASSISTANT_MANAGER', 'AGENT', 'CUSTOMER'] as UserRole[]).map((r) => {
                       const acc = DEMO_ACCOUNTS[r];
                       const isCurrent = user?.role === r;
                       return (

@@ -152,7 +152,6 @@ class DatabaseEngine {
     const adminPass = hashPassword('Admin123!');
     const managerPass = hashPassword('Manager123!');
     const asstManagerPass = hashPassword('AsstManager123!');
-    const cashierPass = hashPassword('Cashier123!');
     const agentPass = hashPassword('Agent123!');
     const buyerPass = hashPassword('Buyer123!');
 
@@ -225,19 +224,6 @@ class DatabaseEngine {
         passwordSalt: agentPass.salt,
       },
       {
-        id: 'usr_cashier_001',
-        email: 'cashier@aamaster.ng',
-        fullName: 'Abubakar Garba (Chief Cashier & Treasury)',
-        phone: '+234 809 444 5566',
-        role: 'CASHIER',
-        isActive: true,
-        companyName: 'A.A. Master Nig. Limited',
-        createdAt: now,
-        updatedAt: now,
-        passwordHash: cashierPass.hash,
-        passwordSalt: cashierPass.salt,
-      },
-      {
         id: 'usr_cust_001',
         email: 'buyer@aamaster.ng',
         fullName: 'Alhaji Mukhtar Dan-Kano',
@@ -245,7 +231,9 @@ class DatabaseEngine {
         role: 'CUSTOMER',
         isActive: true,
         companyName: 'Dan-Kano Mega Estates Ltd',
-        address: 'Plot 45, Western Bypass Commercial Estate, Kano',
+        officeAddress: 'Suite 4B, Dan-Kano Commercial Plaza, Zoo Road, Kano',
+        homeAddress: 'Plot 45, Western Bypass Residential Estate, Kano',
+        address: 'Suite 4B, Dan-Kano Commercial Plaza, Zoo Road, Kano',
         city: 'Kano',
         state: 'Kano',
         createdAt: now,
@@ -606,15 +594,15 @@ class DatabaseEngine {
           updatedByUserId: 'usr_mgr_001',
           updatedByName: 'Engr. Sanusi Kalambaina',
           role: 'MANAGER',
-          notes: 'Order approved by Manager. Stock reserved. Awaiting 100% full payment of ₦13,900,000.',
+          notes: 'Order approved by Manager. Stock reserved. Awaiting 100% full payment of ₦13,020,000.',
         },
         {
           status: 'PAID',
           timestamp: new Date(Date.now() - 10 * 3600 * 1000).toISOString(),
-          updatedByUserId: 'usr_cashier_001',
-          updatedByName: 'Abubakar Garba',
-          role: 'CASHIER',
-          notes: 'Verified 100% full wire transfer of ₦13,900,000 into Zenith Bank. Order released to Agent for issuance.',
+          updatedByUserId: 'usr_mgr_001',
+          updatedByName: 'Engr. Sanusi Kalambaina',
+          role: 'MANAGER',
+          notes: 'Verified 100% full wire transfer of ₦13,020,000 into Zenith Bank. Order released to Agent for issuance.',
         },
         {
           status: 'PARTIALLY_ISSUED',
@@ -643,8 +631,8 @@ class DatabaseEngine {
         bankTransferReference: 'ZEN-TX-98402914',
         bankPayerName: 'Dan-Kano Mega Estates Ltd',
         destinationAccount: 'Zenith Bank - 1018492049',
-        verifiedByStaffId: 'usr_cashier_001',
-        verifiedByStaffName: 'Abubakar Garba',
+        verifiedByStaffId: 'usr_mgr_001',
+        verifiedByStaffName: 'Engr. Sanusi Kalambaina',
         verificationNotes: 'Reconciled in bank portal; 100% full value confirmed. No partial balance.',
         verifiedAt: new Date(Date.now() - 10 * 3600 * 1000).toISOString(),
         createdAt: new Date(Date.now() - 11 * 3600 * 1000).toISOString(),
@@ -2308,7 +2296,7 @@ class DatabaseEngine {
           amount: FIXED_PRICE_PER_TRUCK, // ₦6,510,000
           paymentMethod: 'BANK_TRANSFER',
           referenceNumber: 'PARTIAL-PAY-TEST',
-          user: { id: 'usr_cashier_001', name: 'Abubakar Garba', role: 'CASHIER' },
+          user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
         });
       } catch (err: any) {
         partPaymentBlocked = err.message.includes('Partial payment rejected');
@@ -2373,7 +2361,7 @@ class DatabaseEngine {
         amount: order.totalAmount, // 100% full payment
         paymentMethod: 'BANK_TRANSFER',
         referenceNumber: 'FULL-PAY-TEST-14',
-        user: { id: 'usr_cashier_001', name: 'Abubakar Garba', role: 'CASHIER' },
+        user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
       });
 
       const { allocation, movement } = this.issueTruckByAgent({
