@@ -117,6 +117,32 @@ export const apiAuth = {
       body: JSON.stringify(staffData),
     });
   },
+
+  updateStaff: async (id: string, data: { fullName?: string; phone?: string; role?: UserRole; isActive?: boolean }) => {
+    return request<{ success: boolean; staff: User; message: string }>(`/api/auth/staff/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  toggleStaffStatus: async (id: string) => {
+    return request<{ success: boolean; staff: User; message: string }>(`/api/auth/staff/${id}/toggle-status`, {
+      method: 'PATCH',
+    });
+  },
+
+  resetStaffPassword: async (id: string, password?: string) => {
+    return request<{ success: boolean; temporaryPassword?: string; message: string }>(`/api/auth/staff/${id}/reset-password`, {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    });
+  },
+
+  deleteStaff: async (id: string) => {
+    return request<{ success: boolean; message: string }>(`/api/auth/staff/${id}`, {
+      method: 'DELETE',
+    });
+  },
 };
 
 // --- Products Endpoints ---

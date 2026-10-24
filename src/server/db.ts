@@ -737,6 +737,23 @@ class DatabaseEngine {
     return sanitized;
   }
 
+  public updateUser(id: string, updates: Partial<DBUser>): User | undefined {
+    const user = this.data.users.find((u) => u.id === id);
+    if (!user) return undefined;
+    Object.assign(user, updates, { updatedAt: new Date().toISOString() });
+    this.save();
+    const { passwordHash, passwordSalt, ...sanitized } = user;
+    return sanitized;
+  }
+
+  public deleteUser(id: string): boolean {
+    const index = this.data.users.findIndex((u) => u.id === id);
+    if (index === -1) return false;
+    this.data.users.splice(index, 1);
+    this.save();
+    return true;
+  }
+
   public ensureUserFromSession(session: {
     userId: string;
     email: string;

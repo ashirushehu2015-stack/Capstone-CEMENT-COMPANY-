@@ -21,7 +21,22 @@ import {
   Check,
   X,
   Loader2,
-  DollarSign
+  DollarSign,
+  Edit3,
+  KeyRound,
+  UserCheck,
+  UserX,
+  Trash2,
+  Copy,
+  Shield,
+  Lock,
+  Phone,
+  Mail,
+  Filter,
+  ExternalLink,
+  ChevronRight,
+  UserPlus,
+  Info
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.tsx';
 import {
@@ -58,7 +73,7 @@ interface StaffDashboardProps {
 }
 
 export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewOrderReceipt }) => {
-  const { user, isAdmin, isManager, isAssistantManager, isAgent, isStoreManager, isSalesOfficer, isDeliveryOfficer } = useAuth();
+  const { user, isAdmin, isManager, isAssistantManager, isAgent, isStoreManager, isSalesOfficer, isDeliveryOfficer, switchUserRoleDemo } = useAuth();
 
   // Active Tab
   type TabType =
@@ -161,8 +176,34 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
     password: '',
     fullName: '',
     phone: '',
-    role: 'SALES_OFFICER' as UserRole,
+    role: 'ASSISTANT_MANAGER' as UserRole,
   });
+
+  // Staff & RBAC Accounts Module States
+  const [staffSubTab, setStaffSubTab] = useState<'directory' | 'matrix' | 'protocols'>('directory');
+  const [staffSearchQuery, setStaffSearchQuery] = useState('');
+  const [staffRoleFilter, setStaffRoleFilter] = useState<string>('ALL');
+  const [staffStatusFilter, setStaffStatusFilter] = useState<'ALL' | 'ACTIVE' | 'SUSPENDED'>('ALL');
+
+  const [editingStaff, setEditingStaff] = useState<User | null>(null);
+  const [editStaffForm, setEditStaffForm] = useState<{
+    fullName: string;
+    phone: string;
+    role: UserRole;
+    isActive: boolean;
+  }>({
+    fullName: '',
+    phone: '',
+    role: 'MANAGER',
+    isActive: true,
+  });
+
+  const [resetPasswordTarget, setResetPasswordTarget] = useState<User | null>(null);
+  const [customPasswordInput, setCustomPasswordInput] = useState('');
+  const [generatedTempPassword, setGeneratedTempPassword] = useState<string | null>(null);
+
+  const [deleteStaffTarget, setDeleteStaffTarget] = useState<User | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -352,9 +393,73 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
       await apiAuth.createStaff(newStaffForm);
       showNotification('success', `New staff account created: ${newStaffForm.fullName}`);
       setShowCreateStaffModal(false);
+      setNewStaffForm({
+        email: '',
+        password: '',
+        fullName: '',
+        phone: '',
+        role: 'ASSISTANT_MANAGER',
+      });
       loadAllData();
     } catch (err: any) {
       showNotification('error', err.message || 'Failed to create staff');
+    }
+  };
+
+  const handleUpdateStaff = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingStaff) return;
+    try {
+      await apiAuth.updateStaff(editingStaff.id, editStaffForm);
+      showNotification('success', `Staff member ${editStaffForm.fullName} profile updated!`);
+      setEditingStaff(null);
+      loadAllData();
+    } catch (err: any) {
+      showNotification('error', err.message || 'Failed to update staff');
+    }
+  };
+
+  const handleToggleStaffStatus = async (targetStaff: User) => {
+    try {
+      const res = await apiAuth.toggleStaffStatus(targetStaff.id);
+      showNotification('success', res.message || `Status updated for ${targetStaff.fullName}`);
+      loadAllData();
+    } catch (err: any) {
+      showNotification('error', err.message || 'Failed to update account status');
+    }
+  };
+
+  const handleResetStaffPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetPasswordTarget) return;
+    try {
+      const res = await apiAuth.resetStaffPassword(resetPasswordTarget.id, customPasswordInput || undefined);
+      setGeneratedTempPassword(res.temporaryPassword || customPasswordInput || 'Password updated');
+      showNotification('success', `Password successfully updated for ${resetPasswordTarget.fullName}!`);
+      loadAllData();
+    } catch (err: any) {
+      showNotification('error', err.message || 'Failed to reset password');
+    }
+  };
+
+  const handleDeleteStaff = async () => {
+    if (!deleteStaffTarget) return;
+    try {
+      await apiAuth.deleteStaff(deleteStaffTarget.id);
+      showNotification('success', `Staff account for ${deleteStaffTarget.fullName} deleted.`);
+      setDeleteStaffTarget(null);
+      loadAllData();
+    } catch (err: any) {
+      showNotification('error', err.message || 'Failed to remove staff member');
+    }
+  };
+
+  const handleSwitchToStaffDemo = async (role: UserRole, staffName: string) => {
+    try {
+      await switchUserRoleDemo(role);
+      showNotification('success', `Switched operator context to ${staffName} (${role})`);
+    } catch {
+      showNotification('error', `Failed to authenticate into role ${role}`);
     }
   };
 
@@ -1249,54 +1354,738 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
             </div>
           )}
 
-          {/* TAB 7: STAFF MANAGEMENT (ADMIN ONLY) */}
-          {activeTab === 'staff' && isAdmin && (
+          {/* TAB 7: STAFF & RBAC ACCOUNTS (ADMIN & MANAGER) */}
+          {activeTab === 'staff' && (isAdmin || isManager) && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-white">Staff Accounts & RBAC Directory</h2>
-                  <p className="text-xs text-slate-400">Manage plant managers, assistant managers, and issuing agents</p>
+              {/* Executive Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-[#0a1836] to-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                      <Shield className="w-3 h-3" /> KALAMBAINA PLANT RBAC DIRECTORY
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Policy Active
+                    </span>
+                  </div>
+                  <h2 className="text-xl font-black text-white flex items-center gap-2">
+                    <Users className="w-6 h-6 text-amber-400" /> Staff &amp; RBAC Accounts
+                  </h2>
+                  <p className="text-xs text-slate-300 max-w-2xl">
+                    Authorized identity directory, operational role assignments, credentials governance, and strict separation of duties across A.A. Master Nig. Limited.
+                  </p>
                 </div>
+                <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                  <button
+                    onClick={loadAllData}
+                    className="p-2.5 rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
+                    title="Refresh Personnel Directory"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setNewStaffForm({
+                        email: '',
+                        password: '',
+                        fullName: '',
+                        phone: '',
+                        role: 'ASSISTANT_MANAGER',
+                      });
+                      setShowCreateStaffModal(true);
+                    }}
+                    className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-black px-4 py-2.5 rounded-2xl flex items-center gap-2 transition-all shadow-lg shadow-amber-600/20 active:scale-95"
+                  >
+                    <UserPlus className="w-4 h-4" /> Provision Staff Account
+                  </button>
+                </div>
+              </div>
+
+              {/* 4 Summary Metric Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                    <span>Total Personnel</span>
+                    <Users className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <div className="text-2xl font-black text-white font-mono">
+                    {staffList.length}
+                  </div>
+                  <div className="text-[10px] text-emerald-400 font-semibold mt-1">
+                    {staffList.filter((s) => s.isActive).length} Active • {staffList.filter((s) => !s.isActive).length} Suspended
+                  </div>
+                </div>
+
+                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                    <span>Operational Roles</span>
+                    <ShieldCheck className="w-4 h-4 text-purple-400" />
+                  </div>
+                  <div className="text-2xl font-black text-white font-mono">
+                    3
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-1">
+                    Manager, Asst. Mgr, Issuing Agent
+                  </div>
+                </div>
+
+                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                    <span>Executive Directorate</span>
+                    <KeyRound className="w-4 h-4 text-amber-400" />
+                  </div>
+                  <div className="text-2xl font-black text-white font-mono">
+                    {staffList.filter((s) => s.role === 'ADMIN').length}
+                  </div>
+                  <div className="text-[10px] text-amber-400/90 mt-1">
+                    Full System Administration
+                  </div>
+                </div>
+
+                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                    <span>Cashier Desk</span>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <div className="text-sm font-black text-emerald-400 mt-1">
+                    Excluded By Policy
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-1">
+                    Manager reconciles wire directly
+                  </div>
+                </div>
+              </div>
+
+              {/* Sub-Tabs: Directory vs RBAC Matrix vs Operational Directives */}
+              <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
                 <button
-                  onClick={() => setShowCreateStaffModal(true)}
-                  className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition-colors shadow-md"
+                  type="button"
+                  onClick={() => setStaffSubTab('directory')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                    staffSubTab === 'directory'
+                      ? 'bg-amber-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                  }`}
                 >
-                  <Plus className="w-4 h-4" /> Add Staff Member
+                  <Users className="w-3.5 h-3.5" /> Personnel Directory ({staffList.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStaffSubTab('matrix')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                    staffSubTab === 'matrix'
+                      ? 'bg-amber-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                  }`}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" /> Role &amp; Permission Matrix (RBAC)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStaffSubTab('protocols')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                    staffSubTab === 'protocols'
+                      ? 'bg-amber-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                  }`}
+                >
+                  <FileText className="w-3.5 h-3.5" /> Kalambaina Plant Protocols
                 </button>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-950 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800">
-                    <tr>
-                      <th className="p-3.5">Name</th>
-                      <th className="p-3.5">Email</th>
-                      <th className="p-3.5">Phone</th>
-                      <th className="p-3.5">Assigned Role</th>
-                      <th className="p-3.5">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800">
-                    {staffList.map((s) => (
-                      <tr key={s.id} className="hover:bg-slate-800/40">
-                        <td className="p-3.5 font-bold text-white">{s.fullName}</td>
-                        <td className="p-3.5 text-slate-400 font-mono">{s.email}</td>
-                        <td className="p-3.5 text-slate-300">{s.phone}</td>
-                        <td className="p-3.5">
-                          <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold text-[11px]">
-                            {s.role}
-                          </span>
-                        </td>
-                        <td className="p-3.5">
-                          <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 text-[10px] font-bold">
-                            Active
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {/* SUBTAB 1: PERSONNEL DIRECTORY */}
+              {staffSubTab === 'directory' && (
+                <div className="space-y-4">
+                  {/* Filter and Search Bar */}
+                  <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                    <div className="relative flex-1">
+                      <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={staffSearchQuery}
+                        onChange={(e) => setStaffSearchQuery(e.target.value)}
+                        placeholder="Search personnel by name, email, phone number, or role..."
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                      />
+                      {staffSearchQuery && (
+                        <button
+                          onClick={() => setStaffSearchQuery('')}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1">
+                        <Filter className="w-3.5 h-3.5 text-slate-400" />
+                        <select
+                          value={staffRoleFilter}
+                          onChange={(e) => setStaffRoleFilter(e.target.value)}
+                          className="bg-transparent text-xs text-slate-300 font-semibold focus:outline-none cursor-pointer"
+                        >
+                          <option value="ALL">All Roles</option>
+                          <option value="MANAGER">Manager</option>
+                          <option value="ASSISTANT_MANAGER">Assistant Manager</option>
+                          <option value="AGENT">Issuing Agent</option>
+                          <option value="ADMIN">Executive Administrator</option>
+                        </select>
+                      </div>
+
+                      <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1">
+                        <select
+                          value={staffStatusFilter}
+                          onChange={(e) => setStaffStatusFilter(e.target.value as any)}
+                          className="bg-transparent text-xs text-slate-300 font-semibold focus:outline-none cursor-pointer"
+                        >
+                          <option value="ALL">All Statuses</option>
+                          <option value="ACTIVE">Active Only</option>
+                          <option value="SUSPENDED">Suspended Only</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Staff Table */}
+                  <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
+                    {staffList.filter((s) => {
+                      const matchesSearch =
+                        !staffSearchQuery.trim() ||
+                        s.fullName.toLowerCase().includes(staffSearchQuery.toLowerCase()) ||
+                        s.email.toLowerCase().includes(staffSearchQuery.toLowerCase()) ||
+                        s.phone.toLowerCase().includes(staffSearchQuery.toLowerCase()) ||
+                        s.role.toLowerCase().includes(staffSearchQuery.toLowerCase());
+
+                      const matchesRole =
+                        staffRoleFilter === 'ALL' ||
+                        s.role === staffRoleFilter ||
+                        (staffRoleFilter === 'MANAGER' && (s.role === 'MANAGER' || s.role === 'STORE_MANAGER')) ||
+                        (staffRoleFilter === 'ASSISTANT_MANAGER' && (s.role === 'ASSISTANT_MANAGER' || s.role === 'SALES_OFFICER')) ||
+                        (staffRoleFilter === 'AGENT' && (s.role === 'AGENT' || s.role === 'DELIVERY_OFFICER'));
+
+                      const matchesStatus =
+                        staffStatusFilter === 'ALL' ||
+                        (staffStatusFilter === 'ACTIVE' && s.isActive) ||
+                        (staffStatusFilter === 'SUSPENDED' && !s.isActive);
+
+                      return matchesSearch && matchesRole && matchesStatus;
+                    }).length === 0 ? (
+                      <div className="p-8 text-center space-y-2">
+                        <Users className="w-8 h-8 text-slate-600 mx-auto" />
+                        <h4 className="text-sm font-bold text-slate-300">No personnel match your search criteria</h4>
+                        <p className="text-xs text-slate-500">Try adjusting your keyword or reset filters.</p>
+                        <button
+                          onClick={() => {
+                            setStaffSearchQuery('');
+                            setStaffRoleFilter('ALL');
+                            setStaffStatusFilter('ALL');
+                          }}
+                          className="text-xs text-amber-400 underline font-bold mt-2"
+                        >
+                          Clear all filters
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-950 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800">
+                            <tr>
+                              <th className="p-3.5">Personnel / Identity</th>
+                              <th className="p-3.5">Official Contact</th>
+                              <th className="p-3.5">Assigned Operational Role</th>
+                              <th className="p-3.5">Security Status</th>
+                              <th className="p-3.5 text-right">Actions &amp; RBAC Control</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-800">
+                            {staffList
+                              .filter((s) => {
+                                const matchesSearch =
+                                  !staffSearchQuery.trim() ||
+                                  s.fullName.toLowerCase().includes(staffSearchQuery.toLowerCase()) ||
+                                  s.email.toLowerCase().includes(staffSearchQuery.toLowerCase()) ||
+                                  s.phone.toLowerCase().includes(staffSearchQuery.toLowerCase()) ||
+                                  s.role.toLowerCase().includes(staffSearchQuery.toLowerCase());
+
+                                const matchesRole =
+                                  staffRoleFilter === 'ALL' ||
+                                  s.role === staffRoleFilter ||
+                                  (staffRoleFilter === 'MANAGER' && (s.role === 'MANAGER' || s.role === 'STORE_MANAGER')) ||
+                                  (staffRoleFilter === 'ASSISTANT_MANAGER' && (s.role === 'ASSISTANT_MANAGER' || s.role === 'SALES_OFFICER')) ||
+                                  (staffRoleFilter === 'AGENT' && (s.role === 'AGENT' || s.role === 'DELIVERY_OFFICER'));
+
+                                const matchesStatus =
+                                  staffStatusFilter === 'ALL' ||
+                                  (staffStatusFilter === 'ACTIVE' && s.isActive) ||
+                                  (staffStatusFilter === 'SUSPENDED' && !s.isActive);
+
+                                return matchesSearch && matchesRole && matchesStatus;
+                              })
+                              .map((s) => {
+                                const isCurrentUser = s.id === user?.id;
+                                const isSuperAdmin = s.email === 'ashirushehu2015@gmail.com' || s.id === 'usr_admin_001';
+
+                                return (
+                                  <tr key={s.id} className="hover:bg-slate-800/40 transition-colors">
+                                    {/* Personnel Name and Avatar */}
+                                    <td className="p-3.5">
+                                      <div className="flex items-center gap-3">
+                                        <div
+                                          className={`w-9 h-9 rounded-2xl flex items-center justify-center font-black text-xs shrink-0 shadow-inner ${
+                                            s.role === 'ADMIN'
+                                              ? 'bg-amber-600/20 text-amber-400 border border-amber-500/40'
+                                              : s.role === 'MANAGER' || s.role === 'STORE_MANAGER'
+                                              ? 'bg-blue-600/20 text-blue-400 border border-blue-500/40'
+                                              : s.role === 'ASSISTANT_MANAGER' || s.role === 'SALES_OFFICER'
+                                              ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/40'
+                                              : 'bg-teal-600/20 text-teal-400 border border-teal-500/40'
+                                          }`}
+                                        >
+                                          {s.fullName
+                                            .split(' ')
+                                            .map((p) => p[0])
+                                            .slice(0, 2)
+                                            .join('')
+                                            .toUpperCase()}
+                                        </div>
+                                        <div>
+                                          <div className="flex items-center gap-1.5 flex-wrap">
+                                            <strong className="text-white font-bold">{s.fullName}</strong>
+                                            {isCurrentUser && (
+                                              <span className="bg-amber-500/20 text-amber-300 text-[9px] font-black uppercase px-1.5 py-0.2 rounded border border-amber-500/30">
+                                                You
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className="flex items-center gap-1 text-[11px] text-slate-400 font-mono mt-0.5">
+                                            <span>{s.email}</span>
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                navigator.clipboard.writeText(s.email);
+                                                setCopiedId(`email_${s.id}`);
+                                                setTimeout(() => setCopiedId(null), 2000);
+                                              }}
+                                              title="Copy email address"
+                                              className="text-slate-500 hover:text-slate-300 transition-colors ml-1"
+                                            >
+                                              {copiedId === `email_${s.id}` ? (
+                                                <Check className="w-3 h-3 text-emerald-400" />
+                                              ) : (
+                                                <Copy className="w-3 h-3" />
+                                              )}
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </td>
+
+                                    {/* Phone */}
+                                    <td className="p-3.5">
+                                      <div className="flex items-center gap-1 text-slate-300 font-mono text-[11px]">
+                                        <Phone className="w-3 h-3 text-slate-500 shrink-0" />
+                                        <span>{s.phone}</span>
+                                      </div>
+                                    </td>
+
+                                    {/* Role Badge */}
+                                    <td className="p-3.5">
+                                      {s.role === 'ADMIN' && (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold text-[11px]">
+                                          <KeyRound className="w-3 h-3" /> Executive Administrator
+                                        </span>
+                                      )}
+                                      {(s.role === 'MANAGER' || s.role === 'STORE_MANAGER') && (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/30 font-bold text-[11px]">
+                                          <ShieldCheck className="w-3 h-3" /> 1. Depot Manager (Approval)
+                                        </span>
+                                      )}
+                                      {(s.role === 'ASSISTANT_MANAGER' || s.role === 'SALES_OFFICER') && (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 font-bold text-[11px]">
+                                          <FileText className="w-3 h-3" /> 2. Assistant Manager (Queue)
+                                        </span>
+                                      )}
+                                      {(s.role === 'AGENT' || s.role === 'DELIVERY_OFFICER') && (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/30 font-bold text-[11px]">
+                                          <Truck className="w-3 h-3" /> 3. Issuing Agent (Plant Site)
+                                        </span>
+                                      )}
+                                    </td>
+
+                                    {/* Status */}
+                                    <td className="p-3.5">
+                                      {s.isActive ? (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-800 text-[10px] font-bold">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                          Operational
+                                        </span>
+                                      ) : (
+                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-950/80 text-rose-300 border border-rose-800 text-[10px] font-bold">
+                                          <UserX className="w-3 h-3" /> Suspended
+                                        </span>
+                                      )}
+                                    </td>
+
+                                    {/* Actions */}
+                                    <td className="p-3.5 text-right">
+                                      <div className="flex items-center justify-end gap-1.5">
+                                        {/* Switch Demo Context button */}
+                                        <button
+                                          type="button"
+                                          onClick={() => handleSwitchToStaffDemo(s.role, s.fullName)}
+                                          title={`Test active UI as ${s.fullName} (${s.role})`}
+                                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors flex items-center gap-1 text-[10px] font-bold"
+                                        >
+                                          <ExternalLink className="w-3 h-3 text-amber-400" />
+                                          <span className="hidden lg:inline">Test Role</span>
+                                        </button>
+
+                                        {/* Edit Profile button */}
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setEditingStaff(s);
+                                            setEditStaffForm({
+                                              fullName: s.fullName,
+                                              phone: s.phone,
+                                              role: s.role,
+                                              isActive: s.isActive,
+                                            });
+                                          }}
+                                          title="Edit Staff Member"
+                                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-blue-600/30 text-slate-300 hover:text-blue-300 border border-slate-700 transition-colors"
+                                        >
+                                          <Edit3 className="w-3.5 h-3.5" />
+                                        </button>
+
+                                        {/* Reset Password button */}
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setResetPasswordTarget(s);
+                                            setCustomPasswordInput('');
+                                            setGeneratedTempPassword(null);
+                                          }}
+                                          title="Reset Credentials"
+                                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-amber-600/30 text-slate-300 hover:text-amber-300 border border-slate-700 transition-colors"
+                                        >
+                                          <KeyRound className="w-3.5 h-3.5" />
+                                        </button>
+
+                                        {/* Toggle Active / Suspended */}
+                                        {!isSuperAdmin && !isCurrentUser && (
+                                          <button
+                                            type="button"
+                                            onClick={() => handleToggleStaffStatus(s)}
+                                            title={s.isActive ? 'Suspend account access' : 'Activate account access'}
+                                            className={`p-1.5 rounded-lg border transition-colors ${
+                                              s.isActive
+                                                ? 'bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-400 border-slate-700 hover:border-rose-800'
+                                                : 'bg-emerald-950 hover:bg-emerald-900 text-emerald-400 border-emerald-800'
+                                            }`}
+                                          >
+                                            {s.isActive ? <UserX className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
+                                          </button>
+                                        )}
+
+                                        {/* Delete Staff Member */}
+                                        {!isSuperAdmin && !isCurrentUser && (
+                                          <button
+                                            type="button"
+                                            onClick={() => setDeleteStaffTarget(s)}
+                                            title="Delete Staff Account"
+                                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/50 text-slate-400 hover:text-rose-400 border border-slate-700 transition-colors"
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* SUBTAB 2: ROLE & PERMISSION MATRIX (RBAC) */}
+              {staffSubTab === 'matrix' && (
+                <div className="space-y-4">
+                  <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-2">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-5 h-5 text-amber-400" />
+                      <h3 className="text-base font-bold text-white">
+                        Kalambaina Plant Role-Based Access Control (RBAC) Authority Matrix
+                      </h3>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      Formal delegation of authority for A.A. Master Nig. Limited wholesale operations. Built on the principle of least privilege to prevent inventory discrepancy and safeguard multi-million Naira trailer loads (₦6,510,000 per 30T truck).
+                    </p>
+                  </div>
+
+                  {/* Matrix Comparison Table */}
+                  <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-950 text-slate-300 font-bold uppercase tracking-wider border-b border-slate-800">
+                        <tr>
+                          <th className="p-3.5 w-1/3">System Operational Function</th>
+                          <th className="p-3.5 text-center bg-blue-950/20 text-blue-300">
+                            1. Manager
+                            <span className="block text-[10px] text-slate-400 font-normal">Sanusi Kalambaina</span>
+                          </th>
+                          <th className="p-3.5 text-center bg-indigo-950/20 text-indigo-300">
+                            2. Asst. Manager
+                            <span className="block text-[10px] text-slate-400 font-normal">Fatima Aliyu</span>
+                          </th>
+                          <th className="p-3.5 text-center bg-teal-950/20 text-teal-300">
+                            3. Issuing Agent
+                            <span className="block text-[10px] text-slate-400 font-normal">Haruna Danladi</span>
+                          </th>
+                          <th className="p-3.5 text-center bg-amber-950/20 text-amber-300">
+                            Administrator
+                            <span className="block text-[10px] text-slate-400 font-normal">MD / Principal</span>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800 text-[11px]">
+                        <tr className="hover:bg-slate-800/30">
+                          <td className="p-3 font-semibold text-white">
+                            Customer Wholesale Order Review &amp; Approval
+                          </td>
+                          <td className="p-3 text-center bg-blue-950/10 font-bold text-emerald-400">
+                            ✅ Full Approval Authority
+                          </td>
+                          <td className="p-3 text-center bg-indigo-950/10 font-bold text-amber-400">
+                            ⚠️ Queue Review Only
+                          </td>
+                          <td className="p-3 text-center bg-teal-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-amber-950/10 font-bold text-emerald-400">
+                            ✅ Full Authority
+                          </td>
+                        </tr>
+
+                        <tr className="hover:bg-slate-800/30">
+                          <td className="p-3 font-semibold text-white">
+                            100% Upfront Payment Reconciliation &amp; Verification
+                          </td>
+                          <td className="p-3 text-center bg-blue-950/10 font-bold text-emerald-400">
+                            ✅ Primary Treasury Authority
+                          </td>
+                          <td className="p-3 text-center bg-indigo-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-teal-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-amber-950/10 font-bold text-emerald-400">
+                            ✅ Full Authority
+                          </td>
+                        </tr>
+
+                        <tr className="hover:bg-slate-800/30">
+                          <td className="p-3 font-semibold text-white">
+                            Plant Stock Intake &amp; Waybill Recording (Section 2)
+                          </td>
+                          <td className="p-3 text-center bg-blue-950/10 font-bold text-blue-400">
+                            👁️ Oversight &amp; Audit
+                          </td>
+                          <td className="p-3 text-center bg-indigo-950/10 font-bold text-emerald-400">
+                            ✅ Primary Entry Officer
+                          </td>
+                          <td className="p-3 text-center bg-teal-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-amber-950/10 font-bold text-emerald-400">
+                            ✅ Full Authority
+                          </td>
+                        </tr>
+
+                        <tr className="hover:bg-slate-800/30">
+                          <td className="p-3 font-semibold text-white">
+                            Physical Articulated Truck Loading (600 Bags / 30T)
+                          </td>
+                          <td className="p-3 text-center bg-blue-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-indigo-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-teal-950/10 font-bold text-emerald-400">
+                            ✅ Exclusive Plant Site Authority
+                          </td>
+                          <td className="p-3 text-center bg-amber-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                        </tr>
+
+                        <tr className="hover:bg-slate-800/30">
+                          <td className="p-3 font-semibold text-white">
+                            Truck Tractor &amp; Trailer Bed Number Verification
+                          </td>
+                          <td className="p-3 text-center bg-blue-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-indigo-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-teal-950/10 font-bold text-emerald-400">
+                            ✅ Mandatory Plant Gate Check
+                          </td>
+                          <td className="p-3 text-center bg-amber-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                        </tr>
+
+                        <tr className="hover:bg-slate-800/30">
+                          <td className="p-3 font-semibold text-white">
+                            Driver Credentials &amp; Recipient Signature Sign-Off
+                          </td>
+                          <td className="p-3 text-center bg-blue-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-indigo-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-teal-950/10 font-bold text-emerald-400">
+                            ✅ Official Dispatch Release
+                          </td>
+                          <td className="p-3 text-center bg-amber-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                        </tr>
+
+                        <tr className="hover:bg-slate-800/30">
+                          <td className="p-3 font-semibold text-white">
+                            Staff RBAC Provisioning &amp; Password Resets
+                          </td>
+                          <td className="p-3 text-center bg-blue-950/10 font-bold text-emerald-400">
+                            ✅ Authorized
+                          </td>
+                          <td className="p-3 text-center bg-indigo-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-teal-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-amber-950/10 font-bold text-emerald-400">
+                            ✅ Full Authority
+                          </td>
+                        </tr>
+
+                        <tr className="hover:bg-slate-800/30">
+                          <td className="p-3 font-semibold text-white">
+                            Immutable Security Audit Trail Oversight
+                          </td>
+                          <td className="p-3 text-center bg-blue-950/10 font-bold text-emerald-400">
+                            ✅ Audit Review
+                          </td>
+                          <td className="p-3 text-center bg-indigo-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-teal-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-amber-950/10 font-bold text-emerald-400">
+                            ✅ Full Governance
+                          </td>
+                        </tr>
+
+                        <tr className="hover:bg-slate-800/30">
+                          <td className="p-3 font-semibold text-white">
+                            Zenith Bank Treasury &amp; Regional Haulage Matrix
+                          </td>
+                          <td className="p-3 text-center bg-blue-950/10 font-bold text-amber-400">
+                            👁️ View Only
+                          </td>
+                          <td className="p-3 text-center bg-indigo-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-teal-950/10 text-slate-500">
+                            ❌ Prohibited
+                          </td>
+                          <td className="p-3 text-center bg-amber-950/10 font-bold text-emerald-400">
+                            ✅ Full Configuration
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Cashier Exclusion Policy Banner */}
+                  <div className="bg-emerald-950/30 border border-emerald-800/60 p-4 rounded-2xl flex items-start gap-3">
+                    <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                    <div className="text-xs space-y-1">
+                      <strong className="text-white block font-bold">
+                        Corporate Governance: Complete Elimination of the Cashier Role
+                      </strong>
+                      <p className="text-emerald-200/90 leading-relaxed">
+                        To protect company capital and prevent cash handling discrepancies, A.A. Master Nig. Limited operates with 100% upfront banking settlement. Wholesale buyers remit directly to Zenith Bank (Account: 1018492049), and verification is conducted by Engr. Sanusi Kalambaina (Plant Depot Manager) prior to physical loading by Haruna Danladi.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SUBTAB 3: KALAMBAINA PLANT PROTOCOLS */}
+              {staffSubTab === 'protocols' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                        <Shield className="w-4 h-4" />
+                      </div>
+                      <h4 className="text-sm font-bold text-white">1. Dual Control &amp; Separation of Duties</h4>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      No single staff member may simultaneously approve an order, verify funds, and dispatch stock. The Depot Manager approves and reconciles funds, while the physical Issuing Agent handles the loading bay, ensuring full tripartite checks.
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                        <Truck className="w-4 h-4" />
+                      </div>
+                      <h4 className="text-sm font-bold text-white">2. Articulated Trailer Standard (600 Bags)</h4>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      All factory allocations are strictly measured in 600-bag articulated trailers (30 metric tonnes). The Issuing Agent verifies that the tractor plate and trailer bed registration numbers match before stamping the gate pass.
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                        <DollarSign className="w-4 h-4" />
+                      </div>
+                      <h4 className="text-sm font-bold text-white">3. Zero Credit &amp; 100% Upfront Wire Rule</h4>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      Under Board directive, credit sales and partial payments are prohibited. Cement is released only after the Depot Manager validates verified Zenith Bank credit reference numbers.
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-amber-600/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                        <KeyRound className="w-4 h-4" />
+                      </div>
+                      <h4 className="text-sm font-bold text-white">4. Immutable Audit Trail &amp; Identity Tracking</h4>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      Every administrative sign-in, order approval, stock intake receipt, and truck issuance is time-stamped and bound to the staff member's ID in the system's tamper-evident audit ledger.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1780,72 +2569,108 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
           <div className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl space-y-4 text-xs">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Users className="w-5 h-5 text-amber-400" /> Create Staff Account
-              </h3>
-              <button onClick={() => setShowCreateStaffModal(false)} className="text-slate-400 hover:text-white">
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <UserPlus className="w-5 h-5 text-amber-400" /> Provision Staff Account
+                </h3>
+                <p className="text-[11px] text-slate-400">
+                  Assign official credentials for A.A. Master Nig. Limited operational staff.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCreateStaffModal(false)}
+                className="text-slate-400 hover:text-white"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleCreateStaff} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-400 block mb-1">Full Name</label>
+                  <label className="text-slate-400 block mb-1">Full Name *</label>
                   <input
                     type="text"
                     required
+                    placeholder="e.g. Ibrahim Aliyu"
                     value={newStaffForm.fullName}
                     onChange={(e) => setNewStaffForm({ ...newStaffForm, fullName: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold focus:outline-none focus:border-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-400 block mb-1">Assigned Role</label>
+                  <label className="text-slate-400 block mb-1">Operational Role *</label>
                   <select
                     value={newStaffForm.role}
                     onChange={(e) => setNewStaffForm({ ...newStaffForm, role: e.target.value as any })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold focus:outline-none focus:border-amber-500"
                   >
-                    <option value="MANAGER">Depot Manager</option>
-                    <option value="ASSISTANT_MANAGER">Assistant Manager</option>
-                    <option value="AGENT">Issuing Agent</option>
-                    <option value="ADMIN">System Administrator</option>
+                    <option value="MANAGER">1. Depot Manager (Approval &amp; Treasury)</option>
+                    <option value="ASSISTANT_MANAGER">2. Assistant Manager (Queue &amp; Stock Intake)</option>
+                    <option value="AGENT">3. Issuing Agent (Kalambaina Loading Bay)</option>
+                    <option value="ADMIN">Executive Administrator (Directorate)</option>
                   </select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-400 block mb-1">Email Address</label>
+                  <label className="text-slate-400 block mb-1">Official Email Address *</label>
                   <input
                     type="email"
                     required
+                    placeholder="staff@aamaster.ng"
                     value={newStaffForm.email}
                     onChange={(e) => setNewStaffForm({ ...newStaffForm, email: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-400 block mb-1">Phone Number</label>
+                  <label className="text-slate-400 block mb-1">Telephone Number *</label>
                   <input
                     type="tel"
                     required
+                    placeholder="+234 803 000 0000"
                     value={newStaffForm.phone}
                     onChange={(e) => setNewStaffForm({ ...newStaffForm, phone: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-slate-400 block mb-1">Password (min 6 characters)</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-slate-400">Password (min 6 characters) *</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const generated = 'AAMaster-' + Math.floor(100000 + Math.random() * 900000);
+                      setNewStaffForm({ ...newStaffForm, password: generated });
+                    }}
+                    className="text-[11px] text-amber-400 hover:text-amber-300 font-bold underline"
+                  >
+                    Generate Random Password
+                  </button>
+                </div>
                 <input
-                  type="password"
+                  type="text"
                   required
                   minLength={6}
                   value={newStaffForm.password}
                   onChange={(e) => setNewStaffForm({ ...newStaffForm, password: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
+                  placeholder="Enter secure initial password..."
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-amber-500"
                 />
               </div>
+
+              <div className="bg-slate-950/60 border border-slate-800 p-2.5 rounded-xl text-[11px] text-slate-400 space-y-1">
+                <span className="font-bold text-slate-300 block">RBAC Governance Note:</span>
+                <span>
+                  {newStaffForm.role === 'MANAGER' && 'Has exclusive authority to approve wholesale customer orders and reconcile 100% upfront wire transfers.'}
+                  {newStaffForm.role === 'ASSISTANT_MANAGER' && 'Authorized to review the wholesale order queue, check customer documents, and register factory stock intake (Section 2).'}
+                  {newStaffForm.role === 'AGENT' && 'Assigned to the Kalambaina Plant loading bay for physical vehicle bed checks, driver license verification, and 600-bag truck issuance.'}
+                  {newStaffForm.role === 'ADMIN' && 'Full executive access across all inventory lines, staff RBAC directory, pricing matrices, and immutable audit logs.'}
+                </span>
+              </div>
+
               <div className="pt-2 flex justify-end gap-2">
                 <button
                   type="button"
@@ -1856,12 +2681,258 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                 </button>
                 <button
                   type="submit"
-                  className="bg-amber-600 hover:bg-amber-500 text-white font-bold px-4 py-2 rounded-xl"
+                  className="bg-amber-600 hover:bg-amber-500 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-md active:scale-95"
                 >
                   Create Staff Account
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: EDIT STAFF MEMBER */}
+      {editingStaff && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl space-y-4 text-xs">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <Edit3 className="w-5 h-5 text-blue-400" /> Edit Personnel Profile
+                </h3>
+                <p className="text-[11px] text-slate-400 font-mono">{editingStaff.email}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingStaff(null)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateStaff} className="space-y-4">
+              <div>
+                <label className="text-slate-400 block mb-1 font-semibold">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={editStaffForm.fullName}
+                  onChange={(e) => setEditStaffForm({ ...editStaffForm, fullName: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-400 block mb-1 font-semibold">Telephone Number *</label>
+                <input
+                  type="tel"
+                  required
+                  value={editStaffForm.phone}
+                  onChange={(e) => setEditStaffForm({ ...editStaffForm, phone: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-400 block mb-1 font-semibold">Assigned Operational Role *</label>
+                <select
+                  value={editStaffForm.role}
+                  onChange={(e) => setEditStaffForm({ ...editStaffForm, role: e.target.value as any })}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold focus:outline-none focus:border-blue-500"
+                >
+                  <option value="MANAGER">1. Depot Manager (Approval &amp; Treasury)</option>
+                  <option value="ASSISTANT_MANAGER">2. Assistant Manager (Queue Review &amp; Stock Intake)</option>
+                  <option value="AGENT">3. Issuing Agent (Kalambaina Loading Bay)</option>
+                  <option value="ADMIN">Executive Administrator</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="editIsActive"
+                  checked={editStaffForm.isActive}
+                  onChange={(e) => setEditStaffForm({ ...editStaffForm, isActive: e.target.checked })}
+                  className="rounded border-slate-700 bg-slate-950 text-amber-500 focus:ring-0"
+                />
+                <label htmlFor="editIsActive" className="text-slate-300 font-semibold cursor-pointer">
+                  Account is Active and authorized for system operations
+                </label>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingStaff(null)}
+                  className="px-4 py-2 text-slate-400 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-md active:scale-95"
+                >
+                  Save Profile Updates
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: RESET PASSWORD */}
+      {resetPasswordTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl space-y-4 text-xs">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <KeyRound className="w-5 h-5 text-amber-400" /> Reset Staff Credentials
+                </h3>
+                <p className="text-[11px] text-slate-400">
+                  {resetPasswordTarget.fullName} ({resetPasswordTarget.email})
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setResetPasswordTarget(null)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {generatedTempPassword ? (
+              <div className="space-y-4">
+                <div className="bg-emerald-950/60 border border-emerald-800 p-4 rounded-2xl text-emerald-300 space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-bold text-emerald-200">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" /> Password Successfully Reset!
+                  </div>
+                  <p className="text-xs">
+                    Please provide the new temporary credentials to <strong>{resetPasswordTarget.fullName}</strong>:
+                  </p>
+                  <div className="flex items-center justify-between bg-slate-950 border border-slate-800 p-3 rounded-xl font-mono text-sm text-white">
+                    <span>{generatedTempPassword}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(generatedTempPassword);
+                        setCopiedId('temp_pass');
+                        setTimeout(() => setCopiedId(null), 2000);
+                      }}
+                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1"
+                    >
+                      {copiedId === 'temp_pass' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedId === 'temp_pass' ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setResetPasswordTarget(null)}
+                    className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2 rounded-xl"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleResetStaffPassword} className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-slate-400 font-semibold">New Password (or Leave Empty for Auto-Gen)</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const random = 'AAMaster-' + Math.floor(100000 + Math.random() * 900000);
+                        setCustomPasswordInput(random);
+                      }}
+                      className="text-[11px] text-amber-400 hover:text-amber-300 font-bold underline"
+                    >
+                      Auto-Generate
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Enter new password (min 6 characters)..."
+                    value={customPasswordInput}
+                    onChange={(e) => setCustomPasswordInput(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-amber-500"
+                  />
+                  <span className="text-[10px] text-slate-500 block mt-1">
+                    Clicking "Apply New Password" will update the salt hash and log this action in the security audit trail.
+                  </span>
+                </div>
+
+                <div className="pt-2 flex justify-end gap-2 border-t border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setResetPasswordTarget(null)}
+                    className="px-4 py-2 text-slate-400 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-amber-600 hover:bg-amber-500 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-md active:scale-95"
+                  >
+                    Apply New Password
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: DELETE STAFF CONFIRMATION */}
+      {deleteStaffTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 text-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-rose-600/20 border border-rose-500/30 flex items-center justify-center text-rose-500 shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Permanently Remove Staff Member?</h3>
+                <p className="text-[11px] text-slate-400">Action is irreversible but historical audit trail is preserved.</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Name:</span>
+                <strong className="text-white">{deleteStaffTarget.fullName}</strong>
+              </div>
+              <div className="flex justify-between font-mono">
+                <span className="text-slate-400">Email:</span>
+                <span className="text-slate-300">{deleteStaffTarget.email}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Assigned Role:</span>
+                <span className="text-amber-400 font-bold">{deleteStaffTarget.role}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteStaffTarget(null)}
+                className="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteStaff}
+                className="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95"
+              >
+                Confirm Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

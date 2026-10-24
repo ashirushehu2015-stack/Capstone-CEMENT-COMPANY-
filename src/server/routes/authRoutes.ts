@@ -179,4 +179,148 @@ router.post('/staff', authenticate, requireRole('ADMIN', 'MANAGER'), (req: Authe
   return res.status(201).json({ success: true, staff: newStaff, message: 'Staff account created successfully' });
 });
 
+// PUT /api/auth/staff/:id (Update Staff Profile & Role)
+router.put('/staff/:id', authenticate, requireRole('ADMIN', 'MANAGER'), (req: AuthenticatedRequest, res) => {
+  const { id } = req.params;
+  const updateSchema = z.object({
+    fullName: z.string().min(2).optional(),
+    phone: z.string().min(10).optional(),
+    role: z.enum(['MANAGER', 'ASSISTANT_MANAGER', 'AGENT', 'ADMIN', 'STORE_MANAGER', 'SALES_OFFICER', 'DELIVERY_OFFICER']).optional(),
+    isActive: z.boolean().optional(),
+  });
+
+  const parsed = updateSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ success: false, error: parsed.error.issues[0].message });
+  }
+
+  const existing = db.findUserById(id);
+  if (!existing || existing.role === 'CUSTOMER') {
+    return res.status(404).json({ success: false, error: 'Staff member not found' });
+  }
+
+  const updated = db.updateUser(id, parsed.data);
+
+  db.appendAuditLog({
+    userId: req.user!.userId,
+    userName: req.user!.fullName,
+    userRole: req.user!.role,
+    action: 'UPDATE_STAFF_ACCOUNT',
+    entityType: 'USER',
+    entityId: id,
+    details: `Updated staff ${existing.fullName}: ${JSON.stringify(parsed.data)}`,
+  });
+
+  return res.json({ success: true, staff: updated, message: 'Staff profile updated successfully' });
+});
+
+// PATCH /api/auth/staff/:id/toggle-status (Suspend or Activate Account)
+router.patch('/staff/:id/toggle-status', authenticate, requireRole('ADMIN', 'MANAGER'), (req: AuthenticatedRequest, res) => {
+  const { id } = req.params;
+  if (id === req.user!.userId) {
+    return res.status(400).json({ success: false, error: 'Cannot deactivate your own active session account' });
+  }
+
+  const existing = db.findUserById(id);
+  if (!existing || existing.role === 'CUSTOMER') {
+    return res.status(404).json({ success: false, error: 'Staff member not found' });
+  }
+
+  if (existing.email === 'ashirushehu2015@gmail.com' || existing.id === 'usr_admin_001') {
+    return res.status(403).json({ success: false, error: 'Cannot suspend primary executive administrator accounts' });
+  }
+
+  const newStatus = !existing.isActive;
+  const updated = db.updateUser(id, { isActive: newStatus });
+
+  db.appendAuditLog({
+    userId: req.user!.userId,
+    userName: req.user!.fullName,
+    userRole: req.user!.role,
+    action: newStatus ? 'ACTIVATE_STAFF_ACCOUNT' : 'SUSPEND_STAFF_ACCOUNT',
+    entityType: 'USER',
+    entityId: id,
+    details: `${newStatus ? 'Activated' : 'Suspended'} staff access for ${existing.fullName} (${existing.role})`,
+  });
+
+  return res.json({
+    success: true,
+    staff: updated,
+    message: `Account for ${existing.fullName} is now ${newStatus ? 'ACTIVE' : 'SUSPENDED'}.`,
+  });
+});
+
+// POST /api/auth/staff/:id/reset-password (Set or generate temporary password)
+router.post('/staff/:id/reset-password', authenticate, requireRole('ADMIN', 'MANAGER'), (req: AuthenticatedRequest, res) => {
+  const { id } = req.params;
+  const resetSchema = z.object({
+    password: z.string().min(6).optional(),
+  });
+
+  const parsed = resetSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ success: false, error: parsed.error.issues[0].message });
+  }
+
+  const existing = db.findUserById(id);
+  if (!existing || existing.role === 'CUSTOMER') {
+    return res.status(404).json({ success: false, error: 'Staff member not found' });
+  }
+
+  const newPass = parsed.data.password || 'AAMaster-' + Math.floor(100000 + Math.random() * 900000);
+  const { hash, salt } = hashPassword(newPass);
+
+  db.updateUser(id, {
+    passwordHash: hash,
+    passwordSalt: salt,
+  });
+
+  db.appendAuditLog({
+    userId: req.user!.userId,
+    userName: req.user!.fullName,
+    userRole: req.user!.role,
+    action: 'RESET_STAFF_PASSWORD',
+    entityType: 'USER',
+    entityId: id,
+    details: `Reset password for staff member ${existing.fullName} (${existing.email})`,
+  });
+
+  return res.json({
+    success: true,
+    temporaryPassword: newPass,
+    message: `Password successfully updated for ${existing.fullName}`,
+  });
+});
+
+// DELETE /api/auth/staff/:id (Delete Staff Member)
+router.delete('/staff/:id', authenticate, requireRole('ADMIN', 'MANAGER'), (req: AuthenticatedRequest, res) => {
+  const { id } = req.params;
+  if (id === req.user!.userId) {
+    return res.status(400).json({ success: false, error: 'Cannot delete your own active session account' });
+  }
+
+  const existing = db.findUserById(id);
+  if (!existing || existing.role === 'CUSTOMER') {
+    return res.status(404).json({ success: false, error: 'Staff member not found' });
+  }
+
+  if (existing.email === 'ashirushehu2015@gmail.com' || existing.id === 'usr_admin_001') {
+    return res.status(403).json({ success: false, error: 'Cannot delete primary executive administrator accounts' });
+  }
+
+  db.deleteUser(id);
+
+  db.appendAuditLog({
+    userId: req.user!.userId,
+    userName: req.user!.fullName,
+    userRole: req.user!.role,
+    action: 'DELETE_STAFF_ACCOUNT',
+    entityType: 'USER',
+    entityId: id,
+    details: `Permanently removed staff account ${existing.fullName} (${existing.email}) [${existing.role}]`,
+  });
+
+  return res.json({ success: true, message: `Staff member ${existing.fullName} removed successfully` });
+});
+
 export default router;
