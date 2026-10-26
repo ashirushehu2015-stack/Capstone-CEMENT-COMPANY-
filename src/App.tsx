@@ -336,25 +336,6 @@ function StorefrontContent() {
                 <span>080-36172280</span>
               </a>
 
-              <button
-                onClick={handleOpenCustomerPortal}
-                className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-semibold transition-colors"
-              >
-                <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Customer Portal</span>
-              </button>
-
-
-              <button
-                onClick={() => setIsTrackerOpen(true)}
-                className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-colors"
-              >
-                <Search className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="hidden sm:inline">Track Waybill</span>
-              </button>
-
-
-
               <div className="text-slate-300 font-mono text-xs flex items-center gap-1 pl-1 border-l border-slate-700/60">
                 <Clock className="w-3.5 h-3.5 text-amber-400" />
                 <span>{currentTime}</span>
