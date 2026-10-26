@@ -185,6 +185,7 @@ class DatabaseEngine {
     const asstManagerPass = hashPassword('AsstManager123!');
     const agentPass = hashPassword('Agent123!');
     const buyerPass = hashPassword('Buyer123!');
+    const tasiuPass = hashPassword('12345678');
 
     const now = new Date().toISOString();
 
@@ -271,6 +272,24 @@ class DatabaseEngine {
         updatedAt: now,
         passwordHash: buyerPass.hash,
         passwordSalt: buyerPass.salt,
+      },
+      {
+        id: 'usr_cust_tasiu',
+        email: 'tasiu@yahoo.com',
+        fullName: 'Alhaji Tasiu (Wholesale Contractor)',
+        phone: '+234 803 555 7788',
+        role: 'CUSTOMER',
+        isActive: true,
+        companyName: 'Tasiu Construction & Merchant Ltd',
+        officeAddress: 'Canteen Dawanau Wholesale Market, Kano',
+        homeAddress: 'Plot 12, Sharada Industrial Phase 2, Kano',
+        address: 'Canteen Dawanau Wholesale Market, Kano',
+        city: 'Kano',
+        state: 'Kano',
+        createdAt: now,
+        updatedAt: now,
+        passwordHash: tasiuPass.hash,
+        passwordSalt: tasiuPass.salt,
       },
     ];
 

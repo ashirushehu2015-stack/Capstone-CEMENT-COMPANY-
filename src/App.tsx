@@ -716,7 +716,7 @@ function StorefrontContent() {
                       </form>
                     ) : (
                       /* CUSTOMER LOGIN */
-                      <form onSubmit={handleManualLogin} className="space-y-3">
+                      <form onSubmit={handleCustomerLogin} className="space-y-3">
                         <div>
                           <label className="text-xs font-bold text-slate-700 block mb-1">
                             Contractor Email / Username <span className="text-amber-500">*</span>
