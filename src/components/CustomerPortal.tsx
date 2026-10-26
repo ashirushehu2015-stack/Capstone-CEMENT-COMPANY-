@@ -59,7 +59,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   const { user, logout } = useAuth();
   // Strictly isolate Customer Portal from Staff sessions so staff accounts/orders never leak here
   const customerUser = user?.role === 'CUSTOMER' ? user : null;
-  const { addItem, totalTrailers, totalBags, totalWeightTonnes, subtotalNGN, setIsCartOpen } = useCart();
+  const { addItem, setSingleItem, totalTrailers, totalBags, totalWeightTonnes, subtotalNGN, setIsCartOpen } = useCart();
 
   const [activeTab, setActiveTab] = useState<'catalogue' | 'my_orders' | 'how_it_works' | 'bank_details'>('catalogue');
   const [customerOrders, setCustomerOrders] = useState<Order[]>([]);

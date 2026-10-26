@@ -137,7 +137,7 @@ const FALLBACK_PRODUCTS: Product[] = [
 
 function StorefrontContent() {
   const { user, login, register, logout, switchUserRoleDemo, isStaff } = useAuth();
-  const { addItem, totalTrailers, setIsCartOpen } = useCart();
+  const { addItem, setSingleItem, totalTrailers, setIsCartOpen } = useCart();
 
   const [products, setProducts] = useState<Product[]>(FALLBACK_PRODUCTS);
   const [settings, setSettings] = useState<BusinessSettings | null>(null);

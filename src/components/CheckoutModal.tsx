@@ -12,7 +12,10 @@ import {
   Copy,
   Check,
   ArrowRight,
-  User
+  User,
+  Plus,
+  Minus,
+  Trash2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useCart } from '../context/CartContext.tsx';
@@ -32,7 +35,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   onClose,
   onOrderSuccess,
 }) => {
-  const { items, totalTrailers, totalBags, totalWeightTonnes, subtotalNGN, clearCart } = useCart();
+  const { items, totalTrailers, totalBags, totalWeightTonnes, subtotalNGN, updateQuantity, removeItem, clearCart } = useCart();
   const { user } = useAuth();
 
   const [settings, setSettings] = useState<BusinessSettings | null>(null);
@@ -545,6 +548,59 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 )}
               </div>
 
+
+              {/* Selected Order Items with Interactive Quantity Controls */}
+              <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2 text-xs">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                  <span className="font-bold text-white uppercase tracking-wider text-[11px]">
+                    Trailer Quantity Selection
+                  </span>
+                  <span className="text-[10px] text-amber-400 font-mono">
+                    600 Bags (30T) / Trailer
+                  </span>
+                </div>
+
+                <div className="space-y-2 pt-1">
+                  {items.map((it) => (
+                    <div
+                      key={it.product.id}
+                      className="bg-slate-900/90 p-2.5 rounded-lg border border-slate-800 flex items-center justify-between gap-2"
+                    >
+                      <div className="min-w-0">
+                        <span className="font-bold text-white text-xs block truncate">
+                          {it.product.name}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono block">
+                          ₦{(it.product.pricePerTrailer || 6510000).toLocaleString('en-NG')} per trailer
+                        </span>
+                      </div>
+
+                      {/* Interactive Stepper: Decrement / Count / Increment */}
+                      <div className="flex items-center gap-1.5 shrink-0 bg-slate-950 px-2 py-1 rounded-lg border border-slate-700">
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(it.product.id, Math.max(1, it.trailerCount - 1))}
+                          className="w-5 h-5 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                          title="Reduce trailer count by 1"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="font-bold text-amber-400 text-xs font-mono px-1">
+                          {it.trailerCount} {it.trailerCount === 1 ? 'Trailer' : 'Trailers'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(it.product.id, it.trailerCount + 1)}
+                          className="w-5 h-5 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                          title="Increase trailer count by 1"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               {/* Price Breakdown */}
               <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1.5 text-xs">

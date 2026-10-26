@@ -9,6 +9,7 @@ export interface CartItem {
 interface CartContextType {
   items: CartItem[];
   addItem: (product: Product, trailers?: number) => void;
+  setSingleItem: (product: Product, trailers?: number) => void;
   updateQuantity: (productId: string, trailers: number) => void;
   removeItem: (productId: string) => void;
   clearCart: () => void;
@@ -54,6 +55,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Failed to persist cart', e);
     }
   }, [items]);
+
+  const setSingleItem = (product: Product, trailers = 1) => {
+    if (!product || !product.id) return;
+    const validTrailers = Math.max(1, trailers);
+    setItems([{ product, trailerCount: validTrailers }]);
+  };
 
   const addItem = (product: Product, trailers = 1) => {
     if (!product || !product.id) return;
@@ -106,6 +113,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         items,
         addItem,
+        setSingleItem,
         updateQuantity,
         removeItem,
         clearCart,
