@@ -35,6 +35,7 @@ import { CheckoutModal } from './components/CheckoutModal.tsx';
 import { OrderReceiptModal } from './components/OrderReceiptModal.tsx';
 import { OrderTrackerModal } from './components/OrderTrackerModal.tsx';
 import { StaffDashboard } from './components/StaffDashboard.tsx';
+import { StaffAuthModal } from './components/StaffAuthModal.tsx';
 import { CustomerPortal } from './components/CustomerPortal.tsx';
 import { apiProducts, apiReports } from './services/api.ts';
 import type { Product, Order, BusinessSettings, UserRole } from './types/index.ts';
@@ -147,13 +148,13 @@ function StorefrontContent() {
   const [viewSpecsProduct, setViewSpecsProduct] = useState<Product | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isTrackerOpen, setIsTrackerOpen] = useState(false);
+  const [isStaffAuthModalOpen, setIsStaffAuthModalOpen] = useState(false);
   const [receiptOrder, setReceiptOrder] = useState<Order | null>(null);
 
   // View state: 'landing' (single unscrollable), 'customer_portal' (full buyer experience), or 'dashboard' (staff logistics)
   const [activeView, setActiveView] = useState<'landing' | 'customer_portal' | 'dashboard'>('landing');
 
   // Landing Card Portal & Auth state
-  const [landingCardPortalType, setLandingCardPortalType] = useState<'customer' | 'staff'>('customer');
   const [customerAuthMode, setCustomerAuthMode] = useState<'login' | 'register'>('login');
 
   // Login form state
@@ -493,53 +494,55 @@ function StorefrontContent() {
                 <div className="flex items-center justify-between text-[11px] text-blue-200 font-semibold mb-1">
                   <span className="flex items-center gap-1.5 text-amber-400 uppercase tracking-wider font-bold">
                     <ShieldCheck className="w-4 h-4 text-amber-400" />
-                    {landingCardPortalType === 'customer' ? 'CUSTOMER PORTAL & REGISTRATION' : 'AUTHORIZED STAFF TERMINAL'}
+                    WHOLESALE BUYER ACCESS
                   </span>
                   <span className="font-mono text-slate-300 flex items-center gap-1 text-[10px]">
                     <Clock className="w-3.5 h-3.5 text-blue-300" /> {currentTime}
                   </span>
                 </div>
                 <h2 className="text-lg sm:text-xl font-black tracking-tight text-white font-['Plus_Jakarta_Sans']">
-                  {landingCardPortalType === 'customer' ? 'Wholesale Customer Portal' : 'Logistics Management Portal'}
+                  Wholesale Customer Portal
                 </h2>
                 <p className="text-[11px] text-blue-200/80 mt-0.5">
-                  A.A. Master Nig. Limited • Sokoto Cement Haulage
+                  A.A. Master Nig. Limited • Authorized Contractor &amp; Buyer Sign In
                 </p>
               </div>
 
-              {/* Top Segmented Portal Selector (Customer vs Staff) */}
-              <div className="grid grid-cols-2 p-1.5 bg-[#071738] text-xs font-bold border-b border-blue-900/40">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLandingCardPortalType('customer');
-                    setLoginError('');
-                  }}
-                  className={`py-1.5 px-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 ${
-                    landingCardPortalType === 'customer'
-                      ? 'bg-amber-500 text-slate-950 font-black shadow'
-                      : 'text-slate-300 hover:text-white'
-                  }`}
-                >
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  <span>Customer Portal</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLandingCardPortalType('staff');
-                    setLoginError('');
-                  }}
-                  className={`py-1.5 px-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 ${
-                    landingCardPortalType === 'staff'
-                      ? 'bg-[#0052cc] text-white font-black shadow'
-                      : 'text-slate-300 hover:text-white'
-                  }`}
-                >
-                  <Lock className="w-3.5 h-3.5" />
-                  <span>Staff Terminal (3 Operational Roles)</span>
-                </button>
-              </div>
+              {/* Sub-tabs: Customer Login vs Register (when not logged in as customer) */}
+              {!(user && user.role === 'CUSTOMER') && (
+                <div className="grid grid-cols-2 p-1.5 bg-[#071738] text-xs font-bold border-b border-blue-900/40">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCustomerAuthMode('login');
+                      setLoginError('');
+                    }}
+                    className={`py-1.5 px-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 ${
+                      customerAuthMode === 'login'
+                        ? 'bg-amber-500 text-slate-950 font-black shadow'
+                        : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>Customer Sign In</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCustomerAuthMode('register');
+                      setLoginError('');
+                    }}
+                    className={`py-1.5 px-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 ${
+                      customerAuthMode === 'register'
+                        ? 'bg-amber-500 text-slate-950 font-black shadow'
+                        : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Create Account</span>
+                  </button>
+                </div>
+              )}
 
               {/* Card Content Form Area */}
               <div className="p-4 sm:p-5 space-y-3 overflow-y-auto flex-1">
@@ -551,13 +554,13 @@ function StorefrontContent() {
                   </div>
                 )}
 
-                {/* If Logged In: Show Active Session with Direct Access */}
-                {user ? (
+                {/* If Logged In as CUSTOMER: Show Active Session */}
+                {user && user.role === 'CUSTOMER' ? (
                   <div className="space-y-3">
                     <div className="p-3.5 rounded-2xl bg-blue-50 border border-blue-200 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black uppercase tracking-wider bg-blue-900 text-white px-2 py-0.5 rounded">
-                          {user.role}
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-900 text-emerald-200 px-2 py-0.5 rounded font-mono">
+                          Verified Wholesale Buyer
                         </span>
                         <span className="text-[10px] text-emerald-700 font-bold flex items-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Authenticated
@@ -572,34 +575,23 @@ function StorefrontContent() {
                       </div>
                     </div>
 
-                    {isStaff ? (
+                    <div className="space-y-2">
                       <button
-                        onClick={() => setActiveView('dashboard')}
-                        className="w-full bg-[#0052cc] hover:bg-[#0043a8] text-white font-bold py-2.5 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-xs sm:text-sm transition-all active:scale-95"
+                        onClick={() => setActiveView('customer_portal')}
+                        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-xs sm:text-sm transition-all active:scale-95"
                       >
-                        <Layers className="w-4 h-4" />
-                        <span>Enter Staff Logistics Portal ({user.role})</span>
+                        <ShoppingBag className="w-4 h-4" />
+                        <span>Enter Customer Facing Portal</span>
                         <ArrowRight className="w-4 h-4" />
                       </button>
-                    ) : (
-                      <div className="space-y-2">
-                        <button
-                          onClick={() => setActiveView('customer_portal')}
-                          className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-xs sm:text-sm transition-all active:scale-95"
-                        >
-                          <ShoppingBag className="w-4 h-4" />
-                          <span>Enter Customer Facing Portal</span>
-                          <ArrowRight className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={handleQuickOrderDirect}
-                          className="w-full bg-[#0b224d] hover:bg-[#122e61] text-amber-300 border border-blue-600/50 font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all"
-                        >
-                          <Truck className="w-3.5 h-3.5 text-amber-400" />
-                          <span>Order 1 Trailer Directly (₦6,510,000)</span>
-                        </button>
-                      </div>
-                    )}
+                      <button
+                        onClick={handleQuickOrderDirect}
+                        className="w-full bg-[#0b224d] hover:bg-[#122e61] text-amber-300 border border-blue-600/50 font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all"
+                      >
+                        <Truck className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Order 1 Trailer Directly (₦6,510,000)</span>
+                      </button>
+                    </div>
 
                     <div className="flex items-center justify-between pt-1">
                       <button
@@ -609,96 +601,51 @@ function StorefrontContent() {
                         <LogOut className="w-3.5 h-3.5" /> Sign Out
                       </button>
                       <button
-                        onClick={() => handleOpenCustomerPortal()}
+                        onClick={() => setActiveView('customer_portal')}
                         className="text-xs text-blue-600 hover:underline font-semibold"
                       >
-                        Open Customer Portal &rarr;
+                        Open Catalog &rarr;
                       </button>
                     </div>
                   </div>
-                ) : landingCardPortalType === 'customer' ? (
+                ) : (
                   /* ================= CUSTOMER PORTAL AUTH ================= */
                   <div className="space-y-3">
-                    {/* Sub-tabs: Customer Login vs Customer Register */}
-                    <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-xl text-xs font-bold border border-slate-200">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCustomerAuthMode('login');
-                          setLoginError('');
-                        }}
-                        className={`py-1.5 rounded-lg transition-all ${
-                          customerAuthMode === 'login'
-                            ? 'bg-white text-slate-900 shadow-sm font-extrabold'
-                            : 'text-slate-500 hover:text-slate-800'
-                        }`}
-                      >
-                        Customer Sign In
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCustomerAuthMode('register');
-                          setLoginError('');
-                        }}
-                        className={`py-1.5 rounded-lg transition-all ${
-                          customerAuthMode === 'register'
-                            ? 'bg-amber-500 text-slate-950 shadow-sm font-extrabold'
-                            : 'text-slate-500 hover:text-slate-800'
-                        }`}
-                      >
-                        Create Account
-                      </button>
-                    </div>
-
                     {customerAuthMode === 'register' ? (
-                      /* Customer Registration Form */
+                      /* CUSTOMER REGISTRATION */
                       <form onSubmit={handleCustomerRegister} className="space-y-2.5">
                         <div>
-                          <label className="text-[11px] font-bold text-slate-700 block mb-0.5">
-                            Full Name / Contractor Contact <span className="text-amber-600">*</span>
+                          <label className="text-xs font-bold text-slate-700 block mb-1">
+                            Full Name / Contractor <span className="text-amber-500">*</span>
                           </label>
                           <input
                             type="text"
                             value={regFullName}
                             onChange={(e) => setRegFullName(e.target.value)}
-                            placeholder="e.g. Alhaji Ibrahim Bello"
+                            placeholder="Alhaji Mukhtar Dan-Kano"
                             required
-                            className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 font-medium"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-700 block mb-0.5">
-                            Company / Site Name
-                          </label>
-                          <input
-                            type="text"
-                            value={regCompanyName}
-                            onChange={(e) => setRegCompanyName(e.target.value)}
-                            placeholder="e.g. Bello Foundations &amp; Civil Works Ltd"
-                            className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 font-medium"
+                            className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 font-medium"
                           />
                         </div>
 
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="text-[11px] font-bold text-slate-700 block mb-0.5">
-                              Email (Login ID) <span className="text-amber-600">*</span>
+                            <label className="text-xs font-bold text-slate-700 block mb-1">
+                              Email Address <span className="text-amber-500">*</span>
                             </label>
                             <input
                               type="email"
                               value={regEmail}
                               onChange={(e) => setRegEmail(e.target.value)}
-                              placeholder="contractor@domain.ng"
+                              placeholder="buyer@domain.ng"
                               required
-                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 font-medium"
+                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 font-medium"
                             />
                           </div>
 
                           <div>
-                            <label className="text-[11px] font-bold text-slate-700 block mb-0.5">
-                              Phone Number <span className="text-amber-600">*</span>
+                            <label className="text-xs font-bold text-slate-700 block mb-1">
+                              Phone Number <span className="text-amber-500">*</span>
                             </label>
                             <input
                               type="tel"
@@ -706,49 +653,50 @@ function StorefrontContent() {
                               onChange={(e) => setRegPhone(e.target.value)}
                               placeholder="0803 123 4567"
                               required
-                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 font-mono"
+                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 font-medium font-mono"
                             />
                           </div>
                         </div>
 
                         <div>
-                          <label className="text-[11px] font-bold text-slate-700 block mb-0.5">Address</label>
+                          <label className="text-xs font-bold text-slate-700 block mb-1">Address / Location</label>
                           <input
                             type="text"
                             value={regAddress}
                             onChange={(e) => setRegAddress(e.target.value)}
-                            placeholder="e.g. No. 12 Canteen Area, Gusau, Zamfara State"
-                            className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 font-medium"
+                            placeholder="e.g. Canteen Area, Gusau"
+                            className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500"
                           />
                         </div>
 
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="text-[11px] font-bold text-slate-700 block mb-0.5">
-                              Password (min 6) <span className="text-amber-600">*</span>
+                            <label className="text-xs font-bold text-slate-700 block mb-1">
+                              Password (min 6 chars) <span className="text-amber-500">*</span>
                             </label>
                             <input
                               type={showPassword ? 'text' : 'password'}
                               value={regPassword}
                               onChange={(e) => setRegPassword(e.target.value)}
-                              placeholder="••••••••"
+                              placeholder="••••••"
                               required
                               minLength={6}
-                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500"
+                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 font-medium"
                             />
                           </div>
+
                           <div>
-                            <label className="text-[11px] font-bold text-slate-700 block mb-0.5">
-                              Confirm Password <span className="text-amber-600">*</span>
+                            <label className="text-xs font-bold text-slate-700 block mb-1">
+                              Confirm Password <span className="text-amber-500">*</span>
                             </label>
                             <input
                               type={showPassword ? 'text' : 'password'}
                               value={regConfirmPassword}
                               onChange={(e) => setRegConfirmPassword(e.target.value)}
-                              placeholder="••••••••"
+                              placeholder="••••••"
                               required
                               minLength={6}
-                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-amber-500"
+                              className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 font-medium"
                             />
                           </div>
                         </div>
@@ -756,24 +704,24 @@ function StorefrontContent() {
                         <button
                           type="submit"
                           disabled={isSubmitting}
-                          className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+                          className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 mt-1"
                         >
                           <CheckCircle2 className="w-4 h-4" />
-                          <span>{isSubmitting ? 'Creating Account...' : 'Create Wholesale Account & Enter Portal'}</span>
+                          <span>{isSubmitting ? 'Registering...' : 'Create Customer Account'}</span>
                         </button>
                       </form>
                     ) : (
-                      /* Customer Sign In Form */
-                      <form onSubmit={handleCustomerLogin} className="space-y-3">
+                      /* CUSTOMER LOGIN */
+                      <form onSubmit={handleManualLogin} className="space-y-3">
                         <div>
                           <label className="text-xs font-bold text-slate-700 block mb-1">
-                            Customer Email Address
+                            Contractor Email / Username <span className="text-amber-500">*</span>
                           </label>
                           <input
                             type="email"
                             value={loginEmail}
                             onChange={(e) => setLoginEmail(e.target.value)}
-                            placeholder="contractor@domain.ng"
+                            placeholder="buyer@domain.ng"
                             required
                             className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 font-medium"
                           />
@@ -781,7 +729,9 @@ function StorefrontContent() {
 
                         <div>
                           <div className="flex items-center justify-between mb-1">
-                            <label className="text-xs font-bold text-slate-700">Password</label>
+                            <label className="text-xs font-bold text-slate-700">
+                              Password <span className="text-amber-500">*</span>
+                            </label>
                             <button
                               type="button"
                               onClick={() => setShowPassword(!showPassword)}
@@ -809,130 +759,8 @@ function StorefrontContent() {
                           <Lock className="w-4 h-4" />
                           <span>{isSubmitting ? 'Authenticating...' : 'Sign In as Customer'}</span>
                         </button>
-
-                        {/* Quick fill demo customer */}
-                        <div className="pt-2 border-t border-slate-200 text-center">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setLoginEmail(DEMO_ACCOUNTS.CUSTOMER.email);
-                              setLoginPassword(DEMO_ACCOUNTS.CUSTOMER.pass);
-                            }}
-                            className="w-full bg-slate-50 hover:bg-blue-50/60 text-blue-900 border border-slate-200 font-semibold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors"
-                          >
-                            <User className="w-3.5 h-3.5 text-amber-500" />
-                            <span>Fill Demo Account: Alhaji Mukhtar Dan-Kano</span>
-                          </button>
-                        </div>
                       </form>
                     )}
-
-                    <div className="pt-1 text-center">
-                      <button
-                        onClick={handleOpenCustomerPortal}
-                        className="text-xs text-slate-600 hover:text-blue-700 font-semibold underline"
-                      >
-                        Enter Customer Portal as Guest &rarr;
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  /* ================= STAFF TERMINAL ================= */
-                  <div className="space-y-3">
-                    <form onSubmit={handleManualLogin} className="space-y-2.5">
-                      <div>
-                        <label className="text-xs font-bold text-slate-700 block mb-1">
-                          Staff Username or Account Email
-                        </label>
-                        <input
-                          type="text"
-                          value={loginEmail}
-                          onChange={(e) => setLoginEmail(e.target.value)}
-                          placeholder="manager@aamaster.ng"
-                          required
-                          className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-medium"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="text-xs font-bold text-slate-700">Password</label>
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="text-xs text-blue-700 hover:underline flex items-center gap-1 font-semibold"
-                          >
-                            {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                            <span>{showPassword ? 'Hide' : 'Show'}</span>
-                          </button>
-                        </div>
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          value={loginPassword}
-                          onChange={(e) => setLoginPassword(e.target.value)}
-                          placeholder="••••••••••••"
-                          required
-                          className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-medium"
-                        />
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full bg-[#0052cc] hover:bg-[#0043a8] disabled:opacity-50 text-white font-extrabold py-2.5 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
-                      >
-                        <Lock className="w-4 h-4" />
-                        <span>{isSubmitting ? 'Authenticating...' : 'Sign In to Logistics System'}</span>
-                      </button>
-                    </form>
-
-                    {/* Exactly 3 Operational Staff Roles: Manager, Assistant Manager, Issuing Agent */}
-                    <div className="pt-2 border-t border-slate-200 space-y-1.5">
-                      <div className="flex items-center justify-between text-[10px]">
-                        <span className="font-bold text-slate-700 flex items-center gap-1 uppercase tracking-wider">
-                          <User className="w-3 h-3 text-blue-700" /> SYSTEM STAFF ROLES (CLICK TO FILL)
-                        </span>
-                        <span className="font-mono text-slate-400">Production Site &amp; Desk</span>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-1.5 text-left">
-                        {/* 1. MANAGER */}
-                        <button
-                          type="button"
-                          onClick={() => handleQuickRoleSelect('MANAGER')}
-                          className="p-2 rounded-xl border text-left transition-all bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800"
-                        >
-                          <strong className="text-[11px] text-slate-900 block font-bold leading-tight truncate">
-                            Engr. Sanusi Kalambaina
-                          </strong>
-                          <span className="text-[9px] text-blue-700 font-semibold block mt-0.5">1. Manager (Approval)</span>
-                        </button>
-
-                        {/* 2. ASSISTANT MANAGER */}
-                        <button
-                          type="button"
-                          onClick={() => handleQuickRoleSelect('ASSISTANT_MANAGER')}
-                          className="p-2 rounded-xl border text-left transition-all bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800"
-                        >
-                          <strong className="text-[11px] text-slate-900 block font-bold leading-tight truncate">
-                            Fatima Aliyu
-                          </strong>
-                          <span className="text-[9px] text-blue-700 font-semibold block mt-0.5">2. Assistant Manager</span>
-                        </button>
-
-                        {/* 3. AGENT (Production Site) */}
-                        <button
-                          type="button"
-                          onClick={() => handleQuickRoleSelect('AGENT')}
-                          className="p-2 rounded-xl border text-left transition-all bg-slate-50 hover:bg-blue-50/50 border-slate-200 text-slate-800"
-                        >
-                          <strong className="text-[11px] text-slate-900 block font-bold leading-tight truncate">
-                            Haruna Danladi
-                          </strong>
-                          <span className="text-[9px] text-blue-700 font-semibold block mt-0.5">3. Issuing Agent</span>
-                        </button>
-                      </div>
-                    </div>
                   </div>
                 )}
 
@@ -1011,6 +839,12 @@ function StorefrontContent() {
       <OrderReceiptModal
         order={receiptOrder}
         onClose={() => setReceiptOrder(null)}
+      />
+
+      <StaffAuthModal
+        isOpen={isStaffAuthModalOpen}
+        onClose={() => setIsStaffAuthModalOpen(false)}
+        onSuccess={() => setActiveView('dashboard')}
       />
     </div>
   );
