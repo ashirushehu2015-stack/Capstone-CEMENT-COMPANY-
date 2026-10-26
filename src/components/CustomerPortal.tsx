@@ -112,7 +112,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   };
 
   const handleOrderQuickTrailers = (product: Product, trailersCount: number) => {
-    addItem(product, trailersCount);
+    setSingleItem(product, trailersCount);
     onOpenCheckout();
   };
 

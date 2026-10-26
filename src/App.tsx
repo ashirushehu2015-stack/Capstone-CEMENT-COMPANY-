@@ -293,7 +293,7 @@ function StorefrontContent() {
 
   const handleQuickOrderDirect = () => {
     if (primaryProduct) {
-      addItem(primaryProduct, 1);
+      setSingleItem(primaryProduct, 1);
       setIsCheckoutOpen(true);
     }
   };
