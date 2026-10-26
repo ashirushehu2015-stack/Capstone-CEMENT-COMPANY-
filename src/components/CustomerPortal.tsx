@@ -3,7 +3,6 @@ import {
   Building2,
   Truck,
   ShieldCheck,
-  Calculator,
   Search,
   CheckCircle2,
   ShoppingBag,
@@ -41,7 +40,6 @@ interface CustomerPortalProps {
   settings: BusinessSettings | null;
   orderRefreshKey?: number;
   onOpenCheckout: () => void;
-  onOpenCalculator: () => void;
   onOpenTracker: () => void;
   onViewOrderReceipt: (order: Order) => void;
   onViewSpecs: (product: Product) => void;
@@ -53,7 +51,6 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   settings,
   orderRefreshKey = 0,
   onOpenCheckout,
-  onOpenCalculator,
   onOpenTracker,
   onViewOrderReceipt,
   onViewSpecs,
@@ -339,13 +336,6 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
               <span>Track Waybill</span>
             </button>
 
-            <button
-              onClick={onOpenCalculator}
-              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-[#0b1f3f]/80 hover:bg-[#122e5a] text-blue-200 border border-blue-800/50 transition-all"
-            >
-              <Calculator className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>Trailer Estimator</span>
-            </button>
 
             <button
               onClick={() => {
@@ -446,13 +436,6 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                     <span>Order 2 Trailers (₦13,020,000)</span>
                   </button>
 
-                  <button
-                    onClick={onOpenCalculator}
-                    className="bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 transition-colors"
-                  >
-                    <Calculator className="w-4 h-4 text-amber-400" />
-                    <span>Estimate Custom Convoys</span>
-                  </button>
                 </div>
               </div>
             </div>

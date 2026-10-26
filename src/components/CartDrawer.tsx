@@ -74,7 +74,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout }) =
                 </div>
                 <h3 className="text-base font-bold text-slate-300">No trailers selected</h3>
                 <p className="text-xs text-slate-500 max-w-xs mt-1">
-                  Choose a Sokoto Cement grade trailer load (600 bags / 30 tonnes) or use the trailer load estimator.
+                  Choose a Sokoto Cement grade trailer load (600 bags / 30 tonnes).
                 </p>
                 <button
                   onClick={() => setIsCartOpen(false)}
@@ -170,9 +170,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout }) =
                     ₦{subtotalNGN.toLocaleString('en-NG')}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 italic">
-                  *Interstate haulage fees will be calculated based on your delivery destination state.
-                </p>
               </div>
 
               <div className="flex items-center gap-2">

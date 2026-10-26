@@ -3,7 +3,6 @@ import {
   Building2,
   Truck,
   ShieldCheck,
-  Calculator,
   Search,
   CheckCircle2,
   ShoppingBag,
@@ -31,7 +30,6 @@ import {
 import { AuthProvider, useAuth, DEMO_ACCOUNTS } from './context/AuthContext.tsx';
 import { CartProvider, useCart } from './context/CartContext.tsx';
 import { ProductDetailModal } from './components/ProductDetailModal.tsx';
-import { CalculatorModal } from './components/CalculatorModal.tsx';
 import { CartDrawer } from './components/CartDrawer.tsx';
 import { CheckoutModal } from './components/CheckoutModal.tsx';
 import { OrderReceiptModal } from './components/OrderReceiptModal.tsx';
@@ -147,7 +145,6 @@ function StorefrontContent() {
 
   // Modals
   const [viewSpecsProduct, setViewSpecsProduct] = useState<Product | null>(null);
-  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isTrackerOpen, setIsTrackerOpen] = useState(false);
   const [receiptOrder, setReceiptOrder] = useState<Order | null>(null);
@@ -346,13 +343,6 @@ function StorefrontContent() {
                 <span>Customer Portal</span>
               </button>
 
-              <button
-                onClick={() => setIsCalculatorOpen(true)}
-                className="bg-[#0b1f3f] hover:bg-[#122e5a] text-blue-200 border border-blue-700/50 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-colors"
-              >
-                <Calculator className="w-3.5 h-3.5 text-amber-400" />
-                <span className="hidden sm:inline">Trailer Estimator</span>
-              </button>
 
               <button
                 onClick={() => setIsTrackerOpen(true)}
@@ -394,7 +384,6 @@ function StorefrontContent() {
             settings={settings}
             orderRefreshKey={orderRefreshKey}
             onOpenCheckout={() => setIsCheckoutOpen(true)}
-            onOpenCalculator={() => setIsCalculatorOpen(true)}
             onOpenTracker={() => setIsTrackerOpen(true)}
             onViewOrderReceipt={(order) => setReceiptOrder(order)}
             onViewSpecs={(product) => setViewSpecsProduct(product)}
@@ -1019,11 +1008,6 @@ function StorefrontContent() {
         onClose={() => setViewSpecsProduct(null)}
       />
 
-      <CalculatorModal
-        products={products}
-        isOpen={isCalculatorOpen}
-        onClose={() => setIsCalculatorOpen(false)}
-      />
 
       <OrderTrackerModal
         isOpen={isTrackerOpen}

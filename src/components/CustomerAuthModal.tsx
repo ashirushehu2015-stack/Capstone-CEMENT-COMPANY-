@@ -202,21 +202,6 @@ export const CustomerAuthModal: React.FC<CustomerAuthModalProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">
-                  Company / Enterprise / Site Name
-                </label>
-                <div className="relative">
-                  <Building className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                  <input
-                    type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="e.g. Bello Foundations &amp; Mega Works Ltd"
-                    className="w-full bg-[#040914] border border-blue-900/70 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
-                  />
-                </div>
-              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -378,20 +363,6 @@ export const CustomerAuthModal: React.FC<CustomerAuthModalProps> = ({
                 <ArrowRight className="w-4 h-4" />
               </button>
 
-              {/* Demo Contractor Quick Fill */}
-              <div className="pt-3 border-t border-blue-900/40 text-center space-y-2">
-                <span className="text-[11px] text-slate-400 block">
-                  Testing as an existing pre-registered customer?
-                </span>
-                <button
-                  type="button"
-                  onClick={handleFillDemoCustomer}
-                  className="w-full bg-[#0b214a] hover:bg-[#12316a] text-blue-200 border border-blue-700/60 font-semibold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-colors"
-                >
-                  <User className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Fill Demo Account: Alhaji Mukhtar Dan-Kano</span>
-                </button>
-              </div>
             </form>
           )}
         </div>

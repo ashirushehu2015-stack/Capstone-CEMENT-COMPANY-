@@ -545,17 +545,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 )}
               </div>
 
-              {/* Notes */}
-              <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-                <label className="text-[11px] text-slate-400 block mb-1">Convoy &amp; Site Offloading Instructions (Optional)</label>
-                <input
-                  type="text"
-                  value={customerNotes}
-                  onChange={(e) => setCustomerNotes(e.target.value)}
-                  placeholder="e.g. Ensure waterproof tarpaulin is strapped..."
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white"
-                />
-              </div>
 
               {/* Price Breakdown */}
               <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1.5 text-xs">
@@ -566,14 +555,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 <div className="flex justify-between text-slate-400 text-[11px]">
                   <span>{totalTrailers} Trailer(s) ({totalBags.toLocaleString()} bags / {totalWeightTonnes}T)</span>
                   <span className="font-mono font-bold text-white">₦{subtotalNGN.toLocaleString('en-NG')}</span>
-                </div>
-                <div className="flex justify-between text-slate-400 text-[11px]">
-                  <span>Company Haulage / Delivery:</span>
-                  <span className="font-mono font-bold text-emerald-400">₦0 (Customer Haulage)</span>
-                </div>
-                <div className="flex justify-between text-slate-400 text-[11px]">
-                  <span>Offloading Fee:</span>
-                  <span className="font-mono font-bold text-emerald-400">₦0 (Site Crew)</span>
                 </div>
                 <div className="flex justify-between text-xs font-black text-amber-400 border-t border-slate-800 pt-1.5">
                   <span>Total Payable (100% Upfront)</span>

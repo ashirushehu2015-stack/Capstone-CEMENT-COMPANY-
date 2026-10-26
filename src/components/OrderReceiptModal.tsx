@@ -154,14 +154,6 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
                 <span>Trailers Subtotal:</span>
                 <span className="font-mono text-slate-900">₦{order.subtotal.toLocaleString('en-NG')}</span>
               </div>
-              <div className="flex justify-between text-slate-600">
-                <span>Company Haulage / Delivery:</span>
-                <span className="font-mono font-bold text-emerald-700">₦0 (Customer-Arranged)</span>
-              </div>
-              <div className="flex justify-between text-slate-600">
-                <span>Porter Offloading:</span>
-                <span className="font-mono font-bold text-emerald-700">₦0 (Transporter Crew)</span>
-              </div>
               <div className="flex justify-between text-sm font-black border-t-2 border-slate-900 pt-2 text-slate-950">
                 <span>Total Amount Paid (100%):</span>
                 <span className="font-mono text-amber-800">₦{order.totalAmount.toLocaleString('en-NG')}</span>

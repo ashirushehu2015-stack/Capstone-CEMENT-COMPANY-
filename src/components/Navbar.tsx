@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   ShoppingBag,
   Truck,
-  Calculator,
   Search,
   Building2,
   ShieldCheck,
@@ -19,7 +18,6 @@ import { useCart } from '../context/CartContext.tsx';
 import type { UserRole } from '../types/index.ts';
 
 interface NavbarProps {
-  onOpenCalculator: () => void;
   onOpenTracker: () => void;
   onOpenStaffDashboard: () => void;
   activeView: 'store' | 'dashboard';
@@ -27,7 +25,6 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  onOpenCalculator,
   onOpenTracker,
   onOpenStaffDashboard,
   activeView,
@@ -119,13 +116,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               Trailer Catalog
-            </button>
-            <button
-              onClick={onOpenCalculator}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
-            >
-              <Calculator className="w-4 h-4 text-amber-400" />
-              Trailer Load Calculator
             </button>
             <button
               onClick={onOpenTracker}
@@ -256,16 +246,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="w-full text-left px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 rounded-lg"
             >
               Sokoto Cement Trailer Catalogue
-            </button>
-            <button
-              onClick={() => {
-                onOpenCalculator();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800 rounded-lg flex items-center gap-2"
-            >
-              <Calculator className="w-4 h-4 text-amber-400" />
-              Trailer Load Estimator
             </button>
             <button
               onClick={() => {
