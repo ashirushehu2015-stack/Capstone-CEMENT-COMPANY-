@@ -771,17 +771,6 @@ function StorefrontContent() {
                   <span>Protected under Nigerian Industrial Standards &amp; Corporate Logistics Guidelines.</span>
                 </div>
 
-                {/* Staff Link on Card Footer */}
-                <div className="pt-2 border-t border-slate-200 text-center">
-                  <button
-                    type="button"
-                    onClick={() => setIsStaffAuthModalOpen(true)}
-                    className="text-[11px] text-slate-600 hover:text-blue-700 font-semibold inline-flex items-center gap-1 transition-colors"
-                  >
-                    <Lock className="w-3 h-3 text-amber-500" />
-                    <span>A.A. Master Staff / Depot Officer? <u className="text-blue-700">Sign in to Operations Terminal</u> &rarr;</span>
-                  </button>
-                </div>
               </div>
             </div>
           </div>
