@@ -52,6 +52,7 @@ export interface Product {
   bagWeightKg: number; // 50kg standard
   bagsPerTrailer: number; // Fixed at 600 bags per truck
   tonnesPerTrailer: number; // 30 tonnes per truck
+  trailerWeightTonnes?: number; // Optional alias for backwards compatibility
   pricePerBag: number; // Fixed at ₦10,850 per bag
   pricePerTrailer: number; // Fixed at ₦6,510,000 per truck (600 × ₦10,850)
   pricePerBagEquivalent: number; // ₦10,850
@@ -69,12 +70,11 @@ export interface Product {
   reorderThresholdTrailers?: number;
   minOrderTrailers: number; // Minimum 1 full truck (600 bags)
   minimumOrderTrailers?: number;
-  maxOrderTrailers?: number;
-  trailerWeightTonnes?: number;
+  maxOrderTrailers?: number;
   certification?: string;
   description: string;
   applications: string[];
-  features: string[];
+  features: string[];
   imageUrl: string;
   isActive: boolean;
   createdAt: string;

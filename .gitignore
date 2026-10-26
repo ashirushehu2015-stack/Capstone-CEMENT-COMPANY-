@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+data/*.tmp
+data/cement_db.json.tmp
+data/cement_db.json

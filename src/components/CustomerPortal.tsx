@@ -115,8 +115,9 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
     setClaimSubmitting(true);
     setClaimSuccess(null);
     try {
-      await apiPayments.submitTransferClaim(claimOrderId, {
-        referenceNumber: bankRefInput.trim(),
+      await apiPayments.submitTransferClaim({
+        orderId: claimOrderId,
+        bankTransferReference: bankRefInput.trim(),
         payerName: payerNameInput.trim(),
       });
       setClaimSuccess(`Payment proof submitted for order. Manager will reconcile and confirm shortly.`);

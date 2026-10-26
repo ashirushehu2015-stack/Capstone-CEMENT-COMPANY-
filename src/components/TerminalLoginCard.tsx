@@ -151,6 +151,16 @@ export const TerminalLoginCard: React.FC<TerminalLoginCardProps> = ({
               </span>
               <div className="grid grid-cols-2 gap-1.5">
                 <button
+                  onClick={() => handleQuickSwitch('ADMIN')}
+                  className={`text-[11px] font-bold p-1.5 rounded-lg border text-left transition-all ${
+                    user.role === 'ADMIN'
+                      ? 'bg-rose-900/60 text-rose-200 border-rose-500'
+                      : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800'
+                  }`}
+                >
+                  🏛️ Admin (Managing Dir.)
+                </button>
+                <button
                   onClick={() => handleQuickSwitch('MANAGER')}
                   className={`text-[11px] font-bold p-1.5 rounded-lg border text-left transition-all ${
                     user.role === 'MANAGER'
@@ -179,6 +189,17 @@ export const TerminalLoginCard: React.FC<TerminalLoginCardProps> = ({
                   }`}
                 >
                   📋 Asst. Manager
+                </button>
+                
+                <button
+                  onClick={() => handleQuickSwitch('CUSTOMER')}
+                  className={`text-[11px] font-bold p-1.5 rounded-lg border text-left transition-all ${
+                    user.role === 'CUSTOMER'
+                      ? 'bg-emerald-900/60 text-emerald-200 border-emerald-500'
+                      : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800'
+                  }`}
+                >
+                  🏗️ Customer Portal
                 </button>
               </div>
             </div>
@@ -223,12 +244,24 @@ export const TerminalLoginCard: React.FC<TerminalLoginCardProps> = ({
                 </span>
                 <div className="space-y-1.5">
                   <button
+                    onClick={() => handleQuickSwitch('ADMIN')}
+                    disabled={isSubmitting}
+                    className="w-full text-left p-2 rounded-xl bg-slate-950 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-600 text-xs flex items-center justify-between group transition-all"
+                  >
+                    <div>
+                      <strong className="text-white block group-hover:text-rose-300">1. Managing Director / Admin</strong>
+                      <span className="text-[10px] text-slate-400">Alhaji Shehu Bello (Executive Authority &amp; RBAC Control)</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-rose-400">&rarr;</span>
+                  </button>
+
+                  <button
                     onClick={() => handleQuickSwitch('MANAGER')}
                     disabled={isSubmitting}
                     className="w-full text-left p-2 rounded-xl bg-slate-950 hover:bg-purple-950/40 border border-slate-800 hover:border-purple-600 text-xs flex items-center justify-between group transition-all"
                   >
                     <div>
-                      <strong className="text-white block group-hover:text-purple-300">1. Manager Terminal</strong>
+                      <strong className="text-white block group-hover:text-purple-300">2. Manager Terminal</strong>
                       <span className="text-[10px] text-slate-400">Engr. Sanusi Kalambaina (Order &amp; Stock Approvals)</span>
                     </div>
                     <span className="text-[10px] font-bold text-purple-400">&rarr;</span>
@@ -246,13 +279,15 @@ export const TerminalLoginCard: React.FC<TerminalLoginCardProps> = ({
                     <span className="text-[10px] font-bold text-indigo-400">&rarr;</span>
                   </button>
 
+                  
+
                   <button
                     onClick={() => handleQuickSwitch('AGENT')}
                     disabled={isSubmitting}
                     className="w-full text-left p-2 rounded-xl bg-slate-950 hover:bg-teal-950/40 border border-slate-800 hover:border-teal-600 text-xs flex items-center justify-between group transition-all"
                   >
                     <div>
-                      <strong className="text-white block group-hover:text-teal-300">3. Agent (Production Site)</strong>
+                      <strong className="text-white block group-hover:text-teal-300">4. Agent (Production Site)</strong>
                       <span className="text-[10px] text-slate-400">Haruna Danladi (Truck Issuance &amp; Gate Pass)</span>
                     </div>
                     <span className="text-[10px] font-bold text-teal-400">&rarr;</span>
@@ -264,7 +299,7 @@ export const TerminalLoginCard: React.FC<TerminalLoginCardProps> = ({
                     className="w-full text-left p-2 rounded-xl bg-slate-950 hover:bg-emerald-950/40 border border-slate-800 hover:border-emerald-600 text-xs flex items-center justify-between group transition-all"
                   >
                     <div>
-                      <strong className="text-white block group-hover:text-emerald-300">4. Customer Facing Portal</strong>
+                      <strong className="text-white block group-hover:text-emerald-300">5. Customer Facing Portal</strong>
                       <span className="text-[10px] text-slate-400">Alhaji Mukhtar Dan-Kano (Wholesale Buyer)</span>
                     </div>
                     <span className="text-[10px] font-bold text-emerald-400">&rarr;</span>

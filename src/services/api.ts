@@ -105,6 +105,10 @@ export const apiAuth = {
     return request<{ success: boolean; staff: User[] }>('/api/auth/staff');
   },
 
+  getCustomers: async () => {
+    return request<{ success: boolean; customers: User[] }>('/api/auth/customers');
+  },
+
   createStaff: async (staffData: {
     email: string;
     password: string;

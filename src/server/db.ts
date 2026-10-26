@@ -16,6 +16,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { hashPassword } from './auth.ts';
 import type {
   User,
@@ -54,7 +55,10 @@ interface DatabaseSchema {
   settings: BusinessSettings;
 }
 
-const DATA_DIR = path.resolve(process.cwd(), 'data');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+// Authoritative project data directory: <project_root>/data
+const DATA_DIR = path.resolve(__dirname, '../../data');
 const DB_FILE = path.join(DATA_DIR, 'cement_db.json');
 const TEMP_FILE = path.join(DATA_DIR, 'cement_db.json.tmp');
 
@@ -83,10 +87,25 @@ class DatabaseEngine {
     if (fs.existsSync(DB_FILE)) {
       try {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
-        const parsed = JSON.parse(raw);
-        return this.migrateSchema(parsed);
+        if (raw && raw.trim().length > 0) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.users) && parsed.users.length > 0) {
+            return this.migrateSchema(parsed);
+          }
+        }
       } catch (err) {
-        console.error('Failed to parse cement_db.json, re-seeding...', err);
+        console.error('Failed to parse cement_db.json, attempting backup check...', err);
+        if (fs.existsSync(TEMP_FILE)) {
+          try {
+            const tempRaw = fs.readFileSync(TEMP_FILE, 'utf-8');
+            const tempParsed = JSON.parse(tempRaw);
+            if (tempParsed && Array.isArray(tempParsed.users) && tempParsed.users.length > 0) {
+              return this.migrateSchema(tempParsed);
+            }
+          } catch {
+            // ignore backup parsing error
+          }
+        }
       }
     }
     const seeded = this.generateSeedData();
@@ -129,8 +148,20 @@ class DatabaseEngine {
     try {
       this.ensureDirectory();
       const content = JSON.stringify(dataToSave, null, 2);
-      fs.writeFileSync(TEMP_FILE, content, 'utf-8');
-      fs.renameSync(TEMP_FILE, DB_FILE);
+      try {
+        fs.writeFileSync(TEMP_FILE, content, 'utf-8');
+        fs.renameSync(TEMP_FILE, DB_FILE);
+      } catch (renameErr) {
+        // Fallback for Windows file-locking (EPERM / EBUSY)
+        fs.writeFileSync(DB_FILE, content, 'utf-8');
+        try {
+          if (fs.existsSync(TEMP_FILE)) {
+            fs.unlinkSync(TEMP_FILE);
+          }
+        } catch {
+          // ignore temp file cleanup error
+        }
+      }
     } catch (err) {
       console.error('CRITICAL: Database persist failed', err);
       throw new Error('Database transaction write failure');
@@ -720,6 +751,12 @@ class DatabaseEngine {
 
   public getAllUsers(): User[] {
     return this.data.users.map(({ passwordHash, passwordSalt, ...u }) => u);
+  }
+
+  public getCustomers(): User[] {
+    return this.data.users
+      .filter((u) => u.role === 'CUSTOMER')
+      .map(({ passwordHash, passwordSalt, ...u }) => u);
   }
 
   public createUser(userData: Omit<DBUser, 'id' | 'createdAt' | 'updatedAt'>): User {

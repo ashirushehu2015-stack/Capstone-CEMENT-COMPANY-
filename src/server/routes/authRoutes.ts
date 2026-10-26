@@ -142,6 +142,12 @@ router.get('/staff', authenticate, requireRole('ADMIN', 'MANAGER'), (_req, res) 
   return res.json({ success: true, staff: users });
 });
 
+// GET /api/auth/customers (Manager and Admin)
+router.get('/customers', authenticate, requireRole('ADMIN', 'MANAGER'), (_req, res) => {
+  const customers = db.getCustomers();
+  return res.json({ success: true, customers });
+});
+
 // POST /api/auth/staff (Manager and Admin)
 router.post('/staff', authenticate, requireRole('ADMIN', 'MANAGER'), (req: AuthenticatedRequest, res) => {
   const parsed = createStaffSchema.safeParse(req.body);

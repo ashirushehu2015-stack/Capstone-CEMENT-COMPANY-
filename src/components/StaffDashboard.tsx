@@ -104,6 +104,8 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
   const [products, setProducts] = useState<Product[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [staffList, setStaffList] = useState<User[]>([]);
+  const [customerList, setCustomerList] = useState<User[]>([]);
+  const [userDirectoryTab, setUserDirectoryTab] = useState<'staff' | 'customers'>('staff');
   const [businessSettings, setBusinessSettings] = useState<BusinessSettings | null>(null);
 
   // Modals inside dashboard
@@ -247,13 +249,15 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
       }
 
       if (isAdmin || isManager) {
-        const [logsRes, staffRes, settingsRes] = await Promise.all([
+        const [logsRes, staffRes, customersRes, settingsRes] = await Promise.all([
           apiReports.getAuditLogs().catch(() => ({ logs: [] })),
           apiAuth.getStaff().catch(() => ({ staff: [] })),
+          apiAuth.getCustomers().catch(() => ({ customers: [] })),
           apiReports.getSettings().catch(() => ({ settings: null })),
         ]);
         setAuditLogs(logsRes.logs);
         setStaffList(staffRes.staff);
+        setCustomerList(customersRes.customers);
         if (settingsRes?.settings) setBusinessSettings(settingsRes.settings);
       }
     } catch (e) {
@@ -392,6 +396,13 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
     try {
       await apiAuth.createStaff(newStaffForm);
       showNotification('success', `New staff account created: ${newStaffForm.fullName}`);
+      setNewStaffForm({
+        email: '',
+        password: '',
+        fullName: '',
+        phone: '',
+        role: 'SALES_OFFICER' as UserRole,
+      });
       setShowCreateStaffModal(false);
       setNewStaffForm({
         email: '',
@@ -1354,8 +1365,36 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
             </div>
           )}
 
-          {/* TAB 7: STAFF & RBAC ACCOUNTS (ADMIN & MANAGER) */}
+          {/* TAB 7: USER & RBAC MANAGEMENT (ADMIN & MANAGER) */}
           {activeTab === 'staff' && (isAdmin || isManager) && (
+            <div className="space-y-6">
+              {/* Sub-tab Switcher: Staff vs Customers */}
+              <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+                <button
+                  type="button"
+                  onClick={() => setUserDirectoryTab('staff')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    userDirectoryTab === 'staff'
+                      ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
+                      : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  Staff Personnel ({staffList.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUserDirectoryTab('customers')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    userDirectoryTab === 'customers'
+                      ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
+                      : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  Registered Customers ({customerList.length})
+                </button>
+              </div>
+
+              {userDirectoryTab === 'staff' ? (
             <div className="space-y-6">
               {/* Executive Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-[#0a1836] to-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
@@ -2087,10 +2126,57 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                 </div>
               )}
             </div>
+          ) : (
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-950 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800">
+                  <tr>
+                    <th className="p-3.5">Contractor / Buyer</th>
+                    <th className="p-3.5">Company / Enterprise</th>
+                    <th className="p-3.5">Email (Login ID)</th>
+                    <th className="p-3.5">Phone</th>
+                    <th className="p-3.5">Registered Location</th>
+                    <th className="p-3.5">Created Date</th>
+                    <th className="p-3.5">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800">
+                  {customerList.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="p-6 text-center text-slate-500">
+                        No registered customer accounts found.
+                      </td>
+                    </tr>
+                  ) : (
+                    customerList.map((c) => (
+                      <tr key={c.id} className="hover:bg-slate-800/40">
+                        <td className="p-3.5 font-bold text-white">{c.fullName}</td>
+                        <td className="p-3.5 text-slate-300">{c.companyName || '—'}</td>
+                        <td className="p-3.5 text-slate-400 font-mono">{c.email}</td>
+                        <td className="p-3.5 text-slate-300 font-mono">{c.phone}</td>
+                        <td className="p-3.5 text-slate-400">
+                          {[c.city, c.state].filter(Boolean).join(', ') || c.address || '—'}
+                        </td>
+                        <td className="p-3.5 text-slate-400 font-mono text-[11px]">
+                          {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—'}
+                        </td>
+                        <td className="p-3.5">
+                          <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 text-[10px] font-bold">
+                            Verified Customer
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           )}
+        </div>
+      )}
 
-          {/* TAB 8: AUDIT TRAIL (ADMIN ONLY) */}
-          {activeTab === 'audit' && isAdmin && (
+          {/* TAB 8: AUDIT TRAIL (ADMIN & MANAGER) */}
+          {activeTab === 'audit' && (isAdmin || isManager) && (
             <div className="space-y-4">
               <div>
                 <h2 className="text-lg font-bold text-white">System Security & Audit Log</h2>
@@ -2605,10 +2691,14 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                     onChange={(e) => setNewStaffForm({ ...newStaffForm, role: e.target.value as any })}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold focus:outline-none focus:border-amber-500"
                   >
-                    <option value="MANAGER">1. Depot Manager (Approval &amp; Treasury)</option>
-                    <option value="ASSISTANT_MANAGER">2. Assistant Manager (Queue &amp; Stock Intake)</option>
+                    <option value="MANAGER">1. Depot Manager (Approval Authority)</option>
+                    <option value="ASSISTANT_MANAGER">2. Assistant Manager (Queue & Stock Registration)</option>
                     <option value="AGENT">3. Issuing Agent (Kalambaina Loading Bay)</option>
+                    <option value="CASHIER">4. Cashier (Treasury & 100% Upfront Reconciliations)</option>
                     <option value="ADMIN">Executive Administrator (Directorate)</option>
+                    <option value="STORE_MANAGER">Store / Depot Manager</option>
+                    <option value="SALES_OFFICER">Sales Officer</option>
+                    <option value="DELIVERY_OFFICER">Delivery Officer / Driver</option>
                   </select>
                 </div>
               </div>

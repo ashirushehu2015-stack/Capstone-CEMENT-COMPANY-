@@ -38,6 +38,7 @@ app.get('*', (req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`BuildCem Server listening on port ${PORT}`);
+const portNumber = Number(PORT) || 3000;
+app.listen(portNumber, '0.0.0.0', () => {
+  console.log(`BuildCem Server listening on http://0.0.0.0:${portNumber}`);
 });
