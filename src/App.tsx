@@ -352,13 +352,6 @@ function StorefrontContent() {
                 <span className="hidden sm:inline">Track Waybill</span>
               </button>
 
-              <button
-                onClick={handleOpenCustomerPortal}
-                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3 py-1 rounded-lg flex items-center gap-1.5 text-xs shadow-md transition-all active:scale-95"
-              >
-                <Truck className="w-3.5 h-3.5 text-slate-950" />
-                <span>Order Trailer (600 Bags)</span>
-              </button>
 
               <div className="text-slate-300 font-mono text-xs flex items-center gap-1 pl-1 border-l border-slate-700/60">
                 <Clock className="w-3.5 h-3.5 text-amber-400" />
