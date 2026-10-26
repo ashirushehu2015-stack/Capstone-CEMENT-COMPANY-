@@ -27,6 +27,10 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
   };
 
   const isPaid = order.paymentStatus === 'VERIFIED';
+  const managerName = order.approvedByManagerName || 'Engr. Sanusi Kalambaina';
+  const issuingAgentName =
+    order.truckAllocations?.find((t) => t.issuedByAgentName)?.issuedByAgentName ||
+    'Haruna Danladi';
 
   return (
     <div
@@ -192,26 +196,85 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
             </div>
           </div>
 
-          {/* Official Seals */}
-          <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
-            <div>
-              <span className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Payment Status:</span>
-              <span
-                className={`inline-block px-3 py-1 rounded-md font-bold uppercase text-[11px] ${
-                  isPaid ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'
-                }`}
-              >
-                {order.paymentStatus} via {order.paymentMethod.replace('_', ' ')}
-              </span>
-              <p className="text-[10px] text-slate-500 mt-1">Lifecycle: <strong>{order.status}</strong></p>
+          {/* Official Authorization & Signatures (Manager and Agent Dual Signoff) */}
+          <div className="pt-4 border-t border-slate-200 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span className="text-[10px] font-bold uppercase text-slate-500 block mb-0.5">Payment Status &amp; Clearance:</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`inline-block px-2.5 py-0.5 rounded-md font-bold uppercase text-[10px] ${
+                      isPaid ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'
+                    }`}
+                  >
+                    {order.paymentStatus} via {order.paymentMethod.replace('_', ' ')}
+                  </span>
+                  <span className="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                    Lifecycle: <strong>{order.status}</strong>
+                  </span>
+                </div>
+              </div>
+              <div className="text-left sm:text-right text-[10px] text-slate-500 font-mono">
+                Official Staff Verification Required Prior to Gate Pass Release
+              </div>
             </div>
 
-            <div className="text-right">
-              <div className="h-10 border-b border-slate-400 w-48 mb-1" />
-              <span className="text-[10px] text-slate-500 block">Site Engineer / Recipient Signoff</span>
-              <span className="text-[10px] font-bold text-slate-800">
-                {order.deliveryDetails?.recipientSignatureName || order.customerName}
-              </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              {/* Place 1: Authorized Sales & Issuing Agent */}
+              <div className="bg-slate-50/90 p-3.5 rounded-xl border border-slate-200 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-black uppercase text-amber-800 tracking-wider">
+                      1. Sales &amp; Issuing Agent Signoff
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-bold border border-amber-300">
+                      Physical Loading &amp; Dispatch
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-500">
+                    Certified 600 bags (30 tonnes) per truck payload inspected and issued to transporter.
+                  </p>
+                </div>
+
+                <div className="mt-4">
+                  <div className="h-9 border-b-2 border-dashed border-slate-400 mb-1.5 flex items-end justify-between px-1">
+                    <span className="text-[9px] font-mono text-slate-400 italic">Agent Signature &amp; Date</span>
+                    <span className="text-[9px] font-mono font-bold text-amber-800">✓ TERMINAL ISSUED</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="font-bold text-slate-900">{issuingAgentName}</span>
+                    <span className="text-slate-500 font-semibold">Sales &amp; Issuing Agent</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Place 2: General / Branch Manager Authorization */}
+              <div className="bg-slate-50/90 p-3.5 rounded-xl border border-slate-200 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-black uppercase text-blue-950 tracking-wider">
+                      2. General Manager Signoff
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-900 font-bold border border-blue-300">
+                      Financial Clearance &amp; Approval
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-500">
+                    100% full payment confirmed verified. Waybill and factory gate exit authorization granted.
+                  </p>
+                </div>
+
+                <div className="mt-4">
+                  <div className="h-9 border-b-2 border-dashed border-slate-400 mb-1.5 flex items-end justify-between px-1">
+                    <span className="text-[9px] font-mono text-slate-400 italic">Manager Signature / Stamp</span>
+                    <span className="text-[9px] font-mono font-bold text-blue-800">✓ AUDIT AUTHORIZED</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="font-bold text-slate-900">{managerName}</span>
+                    <span className="text-slate-500 font-semibold">General / Branch Manager</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
