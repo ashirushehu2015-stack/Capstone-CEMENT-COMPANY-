@@ -307,7 +307,7 @@ function StorefrontContent() {
       
       {/* 1. TOP STATUS & NAVIGATION BAR (Only on Landing Screen so Customer Portal & Staff Dashboard have no duplicate header) */}
       {activeView === 'landing' && (
-        <header className="bg-[#060e1d] border-b border-blue-900/40 text-xs py-2 px-4 sm:px-6 shrink-0 z-30">
+        <header className="bg-[#060e1d] border-b border-blue-900/40 text-xs py-2 px-4 sm:px-6 shrink-0 z-30 print:hidden">
           <div className="max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-3">
             
             {/* Left: Operational Status & System Version & Address */}
@@ -365,6 +365,7 @@ function StorefrontContent() {
       )}
 
       {/* RENDER VIEW: STAFF LOGISTICS PORTAL, CUSTOMER FACING PORTAL, OR SPLIT LANDING PAGE */}
+      <div className="flex-1 min-h-0 flex flex-col print:hidden">
       {activeView === 'dashboard' && isStaff ? (
         <div className="flex-1 min-h-0 overflow-y-auto">
           <StaffDashboard
@@ -780,8 +781,11 @@ function StorefrontContent() {
         </main>
       )}
 
+            </div>
+
       {/* 3. SUB-FOOTER BAR & BOTTOM FOOTER (Only on Landing Screen) */}
       {activeView === 'landing' && (
+        <div className="print:hidden">
         <>
           <div className="bg-[#060e1d] border-t border-blue-950 text-slate-400 text-xs py-2 px-4 sm:px-6 shrink-0 z-30">
             <div className="max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-2 text-[11px]">
@@ -835,43 +839,45 @@ function StorefrontContent() {
             </div>
           </footer>
         </>
+        </div>
       )}
 
       {/* Global Modals & Drawers */}
-      <CartDrawer
-        onProceedToCheckout={() => setIsCheckoutOpen(true)}
-      />
+      <div className="print:hidden">
+        <CartDrawer
+          onProceedToCheckout={() => setIsCheckoutOpen(true)}
+        />
 
-      <CheckoutModal
-        isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
-        onOrderSuccess={(order) => {
-          setReceiptOrder(order);
-          setOrderRefreshKey((k) => k + 1);
-        }}
-      />
+        <CheckoutModal
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          onOrderSuccess={(order) => {
+            setReceiptOrder(order);
+            setOrderRefreshKey((k) => k + 1);
+          }}
+        />
 
-      <ProductDetailModal
-        product={viewSpecsProduct}
-        onClose={() => setViewSpecsProduct(null)}
-      />
+        <ProductDetailModal
+          product={viewSpecsProduct}
+          onClose={() => setViewSpecsProduct(null)}
+        />
 
+        <OrderTrackerModal
+          isOpen={isTrackerOpen}
+          onClose={() => setIsTrackerOpen(false)}
+          onViewReceipt={(order) => setReceiptOrder(order)}
+        />
 
-      <OrderTrackerModal
-        isOpen={isTrackerOpen}
-        onClose={() => setIsTrackerOpen(false)}
-        onViewReceipt={(order) => setReceiptOrder(order)}
-      />
+        <StaffAuthModal
+          isOpen={isStaffAuthModalOpen}
+          onClose={() => setIsStaffAuthModalOpen(false)}
+          onSuccess={() => setActiveView('dashboard')}
+        />
+      </div>
 
       <OrderReceiptModal
         order={receiptOrder}
         onClose={() => setReceiptOrder(null)}
-      />
-
-      <StaffAuthModal
-        isOpen={isStaffAuthModalOpen}
-        onClose={() => setIsStaffAuthModalOpen(false)}
-        onSuccess={() => setActiveView('dashboard')}
       />
     </div>
   );

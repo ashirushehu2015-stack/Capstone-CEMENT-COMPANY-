@@ -2,7 +2,7 @@
 
 @page {
   size: A4 portrait;
-  margin: 6mm 8mm;
+  margin: 8mm 10mm;
 }
 
 @media print {
@@ -17,15 +17,31 @@
     print-color-adjust: exact !important;
   }
 
-  .print-a4-fit {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
+  .print-page-1 {
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    min-height: 270mm !important;
+    max-height: 280mm !important;
     box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+
+  .print-page-2 {
+    page-break-before: always !important;
+    break-before: page !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     page-break-after: avoid !important;
     break-after: avoid !important;
+    min-height: 270mm !important;
+    max-height: 280mm !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
   }
 }
