@@ -101,6 +101,16 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
     }
   }, [activeTab, customerUser?.id, orderRefreshKey]);
 
+    const handleCustomerLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      setCustomerOrders([]);
+      setActiveTab('catalogue');
+      onReturnToLanding();
+    }
+  };
+
   const handleOrderQuickTrailers = (product: Product, trailersCount: number) => {
     addItem(product, trailersCount);
     onOpenCheckout();
@@ -207,11 +217,13 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                   </span>
                 </div>
                 <button
-                  onClick={() => logout()}
-                  title="Sign Out of Customer Account"
-                  className="text-slate-400 hover:text-rose-400 p-1 rounded-lg hover:bg-slate-800 transition-colors ml-1"
+                  type="button"
+                  onClick={handleCustomerLogout}
+                  title="Sign Out of Profile & Return Home"
+                  className="bg-rose-950/80 hover:bg-rose-900 border border-rose-800 text-rose-300 hover:text-white px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer ml-1"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
+                  <LogOut className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Sign Out</span>
                 </button>
               </div>
             ) : (
@@ -361,6 +373,18 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 {totalTrailers > 0 ? ` (₦${subtotalNGN.toLocaleString('en-NG')})` : ' in Cart'}
               </span>
             </button>
+            {customerUser && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleCustomerLogout}
+                  className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-300 hover:text-white bg-rose-950/50 hover:bg-rose-900 border border-rose-800/80 transition-all cursor-pointer shadow-sm"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Exit Profile / Sign Out</span>
+                </button>
+              </div>
+            )}
           </div>
         </aside>
 

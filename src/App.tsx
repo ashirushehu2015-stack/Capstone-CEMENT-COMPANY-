@@ -596,7 +596,10 @@ function StorefrontContent() {
 
                     <div className="flex items-center justify-between pt-1">
                       <button
-                        onClick={() => logout()}
+                        onClick={async () => {
+                          await logout();
+                          setCustomerAuthMode('login');
+                        }}
                         className="text-xs text-rose-600 hover:text-rose-800 font-semibold flex items-center gap-1"
                       >
                         <LogOut className="w-3.5 h-3.5" /> Sign Out
