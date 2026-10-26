@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { X, Printer, Truck, ShieldCheck, Building2 } from 'lucide-react';
+import React, { useRef, useEffect } from 'react';
+import { X, Printer, ArrowLeft } from 'lucide-react';
 import type { Order } from '../types/index.ts';
 
 interface OrderReceiptModalProps {
@@ -10,6 +10,16 @@ interface OrderReceiptModalProps {
 export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onClose }) => {
   const receiptRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   if (!order) return null;
 
   const handlePrint = () => {
@@ -19,26 +29,47 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
   const isPaid = order.paymentStatus === 'VERIFIED';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-200 print:p-0 print:bg-white">
-      <div className="relative w-full max-w-3xl bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden my-6 flex flex-col print:border-none print:shadow-none print:bg-white print:text-black">
-        {/* Modal Bar */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-950 print:hidden">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-md border border-amber-500/20">
-              Sokoto Cement Official Trailer Waybill & Gate Pass
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/85 backdrop-blur-sm p-2 sm:p-4 md:p-6 flex justify-center items-start print:p-0 print:bg-white print:static print:overflow-visible print:inset-auto"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="relative w-full max-w-3xl bg-slate-900 border border-slate-700 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden my-2 sm:my-6 flex flex-col print:border-none print:shadow-none print:bg-white print:text-black print:m-0 print:max-w-none">
+        {/* Sticky Top Header Action Bar */}
+        <div className="sticky top-0 z-30 flex items-center justify-between px-3 sm:px-5 py-3 border-b border-slate-800 bg-slate-950/95 backdrop-blur-md print:hidden shadow-md">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-all shadow-sm cursor-pointer"
+              title="Return / Close Waybill"
+            >
+              <ArrowLeft className="w-4 h-4 text-amber-400" />
+              <span>Go Back</span>
+            </button>
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-500/20 truncate hidden sm:inline-block">
+              Waybill &amp; Gate Pass
             </span>
-            <span className="text-xs text-slate-400 font-mono">{order.orderNumber}</span>
+            <span className="text-xs text-slate-400 font-mono font-semibold hidden md:inline-block">
+              {order.orderNumber}
+            </span>
           </div>
+
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={handlePrint}
-              className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors"
+              className="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 text-xs font-black px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-md shadow-amber-500/20 cursor-pointer"
             >
-              <Printer className="w-3.5 h-3.5" /> Print / Save PDF
+              <Printer className="w-4 h-4" />
+              <span>Print / Save PDF</span>
             </button>
             <button
+              type="button"
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white rounded-full hover:bg-slate-800 transition-colors"
+              aria-label="Close Waybill"
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -48,7 +79,7 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
         {/* Printable Invoice & Waybill Body */}
         <div
           ref={receiptRef}
-          className="p-8 space-y-6 bg-white text-slate-900 print:p-4 text-xs font-sans"
+          className="p-6 sm:p-8 space-y-6 bg-white text-slate-900 print:p-4 text-xs font-sans"
         >
           {/* Header with Official Letterhead */}
           <div className="border-b-2 border-slate-900 pb-4 space-y-4">
@@ -80,7 +111,7 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
           </div>
 
           {/* Customer & Transporter Box */}
-          <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
             <div>
               <span className="text-[10px] uppercase font-bold text-slate-500 block">Consignee (Customer / Contractor):</span>
               <p className="font-bold text-sm text-slate-900">{order.customerName}</p>
@@ -187,6 +218,34 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
           {/* Legal Footer */}
           <div className="text-[10px] text-slate-400 border-t border-slate-200 pt-3 text-center">
             Genuine Sokoto Cement manufactured under license at Kalambaina Works, Sokoto State. Standard 50kg bag valve packaging conforms strictly to Nigerian Industrial Standards (NIS 444-1:2018). Demurrage commences 24 hours after trailer arrival on destination site.
+          </div>
+        </div>
+
+        {/* Sticky Bottom Action Bar */}
+        <div className="sticky bottom-0 z-30 bg-slate-950/95 backdrop-blur-md border-t border-slate-800 px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between gap-3 shadow-2xl print:hidden">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs sm:text-sm font-bold transition-all shadow-md cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4 text-amber-400" />
+              <span>Go Back / Close</span>
+            </button>
+            <span className="text-[11px] text-slate-400 hidden md:inline">
+              Press <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono text-[10px]">ESC</kbd> to return
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
+            >
+              <Printer className="w-4 h-4" />
+              <span>Print / Save PDF</span>
+            </button>
           </div>
         </div>
       </div>
