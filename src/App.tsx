@@ -846,25 +846,27 @@ function StorefrontContent() {
               <span>|</span>
               <span className="text-emerald-400 font-mono">600 Bags (30 Metric Tonnes) Per Trailer</span>
               <span>|</span>
-              {isStaff ? (
-                <button
-                  onClick={() => setActiveView('dashboard')}
-                  className="bg-blue-900/80 hover:bg-blue-800 text-blue-200 border border-blue-700/80 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 transition-all"
-                  title="Open Operations Dashboard"
-                >
-                  <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                  <span>Operations Portal ({user?.role}) &rarr;</span>
-                </button>
-              ) : (
-                <button
-                  onClick={() => setIsStaffAuthModalOpen(true)}
-                  className="hover:text-amber-400 text-slate-400 font-semibold flex items-center gap-1 transition-colors"
-                  title="Authorized Staff &amp; Plant Operations Terminal"
-                >
-                  <Lock className="w-3 h-3 text-amber-500" />
-                  <span>Staff &amp; Officer Login</span>
-                </button>
+              {isStaff && (
+                <>
+                  <button
+                    onClick={() => setActiveView('dashboard')}
+                    className="bg-blue-900/80 hover:bg-blue-800 text-blue-200 border border-blue-700/80 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 transition-all"
+                    title="Open Operations Dashboard"
+                  >
+                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                    <span>Operations Portal ({user?.role}) &rarr;</span>
+                  </button>
+                  <span>|</span>
+                </>
               )}
+              <button
+                onClick={() => setIsStaffAuthModalOpen(true)}
+                className="hover:text-amber-400 text-slate-400 font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                title="Authorized Staff &amp; Plant Operations Terminal"
+              >
+                <Lock className="w-3 h-3 text-amber-500" />
+                <span>Staff &amp; Officer Login</span>
+              </button>
             </div>
           </footer>
         </>
