@@ -354,21 +354,30 @@ function StorefrontContent() {
               </button>
 
               {isStaff ? (
-                <button
-                  onClick={() => setActiveView('dashboard')}
-                  className="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-bold transition-all shadow-md"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-white" />
-                  <span>Operations Portal ({user?.role}) &rarr;</span>
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setActiveView('dashboard')}
+                    className="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-bold transition-all shadow-md"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 text-white" />
+                    <span>Operations ({user?.role}) &rarr;</span>
+                  </button>
+                  <button
+                    onClick={() => setIsStaffAuthModalOpen(true)}
+                    className="bg-[#0b1f3f] hover:bg-[#122e5a] text-amber-400 border border-blue-700/50 px-2 py-1 rounded-lg text-xs font-semibold transition-colors"
+                    title="Switch Staff Role / Select RBAC Desk"
+                  >
+                    Switch Role
+                  </button>
+                </div>
               ) : (
                 <button
                   onClick={() => setIsStaffAuthModalOpen(true)}
                   className="bg-[#071329] hover:bg-[#0d2857] text-amber-400 border border-amber-500/40 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-bold transition-all shadow-sm"
-                  title="Internal Staff &amp; Plant Operations Terminal"
+                  title="Internal Staff &amp; Plant Operations Terminal (RBAC)"
                 >
                   <Lock className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Staff Terminal</span>
+                  <span>Staff Terminal (RBAC)</span>
                 </button>
               )}
 

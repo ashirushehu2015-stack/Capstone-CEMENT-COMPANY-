@@ -30,6 +30,7 @@ import {
   Copy,
   Shield,
   Lock,
+  LogOut,
   Phone,
   Mail,
   Filter,
@@ -73,7 +74,7 @@ interface StaffDashboardProps {
 }
 
 export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewOrderReceipt }) => {
-  const { user, isAdmin, isManager, isAssistantManager, isAgent, isStoreManager, isSalesOfficer, isDeliveryOfficer, switchUserRoleDemo } = useAuth();
+  const { user, isAdmin, isManager, isAssistantManager, isAgent, isStoreManager, isSalesOfficer, isDeliveryOfficer, switchUserRoleDemo, logout } = useAuth();
 
   // Active Tab
   type TabType =
@@ -107,6 +108,15 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
   const [customerList, setCustomerList] = useState<User[]>([]);
   const [userDirectoryTab, setUserDirectoryTab] = useState<'staff' | 'customers'>('staff');
   const [businessSettings, setBusinessSettings] = useState<BusinessSettings | null>(null);
+
+  // Strict RBAC: Automatically enforce authorized view when switching roles
+  useEffect(() => {
+    if (isAgent && !['deliveries', 'orders', 'acceptance_tests'].includes(activeTab)) {
+      setActiveTab('deliveries');
+    } else if (isAssistantManager && !['orders', 'stock_registration', 'inventory', 'opening_stock', 'acceptance_tests'].includes(activeTab)) {
+      setActiveTab('orders');
+    }
+  }, [user?.role, isAgent, isAssistantManager]);
 
   // Modals inside dashboard
   const [showReceiveGoodsModal, setShowReceiveGoodsModal] = useState(false);
@@ -487,28 +497,73 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       {/* Dashboard Top Header */}
-      <header className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+      <header className="bg-slate-900 border-b border-slate-800 px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
             <Layers className="w-5 h-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-black text-white">A.A. Master Nig. Limited — Operations Portal</h1>
-              <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-600/30 text-blue-300 border border-blue-500/40">
-                {user?.role === 'MANAGER' && 'Manager (Approval Authority)'}
-                {user?.role === 'ASSISTANT_MANAGER' && 'Assistant Manager (Queue Review)'}
-                {user?.role === 'AGENT' && 'Agent (Production Site Stock Issuance)'}
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-base sm:text-lg font-black text-white">A.A. Master Nig. Limited — Operations Portal</h1>
+              <span className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md border ${
+                user?.role === 'MANAGER'
+                  ? 'bg-purple-950/80 text-purple-300 border-purple-700'
+                  : user?.role === 'ASSISTANT_MANAGER'
+                  ? 'bg-indigo-950/80 text-indigo-300 border-indigo-700'
+                  : 'bg-teal-950/80 text-teal-300 border-teal-700'
+              }`}>
+                {user?.role === 'MANAGER' && '👔 Manager (Approval Authority)'}
+                {user?.role === 'ASSISTANT_MANAGER' && '📋 Assistant Manager (Queue Review)'}
+                {user?.role === 'AGENT' && '🚛 Sales & Issuing Agent (Loading Bay)'}
                 {!['MANAGER', 'ASSISTANT_MANAGER', 'AGENT'].includes(user?.role || '') && user?.role.replace('_', ' ')}
               </span>
             </div>
-            <p className="text-xs text-slate-400">
-              Sokoto Cement Kalambaina Plant Wholesale Terminal • Active Operator: <strong>{user?.fullName}</strong> ({user?.email})
+            <p className="text-xs text-slate-400 mt-0.5">
+              Kalambaina Plant Wholesale Terminal • Active Operator: <strong className="text-white">{user?.fullName}</strong> ({user?.email})
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* Top Header Actions & RBAC Persona Switcher */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          {/* Quick RBAC Role Switcher */}
+          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs shadow-inner">
+            <span className="text-[10px] text-slate-500 font-bold px-1.5 uppercase hidden md:inline">RBAC Role:</span>
+            <button
+              onClick={() => handleSwitchToStaffDemo('MANAGER', 'Engr. Sanusi Kalambaina')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                user?.role === 'MANAGER'
+                  ? 'bg-purple-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+              title="Switch to Depot Manager: Full Order Approvals & Financial Reconciliations"
+            >
+              👔 Manager
+            </button>
+            <button
+              onClick={() => handleSwitchToStaffDemo('ASSISTANT_MANAGER', 'Fatima Aliyu')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                user?.role === 'ASSISTANT_MANAGER'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+              title="Switch to Assistant Manager: Queue Review & Document Audit"
+            >
+              📋 Asst. Mgr
+            </button>
+            <button
+              onClick={() => handleSwitchToStaffDemo('AGENT', 'Haruna Danladi')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                user?.role === 'AGENT'
+                  ? 'bg-teal-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+              title="Switch to Sales & Issuing Agent: Weighbridge & Truck Gate Clearance"
+            >
+              🚛 Sales Agent
+            </button>
+          </div>
+
           <button
             onClick={loadAllData}
             className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
@@ -516,11 +571,24 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
+
+          <button
+            onClick={async () => {
+              await logout();
+              onClose();
+            }}
+            className="px-3 py-1.5 rounded-xl border border-rose-800/80 bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs font-bold flex items-center gap-1 transition-colors"
+            title="Sign Out to Public Storefront"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Sign Out</span>
+          </button>
+
           <button
             onClick={onClose}
-            className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-md transition-colors"
+            className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-3.5 py-1.5 rounded-xl shadow-md transition-colors"
           >
-            Back to Public Storefront
+            Back to Storefront
           </button>
         </div>
       </header>
@@ -543,7 +611,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar Nav */}
         <aside className="w-64 bg-slate-900/60 border-r border-slate-800/80 p-4 space-y-1 overflow-y-auto">
-          {(isAdmin || isManager || isStoreManager) && (
+          {(isAdmin || isManager) && (
             <button
               onClick={() => setActiveTab('overview')}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -557,7 +625,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
           )}
 
           {/* Section 2: Staff Stock Registration Module */}
-          {(isAdmin || isManager || isAssistantManager || isStoreManager || isSalesOfficer) && (
+          {(isAdmin || isManager || isAssistantManager) && !isAgent && (
             <button
               onClick={() => setActiveTab('stock_registration')}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -583,7 +651,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                 : 'text-slate-400 hover:bg-slate-800 hover:text-white'
             }`}
           >
-            <ShoppingBag className="w-4 h-4" /> Orders & Issuance
+            <ShoppingBag className="w-4 h-4" /> {isAgent ? "Loading Bay Dispatch Queue" : isAssistantManager ? "Orders & Queue Review" : "Orders & Approvals"}
             {orders.filter((o) => o.managerApprovalStatus === 'PENDING_REVIEW' || o.status === 'PAID').length > 0 && (
               <span className="ml-auto bg-amber-500 text-slate-950 text-[10px] px-1.5 py-0.5 rounded-full font-black">
                 {orders.filter((o) => o.managerApprovalStatus === 'PENDING_REVIEW' || o.status === 'PAID').length}
@@ -591,7 +659,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
             )}
           </button>
 
-          {(isAdmin || isManager || isAssistantManager || isStoreManager || isSalesOfficer) && (
+          {(isAdmin || isManager || isAssistantManager) && !isAgent && (
             <button
               onClick={() => setActiveTab('inventory')}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -605,7 +673,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
           )}
 
           {/* Section 4: Opening Stock Registration */}
-          {(isAdmin || isManager || isAssistantManager || isStoreManager) && (
+          {(isAdmin || isManager || isAssistantManager) && !isAgent && (
             <button
               onClick={() => setActiveTab('opening_stock')}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -630,7 +698,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
             <ShieldCheck className="w-4 h-4" /> 16 Acceptance Tests
           </button>
 
-          {(isAdmin || isStoreManager || isManager) && (
+          {(isAdmin || isManager) && (
             <button
               onClick={() => setActiveTab('payments')}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -643,8 +711,9 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
             </button>
           )}
 
-          <button
-            onClick={() => setActiveTab('deliveries')}
+          {(isAdmin || isManager || isAgent) && (
+            <button
+              onClick={() => setActiveTab('deliveries')}
             className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
               activeTab === 'deliveries'
                 ? 'bg-amber-600 text-white shadow-md'
@@ -653,8 +722,9 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
           >
             <Truck className="w-4 h-4" /> Agent: Production Site Truck Issuance
           </button>
+          )}
 
-          {(isAdmin || isStoreManager) && (
+          {(isAdmin || isManager) && (
             <button
               onClick={() => setActiveTab('products')}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
