@@ -437,31 +437,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                     </div>
                   </div>
                 </div>
-
-                {/* Quick Action Bar */}
-                <div className="pt-2 flex flex-wrap items-center gap-3">
-                  <button
-                    onClick={() => {
-                      if (products[0]) handleOrderQuickTrailers(products[0], 1);
-                    }}
-                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-5 py-3 rounded-xl text-sm shadow-xl flex items-center gap-2 transition-all active:scale-95"
-                  >
-                    <Truck className="w-4 h-4 text-slate-950" />
-                    <span>Order 1 Trailer (₦6,510,000)</span>
-                    <ArrowRight className="w-4 h-4 text-slate-950" />
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      if (products[0]) handleOrderQuickTrailers(products[0], 2);
-                    }}
-                    className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-3 rounded-xl text-sm shadow-lg flex items-center gap-2 transition-all active:scale-95"
-                  >
-                    <span>Order 2 Trailers (₦13,020,000)</span>
-                  </button>
-
-                </div>
-              </div>
+</div>
             </div>
 
             {/* Authoritative Wholesale Trailer Procurement & Pricing Schedule */}
