@@ -9,7 +9,7 @@ const productSchema = z.object({
   sku: z.string().min(2),
   name: z.string().min(3),
   brand: z.literal('Sokoto Cement'),
-  grade: z.enum(['32.5R', '42.5R', '42.5N']),
+  grade: z.string().optional(),
   bagWeightKg: z.number().default(50),
   bagsPerTrailer: z.number().default(600),
   tonnesPerTrailer: z.number().default(30),

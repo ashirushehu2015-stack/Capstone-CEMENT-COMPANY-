@@ -1363,7 +1363,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                     <div className="flex items-start justify-between">
                       <div>
                         <span className="text-[10px] font-bold uppercase text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                          Sokoto Cement • Grade {p.grade}
+                          Sokoto Cement • Factory Direct
                         </span>
                         <h4 className="text-base font-bold text-white mt-1">{p.name}</h4>
                         <span className="text-xs text-slate-400 font-mono">{p.sku}</span>
@@ -2404,7 +2404,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                   type="text"
                   value={receiveForm.notes}
                   onChange={(e) => setReceiveForm({ ...receiveForm, notes: e.target.value })}
-                  placeholder="e.g. Lab tested 42.5 MPa, verified valve bags intact"
+                  placeholder="e.g. Lab tested standard batch, verified valve bags intact"
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
                 />
               </div>

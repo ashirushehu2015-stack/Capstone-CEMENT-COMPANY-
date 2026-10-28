@@ -74,7 +74,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout }) =
                 </div>
                 <h3 className="text-base font-bold text-slate-300">No trailers selected</h3>
                 <p className="text-xs text-slate-500 max-w-xs mt-1">
-                  Choose a Sokoto Cement grade trailer load (600 bags / 30 tonnes).
+                  Order authentic Sokoto Cement trailer loads (600 bags / 30 tonnes).
                 </p>
                 <button
                   onClick={() => setIsCartOpen(false)}
@@ -96,7 +96,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout }) =
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <span className="text-[10px] uppercase font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                          Sokoto Cement • Grade {product.grade}
+                          Sokoto Cement • 600 Bags / 30T
                         </span>
                         <h4 className="text-sm font-bold text-white mt-1">{product.name}</h4>
                         <span className="text-xs text-emerald-400 font-mono font-semibold">

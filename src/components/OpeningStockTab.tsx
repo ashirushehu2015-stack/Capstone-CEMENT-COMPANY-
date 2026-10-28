@@ -202,7 +202,7 @@ export const OpeningStockTab: React.FC<OpeningStockTabProps> = ({
                 >
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name} (Grade {p.grade})
+                      {p.name}
                     </option>
                   ))}
                 </select>

@@ -50,8 +50,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
           {/* Top Key Metrics Banner */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800 text-center">
-              <span className="text-xs text-slate-400 block">Grade</span>
-              <span className="text-lg font-black text-amber-400">{product.grade}</span>
+              <span className="text-xs text-slate-400 block">Specification</span>
+              <span className="text-lg font-black text-amber-400">NIS 444-1</span>
             </div>
             <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800 text-center">
               <span className="text-xs text-slate-400 block">Trailer Payload</span>

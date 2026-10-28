@@ -453,31 +453,33 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                   </p>
                 </div>
 
-                {/* Grade Selection Tabs */}
-                <div className="flex flex-wrap items-center gap-2">
-                  {products.map((p) => {
-                    const isSelected = (selectedGradeId || products[0]?.id) === p.id;
-                    return (
-                      <button
-                        key={p.id}
-                        onClick={() => setSelectedGradeId(p.id)}
-                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border ${
-                          isSelected
-                            ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md ring-1 ring-amber-400'
-                            : 'bg-[#091d3f] text-slate-300 border-blue-800/60 hover:bg-[#0d2754] hover:text-white'
-                        }`}
-                      >
-                        <ShieldCheck className={`w-3.5 h-3.5 ${isSelected ? 'text-slate-950' : 'text-amber-400'}`} />
-                        <span>Grade {p.grade}</span>
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
-                          isSelected ? 'bg-slate-950 text-amber-300' : 'bg-blue-950 text-slate-400'
-                        }`}>
-                          {p.availableTrailers} Trucks
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+                {/* Grade Selection Tabs (Only displayed if multiple products) */}
+                {products.length > 1 && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {products.map((p) => {
+                      const isSelected = (selectedGradeId || products[0]?.id) === p.id;
+                      return (
+                        <button
+                          key={p.id}
+                          onClick={() => setSelectedGradeId(p.id)}
+                          className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border ${
+                            isSelected
+                              ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md ring-1 ring-amber-400'
+                              : 'bg-[#091d3f] text-slate-300 border-blue-800/60 hover:bg-[#0d2754] hover:text-white'
+                          }`}
+                        >
+                          <ShieldCheck className={`w-3.5 h-3.5 ${isSelected ? 'text-slate-950' : 'text-amber-400'}`} />
+                          <span>{p.name}</span>
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
+                            isSelected ? 'bg-slate-950 text-amber-300' : 'bg-blue-950 text-slate-400'
+                          }`}>
+                            {p.availableTrailers} Trucks
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Active Selected Grade Summary Box */}
@@ -485,7 +487,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 <div className="bg-[#050f24] border border-blue-900/60 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 text-xs">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-amber-400 text-[11px] font-bold">Grade {activeProduct.grade}</span>
+                      <span className="font-mono text-amber-400 text-[11px] font-bold">Factory Direct</span>
                       <span className="text-slate-500">•</span>
                       <strong className="text-white text-sm font-bold">{activeProduct.name}</strong>
                     </div>
@@ -519,7 +521,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                   <thead className="bg-[#0b214a] text-blue-200 font-bold border-b border-blue-800">
                     <tr>
                       <th className="py-3 px-4">Trailer Quantity</th>
-                      <th className="py-3 px-4">Selected Grade</th>
+                      <th className="py-3 px-4">Product</th>
                       <th className="py-3 px-4">Standard 50kg Bags</th>
                       <th className="py-3 px-4">Metric Weight</th>
                       <th className="py-3 px-4">Price Per Bag</th>
@@ -539,7 +541,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                             <span>{truckCount} {truckCount === 1 ? 'Trailer' : 'Trailers'}</span>
                           </td>
                           <td className="py-3.5 px-4 text-amber-300 font-sans font-semibold">
-                            Grade {activeProduct?.grade || '42.5R'}
+                            {activeProduct?.name || 'Sokoto Cement'}
                           </td>
                           <td className="py-3.5 px-4">{bags.toLocaleString()} Bags</td>
                           <td className="py-3.5 px-4">{tonnes} Tonnes</td>

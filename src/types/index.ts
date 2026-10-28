@@ -41,7 +41,7 @@ export interface User {
 
 export type CementBrand = 'Sokoto Cement';
 
-export type CementGrade = '32.5R' | '42.5R' | '42.5N';
+export type CementGrade = '32.5R' | '42.5R' | '42.5N' | 'Standard' | string;
 
 export interface Product {
   id: string;
@@ -70,11 +70,11 @@ export interface Product {
   reorderThresholdTrailers?: number;
   minOrderTrailers: number; // Minimum 1 full truck (600 bags)
   minimumOrderTrailers?: number;
-  maxOrderTrailers?: number;
+  maxOrderTrailers?: number;
   certification?: string;
   description: string;
   applications: string[];
-  features: string[];
+  features: string[];
   imageUrl: string;
   isActive: boolean;
   createdAt: string;

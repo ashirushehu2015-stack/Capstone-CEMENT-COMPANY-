@@ -64,7 +64,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onViewSpecs }
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Sokoto Cement
           </span>
           <span className="bg-amber-600 text-white font-extrabold text-xs px-2.5 py-1 rounded-lg shadow-sm">
-            Grade {product.grade}
+            600 Bags / 30T
           </span>
         </div>
 

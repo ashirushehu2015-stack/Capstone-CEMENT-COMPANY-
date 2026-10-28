@@ -122,9 +122,17 @@ class DatabaseEngine {
     schema.settings.fixedPricePerTruck = FIXED_PRICE_PER_TRUCK;
     schema.settings.bagsPerTrailer = FIXED_BAGS_PER_TRUCK;
 
-    // Enforce fixed pricing on products
+    // Enforce fixed pricing on products and ensure only 1 Sokoto Cement product
     if (schema.products) {
+      schema.products = schema.products.filter(
+        (p: any) => p.id !== 'prod_sokoto_325r' && !p.name?.toLowerCase().includes('superior')
+      );
       for (const p of schema.products) {
+        if (p.id === 'prod_sokoto_425r' || p.brand === 'Sokoto Cement') {
+          p.name = 'Sokoto Cement (Full Truck - 600 Bags)';
+          p.sku = 'AAM-SKT-600';
+          p.description = 'Direct factory trailer load of authentic Sokoto Cement (Kalambaina Plant). Standard high-strength formulation engineered for multi-story structural casting, foundations, highway works, and general commercial construction.';
+        }
         p.pricePerBag = FIXED_PRICE_PER_BAG;
         p.pricePerBagEquivalent = FIXED_PRICE_PER_BAG;
         p.pricePerTrailer = FIXED_PRICE_PER_TRUCK;
@@ -297,8 +305,8 @@ class DatabaseEngine {
     const products: Product[] = [
       {
         id: 'prod_sokoto_425r',
-        sku: 'AAM-SKT-425R',
-        name: 'Sokoto Cement Premium 42.5R (Full Truck - 600 Bags)',
+        sku: 'AAM-SKT-600',
+        name: 'Sokoto Cement (Full Truck - 600 Bags)',
         brand: 'Sokoto Cement',
         grade: '42.5R',
         bagWeightKg: 50,
@@ -318,7 +326,7 @@ class DatabaseEngine {
         reorderLevelTrailers: 10,
         minOrderTrailers: 1,
         maxOrderTrailers: 100,
-        description: 'Direct factory trailer load of authentic Sokoto Cement (Kalambaina Plant). Premium Portland Limestone formulation engineered for high early strength, mega foundations, high-rise structural casting, and highway civil works.',
+        description: 'Direct factory trailer load of authentic Sokoto Cement (Kalambaina Plant). Standard high-strength formulation engineered for multi-story structural casting, foundations, highway works, and general commercial construction.',
         applications: [
           'High-Rise Reinforced Columns & Slabs',
           'Heavy Industrial Concrete Foundations',
@@ -333,47 +341,6 @@ class DatabaseEngine {
           'Official NIS 444-1:2018 Certified with SON Quality Mark',
         ],
         imageUrl: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80',
-        isActive: true,
-        createdAt: now,
-        updatedAt: now,
-      },
-      {
-        id: 'prod_sokoto_325r',
-        sku: 'AAM-SKT-325R',
-        name: 'Sokoto Cement Superior 32.5R (Full Truck - 600 Bags)',
-        brand: 'Sokoto Cement',
-        grade: '32.5R',
-        bagWeightKg: 50,
-        bagsPerTrailer: FIXED_BAGS_PER_TRUCK,
-        tonnesPerTrailer: 30,
-        pricePerBag: FIXED_PRICE_PER_BAG,
-        pricePerTrailer: FIXED_PRICE_PER_TRUCK, // ₦6,510,000
-        pricePerBagEquivalent: FIXED_PRICE_PER_BAG,
-        costPerBagBasis: VERIFIED_COST_PER_BAG_BASIS,
-        costPerTrailerBasis: VERIFIED_COST_PER_TRUCK_BASIS,
-        physicalStockBags: 18000, // 30 trucks
-        reservedStockBags: 1200,  // 2 trucks reserved
-        stockOnHoldBags: 0,
-        availableStockBags: 16800, // 28 trucks available
-        availableTrailers: 28,
-        reservedTrailers: 2,
-        reorderLevelTrailers: 8,
-        minOrderTrailers: 1,
-        maxOrderTrailers: 100,
-        description: 'Direct trailer supply of Sokoto Cement Masonry Grade. Exceptional workability, smooth spreading consistency, and crack-free finish for large-scale estate plastering, rendering, screeding, and block making.',
-        applications: [
-          'Estate Plastering & External Wall Rendering',
-          'Non-Structural Bricklaying & Mortar Joints',
-          'Floor Screeding & Driveway Pavements',
-          'Standard Sandcrete Hollow Block Production',
-        ],
-        features: [
-          'High plastic cohesion and zero sand dropping',
-          '30 Metric Tonnes net payload (600 standard 50kg bags)',
-          'Optimized setting time preventing shrinkage hairline cracks',
-          'Factory quality inspection certificate attached to waybill',
-        ],
-        imageUrl: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80',
         isActive: true,
         createdAt: now,
         updatedAt: now,
@@ -470,7 +437,7 @@ class DatabaseEngine {
         countReference: 'AAM-OP-202610-001',
         physicalCountDate: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(),
         productId: 'prod_sokoto_425r',
-        productName: 'Sokoto Cement Premium 42.5R',
+        productName: 'Sokoto Cement',
         trucksCounted: 40,
         totalConfirmedBags: 24000,
         countingStaffId: 'usr_asst_mgr_001',
@@ -494,7 +461,7 @@ class DatabaseEngine {
         supplierReference: 'KLM-DN-9842',
         cementBrand: 'Sokoto Cement',
         productId: 'prod_sokoto_425r',
-        productName: 'Sokoto Cement Premium 42.5R',
+        productName: 'Sokoto Cement',
         receiptDateTime: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
         trucksReceived: 10,
         bagsPerTruck: FIXED_BAGS_PER_TRUCK,
@@ -524,8 +491,8 @@ class DatabaseEngine {
         id: 'mov_init_skt_425r',
         movementReference: 'AAM-MV-202610-0001',
         productId: 'prod_sokoto_425r',
-        productName: 'Sokoto Cement Premium 42.5R',
-        sku: 'AAM-SKT-425R',
+        productName: 'Sokoto Cement',
+        sku: 'AAM-SKT-600',
         movementType: 'APPROVED_SUPPLIER_STOCK_RECEIPT',
         quantityBags: 6000,
         quantityTrucks: 10,
@@ -591,9 +558,9 @@ class DatabaseEngine {
         {
           id: 'item_001_1',
           productId: 'prod_sokoto_425r',
-          productName: 'Sokoto Cement Premium 42.5R (Full Truck - 600 Bags)',
+          productName: 'Sokoto Cement (Full Truck - 600 Bags)',
           brand: 'Sokoto Cement',
-          sku: 'AAM-SKT-425R',
+          sku: 'AAM-SKT-600',
           trailerCount: 2, // 2 Trucks = 1,200 bags
           bagsPerTrailer: 600,
           totalBags: 1200,
@@ -2206,7 +2173,7 @@ class DatabaseEngine {
       try {
         this.recordOpeningStock({
           physicalCountDate: testNow,
-          productId: 'prod_sokoto_325r',
+          productId: 'prod_sokoto_425r',
           trucksCounted: 20,
           countingStaffId: 'usr_cust_001',
           countingStaffName: 'Alhaji Mukhtar',

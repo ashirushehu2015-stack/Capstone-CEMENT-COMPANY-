@@ -410,7 +410,7 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
                 >
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name} (Grade {p.grade}) - 600 Bags / Truck
+                      {p.name} - 600 Bags / Truck
                     </option>
                   ))}
                 </select>
