@@ -17,7 +17,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { hashPassword } from './auth.ts';
+import { hashPassword, verifyPassword } from './auth.ts';
 import type {
   User,
   Product,
@@ -122,6 +122,40 @@ class DatabaseEngine {
     schema.settings.fixedPricePerTruck = FIXED_PRICE_PER_TRUCK;
     schema.settings.bagsPerTrailer = FIXED_BAGS_PER_TRUCK;
 
+    // Ensure customer accounts (such as yusuf@gmail.com) exist and have valid credentials
+    if (Array.isArray(schema.users)) {
+      const yusuf = schema.users.find((u: any) => u.email?.toLowerCase().trim() === 'yusuf@gmail.com');
+      if (!yusuf) {
+        const yPass = hashPassword('123456789');
+        schema.users.push({
+          id: 'usr_cust_yusuf',
+          email: 'yusuf@gmail.com',
+          fullName: 'Alhaji Yusuf (Wholesale Contractor)',
+          phone: '+234 803 123 4567',
+          role: 'CUSTOMER',
+          isActive: true,
+          companyName: 'Yusuf Construction & Merchant Ltd',
+          officeAddress: 'Main Commercial Avenue, Sokoto',
+          homeAddress: 'Plot 8, Kalambaina Residential Layout, Sokoto',
+          address: 'Main Commercial Avenue, Sokoto',
+          city: 'Sokoto',
+          state: 'Sokoto',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          passwordHash: yPass.hash,
+          passwordSalt: yPass.salt,
+        });
+      } else {
+        yusuf.isActive = true;
+        const valid = verifyPassword('123456789', yusuf.passwordHash, yusuf.passwordSalt);
+        if (!valid) {
+          const yPass = hashPassword('123456789');
+          yusuf.passwordHash = yPass.hash;
+          yusuf.passwordSalt = yPass.salt;
+        }
+      }
+    }
+
     // Enforce fixed pricing on products and ensure only 1 Sokoto Cement product
     if (schema.products) {
       schema.products = schema.products.filter(
@@ -194,6 +228,7 @@ class DatabaseEngine {
     const agentPass = hashPassword('Agent123!');
     const buyerPass = hashPassword('Buyer123!');
     const tasiuPass = hashPassword('12345678');
+    const yusufPass = hashPassword('123456789');
 
     const now = new Date().toISOString();
 
@@ -298,6 +333,24 @@ class DatabaseEngine {
         updatedAt: now,
         passwordHash: tasiuPass.hash,
         passwordSalt: tasiuPass.salt,
+      },
+      {
+        id: 'usr_cust_yusuf',
+        email: 'yusuf@gmail.com',
+        fullName: 'Alhaji Yusuf (Wholesale Contractor)',
+        phone: '+234 803 123 4567',
+        role: 'CUSTOMER',
+        isActive: true,
+        companyName: 'Yusuf Construction & Merchant Ltd',
+        officeAddress: 'Main Commercial Avenue, Sokoto',
+        homeAddress: 'Plot 8, Kalambaina Residential Layout, Sokoto',
+        address: 'Main Commercial Avenue, Sokoto',
+        city: 'Sokoto',
+        state: 'Sokoto',
+        createdAt: now,
+        updatedAt: now,
+        passwordHash: yusufPass.hash,
+        passwordSalt: yusufPass.salt,
       },
     ];
 
