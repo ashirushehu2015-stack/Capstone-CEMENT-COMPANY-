@@ -57,10 +57,10 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
     supplierReference: 'BUA-KLB-2026-DN88',
     productId: products[0]?.id || 'prod_sokoto_425r',
     trucksReceived: 1, // Fixed: bags per truck = exactly 600
-    supplierDeliveryNote: 'WAYBILL-DN-84910',
-    vehicleReg: 'SKK-881-XA',
-    driverName: 'Ibrahim Sani',
-    driverPhone: '+234 803 111 2233',
+    supplierDeliveryNote: 'FACTORY-DIRECT',
+    vehicleReg: 'FACTORY-DIRECT',
+    driverName: '',
+    driverPhone: '',
     notesOrDiscrepancies: '',
     isDraft: false,
   });
@@ -240,11 +240,11 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
             <thead className="bg-slate-950/80 text-slate-400 uppercase font-mono text-[10px] tracking-wider border-b border-slate-800">
               <tr>
                 <th className="p-3.5">Receipt Ref</th>
-                <th className="p-3.5">Supplier & Note</th>
+                <th className="p-3.5">Supplier & PO Ref</th>
                 <th className="p-3.5">Product</th>
                 <th className="p-3.5 text-center">Trucks Received</th>
                 <th className="p-3.5 text-center">Total Bags (x600)</th>
-                <th className="p-3.5">Rig Registration</th>
+                <th className="p-3.5">Intake Allocation</th>
                 <th className="p-3.5">Staff & Verifier</th>
                 <th className="p-3.5 text-center">Status</th>
                 <th className="p-3.5 text-right">Actions</th>
@@ -268,7 +268,7 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
                       <td className="p-3.5 font-bold text-amber-400 font-mono">{r.receiptReference}</td>
                       <td className="p-3.5 font-sans">
                         <span className="font-bold text-white block">{r.supplierName}</span>
-                        <span className="text-[10px] text-slate-400 font-mono">DN: {r.supplierDeliveryNote}</span>
+                        <span className="text-[10px] text-slate-400 font-mono">Ref: {r.supplierReference || r.supplierDeliveryNote}</span>
                       </td>
                       <td className="p-3.5 font-sans">
                         <span className="text-white block font-semibold">{r.productName}</span>
@@ -281,8 +281,8 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
                         {r.totalBagsReceived.toLocaleString()} Bags
                       </td>
                       <td className="p-3.5 font-mono text-slate-300">
-                        <span>{r.vehicleReg}</span>
-                        {r.driverName && <span className="block text-[10px] text-slate-500">{r.driverName}</span>}
+                        <span className="text-emerald-400 font-bold block">Factory Direct</span>
+                        <span className="text-[10px] text-slate-500">Self-Collection Plant</span>
                       </td>
                       <td className="p-3.5 font-sans">
                         <span className="text-slate-300 block">Rec: {r.receivingStaffName}</span>
@@ -367,7 +367,7 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                   <Truck className="w-5 h-5 text-amber-500" /> Register New Stock
                 </h3>
-                <p className="text-xs text-slate-400">Record physical arrival of full cement trucks at plant depot</p>
+                <p className="text-xs text-slate-400">Record direct factory stock purchase allocation at plant depot</p>
               </div>
               <button
                 onClick={() => setShowCreateModal(false)}
@@ -438,51 +438,7 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Delivery Note / Waybill Ref *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.supplierDeliveryNote}
-                    onChange={(e) => setFormData({ ...formData, supplierDeliveryNote: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Vehicle Rig Registration *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.vehicleReg}
-                    onChange={(e) => setFormData({ ...formData, vehicleReg: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Haulage Driver Name</label>
-                  <input
-                    type="text"
-                    value={formData.driverName}
-                    onChange={(e) => setFormData({ ...formData, driverName: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Driver Phone Number</label>
-                  <input
-                    type="text"
-                    value={formData.driverPhone}
-                    onChange={(e) => setFormData({ ...formData, driverPhone: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-              </div>
+              
 
               <div>
                 <label className="block text-slate-300 font-semibold mb-1">Notes / Discrepancy Observations</label>

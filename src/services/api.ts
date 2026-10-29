@@ -344,8 +344,8 @@ export const apiInventory = {
     productId: string;
     receiptDateTime?: string;
     trucksReceived: number;
-    supplierDeliveryNote: string;
-    vehicleReg: string;
+    supplierDeliveryNote?: string;
+    vehicleReg?: string;
     driverName?: string;
     driverPhone?: string;
     notesOrDiscrepancies?: string;

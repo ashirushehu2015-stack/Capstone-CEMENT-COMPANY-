@@ -864,8 +864,8 @@ class DatabaseEngine {
     productId: string;
     receiptDateTime: string;
     trucksReceived: number; // Integer ≥ 1
-    supplierDeliveryNote: string;
-    vehicleReg: string;
+    supplierDeliveryNote?: string;
+    vehicleReg?: string;
     driverName?: string;
     driverPhone?: string;
     notesOrDiscrepancies?: string;
@@ -905,8 +905,8 @@ class DatabaseEngine {
       trucksReceived: params.trucksReceived,
       bagsPerTruck,
       totalBagsReceived,
-      supplierDeliveryNote: params.supplierDeliveryNote,
-      vehicleReg: params.vehicleReg,
+      supplierDeliveryNote: params.supplierDeliveryNote || 'FACTORY-DIRECT',
+      vehicleReg: params.vehicleReg || 'FACTORY-DIRECT',
       driverName: params.driverName,
       driverPhone: params.driverPhone,
       receivingStaffId: user.id,
