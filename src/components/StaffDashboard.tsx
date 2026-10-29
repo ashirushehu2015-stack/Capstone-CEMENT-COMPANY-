@@ -119,6 +119,13 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
   }, [user?.role, isAgent, isAssistantManager]);
 
   // Modals inside dashboard
+  // Enhanced Payment Reconciliation state
+  const [paymentSubTab, setPaymentSubTab] = useState<'pending' | 'reconciled' | 'treasury'>('reconciled');
+  const [paymentSearchQuery, setPaymentSearchQuery] = useState('');
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('ALL');
+  const [viewingPaymentReceipt, setViewingPaymentReceipt] = useState<PaymentRecord | null>(null);
+  const [copiedBankAcc, setCopiedBankAcc] = useState(false);
+
   const [showRecordPaymentModal, setShowRecordPaymentModal] = useState(false);
   const [showAssignDriverModal, setShowAssignDriverModal] = useState<Order | null>(null);
   const [showConfirmDeliveryModal, setShowConfirmDeliveryModal] = useState<Order | null>(null);
@@ -656,16 +663,32 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
           </button>
 
           {(isAdmin || isManager) && (
-            <button
-              onClick={() => setActiveTab('payments')}
-              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'payments'
-                  ? 'bg-amber-600 text-white shadow-md'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-              }`}
-            >
-              <CreditCard className="w-4 h-4" /> Manager: Payment Reconciliations
-            </button>
+            (() => {
+            const pendingOrdersCount = orders.filter(
+              (o) =>
+                o.status === 'PAYMENT_UNDER_VERIFICATION' ||
+                o.status === 'APPROVED_AWAITING_PAYMENT' ||
+                o.status === 'PENDING_PAYMENT' ||
+                (o.managerApprovalStatus === 'APPROVED' && o.status !== 'PAID' && o.status !== 'FULLY_ISSUED' && o.status !== 'CANCELLED')
+            ).length;
+            return (
+              <button
+                onClick={() => setActiveTab('payments')}
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === 'payments'
+                    ? 'bg-amber-600 text-white shadow-md'
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                }`}
+              >
+                <CreditCard className="w-4 h-4" /> Manager: Payment Reconciliations
+                {pendingOrdersCount > 0 && (
+                  <span className="ml-auto bg-amber-500 text-slate-950 text-[10px] px-1.5 py-0.5 rounded-full font-black animate-pulse">
+                    {pendingOrdersCount}
+                  </span>
+                )}
+              </button>
+            );
+          })()
           )}
 
           {(isAdmin || isManager || isAgent) && (
@@ -1118,61 +1141,519 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
             </div>
           )}
 
-          {/* TAB 4: PAYMENTS & TREASURY DESK */}
-          {activeTab === 'payments' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-white">Manager Payment Reconciliation & Treasury</h2>
-                  <p className="text-xs text-slate-400">Reconcile bank transfers, POS slips, and online Paystack settlements</p>
-                </div>
-              </div>
+          {/* TAB 4: ENHANCED PAYMENTS & TREASURY DESK */}
+          {activeTab === 'payments' && (() => {
+            const pendingPaymentOrders = orders.filter(
+              (o) =>
+                o.status === 'PAYMENT_UNDER_VERIFICATION' ||
+                o.status === 'APPROVED_AWAITING_PAYMENT' ||
+                o.status === 'PENDING_PAYMENT' ||
+                (o.managerApprovalStatus === 'APPROVED' && o.status !== 'PAID' && o.status !== 'FULLY_ISSUED' && o.status !== 'CANCELLED')
+            );
+            const totalReconciledAmount = payments.reduce((acc, p) => acc + p.amount, 0);
+            const totalPendingAmount = pendingPaymentOrders.reduce((acc, o) => acc + o.totalAmount, 0);
 
-              {/* Payments List Table */}
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-950 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800">
-                    <tr>
-                      <th className="p-3.5">Payment ID</th>
-                      <th className="p-3.5">Order Ref</th>
-                      <th className="p-3.5">Customer</th>
-                      <th className="p-3.5">Method</th>
-                      <th className="p-3.5">Amount (₦)</th>
-                      <th className="p-3.5">Verification Details</th>
-                      <th className="p-3.5">Verified By</th>
-                      <th className="p-3.5">Time</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800">
-                    {payments.map((p) => (
-                      <tr key={p.id} className="hover:bg-slate-800/40">
-                        <td className="p-3.5 font-mono text-slate-400">{p.id}</td>
-                        <td className="p-3.5 font-mono font-bold text-amber-400">{p.orderNumber}</td>
-                        <td className="p-3.5 font-bold text-white">{p.customerName}</td>
-                        <td className="p-3.5">
-                          <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[11px]">
-                            {p.paymentMethod}
+            const filteredPayments = payments.filter((p) => {
+              const matchesSearch =
+                !paymentSearchQuery.trim() ||
+                p.orderNumber.toLowerCase().includes(paymentSearchQuery.toLowerCase()) ||
+                p.customerName.toLowerCase().includes(paymentSearchQuery.toLowerCase()) ||
+                p.id.toLowerCase().includes(paymentSearchQuery.toLowerCase()) ||
+                (p.bankTransferReference && p.bankTransferReference.toLowerCase().includes(paymentSearchQuery.toLowerCase())) ||
+                (p.bankPayerName && p.bankPayerName.toLowerCase().includes(paymentSearchQuery.toLowerCase()));
+
+              const matchesMethod =
+                paymentMethodFilter === 'ALL' || p.paymentMethod === paymentMethodFilter;
+
+              return matchesSearch && matchesMethod;
+            });
+
+            return (
+              <div className="space-y-6">
+                {/* Header with Direct Action Buttons */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                  <div>
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
+                      <CreditCard className="w-4 h-4" /> Manager Treasury &amp; Payment Reconciliation
+                    </div>
+                    <h2 className="text-xl font-black text-white mt-1">
+                      Zenith Bank 100% Upfront Wire Reconciliation
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+                      Cross-check wholesale orders against Zenith Bank corporate credit alerts. Reconcile 100% full invoice values, clear customer payment claims, and audit authoritative treasury settlement slips.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap shrink-0">
+                    <button
+                      onClick={() => {
+                        const firstPending = pendingPaymentOrders[0];
+                        if (firstPending) {
+                          setPaymentForm({
+                            orderId: firstPending.id,
+                            amount: firstPending.totalAmount,
+                            paymentMethod: 'BANK_TRANSFER',
+                            referenceNumber: firstPending.bankTransferReference || 'ZEN-TX-' + Math.floor(10000000 + Math.random() * 90000000),
+                            payerName: firstPending.customerName,
+                            destinationAccount: 'Zenith Bank - 1018492049',
+                            notes: `100% full wire transfer reconciled with Zenith Bank credit alert by Manager Uwaisu Musa.`,
+                          });
+                        } else {
+                          setPaymentForm({
+                            orderId: '',
+                            amount: 0,
+                            paymentMethod: 'BANK_TRANSFER',
+                            referenceNumber: 'ZEN-TX-' + Math.floor(10000000 + Math.random() * 90000000),
+                            payerName: '',
+                            destinationAccount: 'Zenith Bank - 1018492049',
+                            notes: `Direct wire transfer reconciled with Zenith Bank credit alert by Manager Uwaisu Musa.`,
+                          });
+                        }
+                        setShowRecordPaymentModal(true);
+                      }}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-lg transition-all"
+                    >
+                      <Plus className="w-4 h-4" /> Reconcile Wire Payment
+                    </button>
+
+                    <button
+                      onClick={loadAllData}
+                      className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors"
+                      title="Refresh Inflows &amp; Reconciliations"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Top Executive Treasury KPIs (4 Cards) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* KPI 1: Total Reconciled */}
+                  <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
+                    <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                      <span>Total Reconciled Inflow</span>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <div className="text-xl sm:text-2xl font-black text-emerald-400 font-mono truncate">
+                      ₦{totalReconciledAmount.toLocaleString('en-NG')}
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-1">
+                      {payments.length} Verified Settlement{payments.length === 1 ? '' : 's'} (100% Upfront)
+                    </div>
+                  </div>
+
+                  {/* KPI 2: Pending Queue */}
+                  <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
+                    <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                      <span>Pending Clearance Queue</span>
+                      <Clock className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <div className="text-xl sm:text-2xl font-black text-white font-mono">
+                      {pendingPaymentOrders.length} Order{pendingPaymentOrders.length === 1 ? '' : 's'}
+                    </div>
+                    <div className="text-[10px] text-amber-400 font-semibold mt-1 truncate">
+                      ₦{totalPendingAmount.toLocaleString('en-NG')} Awaiting Verification
+                    </div>
+                  </div>
+
+                  {/* KPI 3: Official Zenith Bank Account */}
+                  <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
+                    <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                      <span>Zenith Corporate Treasury</span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText('1018492049');
+                          setCopiedBankAcc(true);
+                          setTimeout(() => setCopiedBankAcc(false), 2000);
+                        }}
+                        className="text-[10px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1"
+                        title="Copy Account Number"
+                      >
+                        {copiedBankAcc ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedBankAcc ? 'Copied' : 'Copy'}</span>
+                      </button>
+                    </div>
+                    <div className="text-lg font-black text-white font-mono tracking-wider">
+                      1018492049
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-1 truncate">
+                      A.A. Master Nig. Ltd • Zenith Bank
+                    </div>
+                  </div>
+
+                  {/* KPI 4: Treasury Policy */}
+                  <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
+                    <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                      <span>Governance Mandate</span>
+                      <ShieldCheck className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <div className="text-sm font-black text-purple-300 mt-1">
+                      100% Upfront Wire Only
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-1">
+                      Zero Credit Sales • Cashier Desk Excluded
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sub-Tabs: Pending Queue vs Reconciled Ledger vs Zenith Details */}
+                <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentSubTab('reconciled')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                      paymentSubTab === 'reconciled'
+                        ? 'bg-amber-600 text-white shadow-md'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                    }`}
+                  >
+                    <CreditCard className="w-3.5 h-3.5" /> Reconciled Transactions Ledger ({payments.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentSubTab('pending')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                      paymentSubTab === 'pending'
+                        ? 'bg-amber-600 text-white shadow-md'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                    }`}
+                  >
+                    <Clock className="w-3.5 h-3.5 text-amber-400" /> Pending Wire Clearance Queue
+                    {pendingPaymentOrders.length > 0 && (
+                      <span className="bg-amber-500 text-slate-950 text-[10px] px-1.5 py-0.2 rounded-full font-black animate-pulse">
+                        {pendingPaymentOrders.length}
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentSubTab('treasury')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                      paymentSubTab === 'treasury'
+                        ? 'bg-amber-600 text-white shadow-md'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                    }`}
+                  >
+                    <Building className="w-3.5 h-3.5" /> Zenith Treasury Profile &amp; Protocol
+                  </button>
+                </div>
+
+                {/* SUBTAB 1: PENDING WIRE CLEARANCE QUEUE */}
+                {paymentSubTab === 'pending' && (
+                  <div className="space-y-4">
+                    {pendingPaymentOrders.length === 0 ? (
+                      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center space-y-3">
+                        <div className="w-12 h-12 rounded-full bg-emerald-950/80 border border-emerald-800 flex items-center justify-center mx-auto text-emerald-400">
+                          <CheckCircle2 className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-base font-bold text-white">All Wholesale Inflows Reconciled</h3>
+                        <p className="text-xs text-slate-400 max-w-md mx-auto">
+                          There are currently no orders awaiting bank transfer verification. All approved customer orders have been fully paid and cleared for production site issuance.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <span className="flex items-center gap-2">
+                            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+                            <strong>Manager Verification Action Required:</strong> {pendingPaymentOrders.length} wholesale order(s) awaiting wire cross-check against Zenith Bank statement.
                           </span>
-                        </td>
-                        <td className="p-3.5 font-mono font-extrabold text-emerald-400">
-                          ₦{p.amount.toLocaleString('en-NG')}
-                        </td>
-                        <td className="p-3.5 text-slate-300">
-                          {p.bankTransferReference && `Ref: ${p.bankTransferReference}`}
-                          {p.gatewayReference && `Gateway: ${p.gatewayReference}`}
-                          {p.posTerminalId && `POS: ${p.posTerminalId}`}
-                        </td>
-                        <td className="p-3.5 text-slate-300">{p.verifiedByStaffName}</td>
-                        <td className="p-3.5 text-slate-500 font-mono">
-                          {new Date(p.createdAt).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          <span className="font-mono font-bold text-amber-300">
+                            Pending Value: ₦{totalPendingAmount.toLocaleString('en-NG')}
+                          </span>
+                        </div>
+
+                        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
+                          <table className="w-full text-left text-xs">
+                            <thead className="bg-slate-950 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800">
+                              <tr>
+                                <th className="p-3.5">Order Ref</th>
+                                <th className="p-3.5">Customer &amp; Company</th>
+                                <th className="p-3.5">Trailers / Quantity</th>
+                                <th className="p-3.5">Amount Due (100%)</th>
+                                <th className="p-3.5">Customer Bank Reference</th>
+                                <th className="p-3.5">Order Status</th>
+                                <th className="p-3.5 text-right">Reconciliation Action</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-800">
+                              {pendingPaymentOrders.map((o) => (
+                                <tr key={o.id} className="hover:bg-slate-800/40 transition-colors">
+                                  <td className="p-3.5 font-mono font-bold text-amber-400">{o.orderNumber}</td>
+                                  <td className="p-3.5">
+                                    <strong className="text-white block">{o.customerName}</strong>
+                                    <span className="text-[11px] text-slate-400">{o.companyName || o.customerPhone}</span>
+                                  </td>
+                                  <td className="p-3.5 font-mono text-slate-300">
+                                    {o.totalTrailers} Truck{o.totalTrailers > 1 ? 's' : ''} ({o.totalBags.toLocaleString()} Bags)
+                                  </td>
+                                  <td className="p-3.5 font-mono font-black text-amber-400 text-sm">
+                                    ₦{o.totalAmount.toLocaleString('en-NG')}
+                                  </td>
+                                  <td className="p-3.5">
+                                    {o.bankTransferReference ? (
+                                      <span className="inline-flex items-center gap-1 font-mono font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800">
+                                        Ref: {o.bankTransferReference}
+                                      </span>
+                                    ) : o.notes && o.notes.includes('Ref:') ? (
+                                      <span className="font-mono text-amber-300 text-[11px] block max-w-xs truncate">
+                                        {o.notes}
+                                      </span>
+                                    ) : (
+                                      <span className="text-slate-500 italic text-[11px]">Awaiting proof submission</span>
+                                    )}
+                                  </td>
+                                  <td className="p-3.5">
+                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-950/80 text-amber-300 border border-amber-800 animate-pulse">
+                                      {o.status.replace(/_/g, ' ')}
+                                    </span>
+                                  </td>
+                                  <td className="p-3.5 text-right">
+                                    <button
+                                      onClick={() => {
+                                        setPaymentForm({
+                                          orderId: o.id,
+                                          amount: o.totalAmount,
+                                          paymentMethod: 'BANK_TRANSFER',
+                                          referenceNumber: o.bankTransferReference || 'ZEN-TX-' + Math.floor(10000000 + Math.random() * 90000000),
+                                          payerName: o.customerName,
+                                          destinationAccount: 'Zenith Bank - 1018492049',
+                                          notes: `100% full wire transfer reconciled with Zenith Bank credit alert by Manager Uwaisu Musa.`,
+                                        });
+                                        setShowRecordPaymentModal(true);
+                                      }}
+                                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 ml-auto shadow-md"
+                                    >
+                                      <Check className="w-3.5 h-3.5" /> Reconcile &amp; Clear Payment
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* SUBTAB 2: RECONCILED TRANSACTIONS LEDGER */}
+                {paymentSubTab === 'reconciled' && (
+                  <div className="space-y-4">
+                    {/* Search and Filters */}
+                    <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                      <div className="relative flex-1">
+                        <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={paymentSearchQuery}
+                          onChange={(e) => setPaymentSearchQuery(e.target.value)}
+                          placeholder="Search by Payment ID, Order Number, Customer, Bank Reference..."
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                        />
+                        {paymentSearchQuery && (
+                          <button
+                            onClick={() => setPaymentSearchQuery('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1">
+                          <Filter className="w-3.5 h-3.5 text-slate-400" />
+                          <select
+                            value={paymentMethodFilter}
+                            onChange={(e) => setPaymentMethodFilter(e.target.value)}
+                            className="bg-transparent text-xs text-slate-300 font-semibold focus:outline-none cursor-pointer"
+                          >
+                            <option value="ALL">All Payment Channels</option>
+                            <option value="BANK_TRANSFER">Zenith Bank Transfer</option>
+                            <option value="PAYSTACK_CARD">Online Paystack</option>
+                            <option value="POS_TERMINAL">POS Slip</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Payments Table */}
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
+                      {filteredPayments.length === 0 ? (
+                        <div className="p-8 text-center text-slate-500 text-xs">
+                          No payments found matching your search.
+                        </div>
+                      ) : (
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-950 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800">
+                            <tr>
+                              <th className="p-3.5">Payment ID</th>
+                              <th className="p-3.5">Order Ref</th>
+                              <th className="p-3.5">Customer &amp; Payer</th>
+                              <th className="p-3.5">Channel</th>
+                              <th className="p-3.5">Amount Reconciled (₦)</th>
+                              <th className="p-3.5">Bank Reference / Details</th>
+                              <th className="p-3.5">Verified By</th>
+                              <th className="p-3.5">Reconciled Time</th>
+                              <th className="p-3.5 text-right">Audit Slip</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-800">
+                            {filteredPayments.map((p) => (
+                              <tr key={p.id} className="hover:bg-slate-800/40 transition-colors">
+                                <td className="p-3.5 font-mono text-slate-400">{p.id}</td>
+                                <td className="p-3.5 font-mono font-bold text-amber-400">{p.orderNumber}</td>
+                                <td className="p-3.5">
+                                  <strong className="text-white block">{p.customerName}</strong>
+                                  {p.bankPayerName && p.bankPayerName !== p.customerName && (
+                                    <span className="text-[10px] text-slate-400 font-mono block">Payer: {p.bankPayerName}</span>
+                                  )}
+                                </td>
+                                <td className="p-3.5">
+                                  <span className={`px-2 py-0.5 rounded text-[11px] font-mono font-bold ${
+                                    p.paymentMethod === 'BANK_TRANSFER'
+                                      ? 'bg-blue-950 text-blue-300 border border-blue-800'
+                                      : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                                  }`}>
+                                    {p.paymentMethod === 'BANK_TRANSFER' ? '🏦 Zenith Bank Wire' : p.paymentMethod}
+                                  </span>
+                                </td>
+                                <td className="p-3.5 font-mono font-extrabold text-emerald-400 text-sm">
+                                  ₦{p.amount.toLocaleString('en-NG')}
+                                </td>
+                                <td className="p-3.5 text-slate-300 font-mono text-[11px]">
+                                  {p.bankTransferReference ? (
+                                    <span className="text-white font-bold block">{p.bankTransferReference}</span>
+                                  ) : (
+                                    p.gatewayReference || p.posTerminalId || 'Confirmed'
+                                  )}
+                                  <span className="text-[10px] text-slate-500 block">{p.destinationAccount || 'Zenith Bank - 1018492049'}</span>
+                                </td>
+                                <td className="p-3.5 text-slate-300">
+                                  <span className="font-semibold text-white block">{p.verifiedByStaffName || 'Uwaisu Musa'}</span>
+                                  <span className="text-[10px] text-emerald-400">Plant Depot Manager</span>
+                                </td>
+                                <td className="p-3.5 text-slate-400 font-mono text-[11px]">
+                                  {new Date(p.createdAt).toLocaleDateString()}
+                                  <span className="block text-[10px] text-slate-500">{new Date(p.createdAt).toLocaleTimeString()}</span>
+                                </td>
+                                <td className="p-3.5 text-right">
+                                  <button
+                                    onClick={() => setViewingPaymentReceipt(p)}
+                                    className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-amber-300 text-[11px] font-bold border border-slate-700 transition-colors flex items-center gap-1 ml-auto"
+                                  >
+                                    <FileText className="w-3.5 h-3.5" />
+                                    <span>Audit Slip</span>
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* SUBTAB 3: ZENITH BANK DETAILS & POLICY */}
+                {paymentSubTab === 'treasury' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Zenith Corporate Bank Details */}
+                    <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div className="flex items-center gap-2">
+                          <Building className="w-5 h-5 text-amber-400" />
+                          <h3 className="font-bold text-white text-sm">Official Corporate Treasury Account</h3>
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                          Operational &amp; Active
+                        </span>
+                      </div>
+
+                      <div className="space-y-3 text-xs">
+                        <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                          <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Account Number:</span>
+                          <div className="flex items-center justify-between mt-1">
+                            <strong className="text-xl font-mono text-emerald-400 tracking-wider">1018492049</strong>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText('1018492049');
+                                setCopiedBankAcc(true);
+                                setTimeout(() => setCopiedBankAcc(false), 2000);
+                              }}
+                              className="text-xs text-amber-400 hover:underline flex items-center gap-1 font-bold"
+                            >
+                              {copiedBankAcc ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                              {copiedBankAcc ? 'Copied' : 'Copy'}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <span className="text-slate-400 block text-[10px] uppercase">Bank:</span>
+                            <strong className="text-white">Zenith Bank PLC</strong>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[10px] uppercase">Branch:</span>
+                            <strong className="text-white">Kalambaina Industrial Area, Sokoto</strong>
+                          </div>
+                        </div>
+
+                        <div>
+                          <span className="text-slate-400 block text-[10px] uppercase">Account Name:</span>
+                          <strong className="text-white">A.A. Master Nig. Limited - Treasury Operations</strong>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 pt-1">
+                          <div>
+                            <span className="text-slate-400 block text-[10px] uppercase">Sort Code:</span>
+                            <span className="font-mono text-slate-300">057150013</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[10px] uppercase">Currency:</span>
+                            <span className="font-mono text-slate-300">NGN (₦)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Treasury Directives */}
+                    <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
+                      <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+                        <ShieldCheck className="w-5 h-5 text-purple-400" />
+                        <h3 className="font-bold text-white text-sm">Corporate Treasury Governance Mandates</h3>
+                      </div>
+
+                      <div className="space-y-3 text-xs text-slate-300">
+                        <div className="p-3 bg-purple-950/30 border border-purple-800/40 rounded-xl space-y-1">
+                          <strong className="text-purple-300 block font-bold">1. 100% Upfront Wire Settlement Only</strong>
+                          <p className="text-[11px] text-slate-400">
+                            Full invoice payment must be confirmed in Zenith Bank statement before loading pass generation. Partial or deferred payments are strictly blocked by the system.
+                          </p>
+                        </div>
+
+                        <div className="p-3 bg-blue-950/30 border border-blue-800/40 rounded-xl space-y-1">
+                          <strong className="text-blue-300 block font-bold">2. Elimination of Cashier Desk</strong>
+                          <p className="text-[11px] text-slate-400">
+                            All physical cash handling at the plant site is prohibited. Wholesale customers wire funds directly to the corporate treasury account.
+                          </p>
+                        </div>
+
+                        <div className="p-3 bg-emerald-950/30 border border-emerald-800/40 rounded-xl space-y-1">
+                          <strong className="text-emerald-300 block font-bold">3. Manager Sole Clearance Authority</strong>
+                          <p className="text-[11px] text-slate-400">
+                            Manager Uwaisu Musa is the designated executive with bank portal access to verify credit alerts and release dispatch authorization to Agent Isiyaka Sulaiman.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* TAB 5: DELIVERIES & DISPATCH */}
           {activeTab === 'deliveries' && (
@@ -2269,6 +2750,53 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
               </button>
             </div>
             <form onSubmit={handleRecordOfflinePayment} className="space-y-3">
+              {!paymentForm.orderId && (
+                <div>
+                  <label className="text-slate-300 block mb-1 font-semibold">Select Wholesale Order to Reconcile *</label>
+                  <select
+                    value={paymentForm.orderId}
+                    onChange={(e) => {
+                      const selOrder = orders.find((o) => o.id === e.target.value);
+                      if (selOrder) {
+                        setPaymentForm({
+                          ...paymentForm,
+                          orderId: selOrder.id,
+                          amount: selOrder.totalAmount,
+                          payerName: selOrder.customerName,
+                          referenceNumber: selOrder.bankTransferReference || 'ZEN-TX-' + Math.floor(10000000 + Math.random() * 90000000),
+                        });
+                      }
+                    }}
+                    required
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold"
+                  >
+                    <option value="">-- Choose Approved Wholesale Order --</option>
+                    {orders
+                      .filter((o) => o.status !== 'PAID' && o.status !== 'FULLY_ISSUED' && o.status !== 'CANCELLED')
+                      .map((o) => (
+                        <option key={o.id} value={o.id}>
+                          {o.orderNumber} — {o.customerName} (₦{o.totalAmount.toLocaleString('en-NG')} • {o.totalTrailers} Trucks)
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              )}
+              {paymentForm.orderId && (
+                <div className="p-3 bg-blue-950/40 border border-blue-800/60 rounded-xl flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-slate-400 block uppercase font-bold">Reconciling Order:</span>
+                    <strong className="text-amber-400 font-mono text-sm">
+                      {orders.find((o) => o.id === paymentForm.orderId)?.orderNumber || paymentForm.orderId}
+                    </strong>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-slate-400 block uppercase font-bold">Total Required:</span>
+                    <strong className="text-emerald-400 font-mono text-sm">
+                      ₦{paymentForm.amount.toLocaleString('en-NG')}
+                    </strong>
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-400 block mb-1">Payment Method</label>

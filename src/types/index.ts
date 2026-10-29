@@ -228,6 +228,8 @@ export interface Order {
   truckAllocations: TruckIssuanceAllocation[];
   issuedTrucksCount: number; // Number of trucks physically issued by Agent
   customerNotes?: string;
+  bankTransferReference?: string;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
 }
