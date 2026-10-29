@@ -47,7 +47,7 @@ const STAFF_PROFILES: StaffMemberProfile[] = [
   {
     id: 'staff_manager',
     role: 'MANAGER',
-    name: 'Engr. Sanusi Kalambaina',
+    name: 'Uwaisu Musa',
     title: 'Depot General Manager (Plant Executive)',
     email: 'manager@aamaster.ng',
     defaultPass: 'Manager123!',
@@ -70,7 +70,7 @@ const STAFF_PROFILES: StaffMemberProfile[] = [
   {
     id: 'staff_assistant',
     role: 'ASSISTANT_MANAGER',
-    name: 'Fatima Aliyu',
+    name: 'Mamuda Ahmed',
     title: 'Assistant Manager (Stock & Verification)',
     email: 'asstmanager@aamaster.ng',
     defaultPass: 'AsstManager123!',
@@ -93,7 +93,7 @@ const STAFF_PROFILES: StaffMemberProfile[] = [
   {
     id: 'staff_agent',
     role: 'AGENT',
-    name: 'Haruna Danladi',
+    name: 'Isiyaka Sulaiman',
     title: 'Sales & Issuing Agent (Loading Terminal)',
     email: 'agent@aamaster.ng',
     defaultPass: 'Agent123!',

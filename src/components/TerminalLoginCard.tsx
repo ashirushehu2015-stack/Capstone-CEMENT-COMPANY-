@@ -262,7 +262,7 @@ export const TerminalLoginCard: React.FC<TerminalLoginCardProps> = ({
                   >
                     <div>
                       <strong className="text-white block group-hover:text-purple-300">2. Manager Terminal</strong>
-                      <span className="text-[10px] text-slate-400">Engr. Sanusi Kalambaina (Order &amp; Stock Approvals)</span>
+                      <span className="text-[10px] text-slate-400">Uwaisu Musa (Order &amp; Stock Approvals)</span>
                     </div>
                     <span className="text-[10px] font-bold text-purple-400">&rarr;</span>
                   </button>
@@ -274,7 +274,7 @@ export const TerminalLoginCard: React.FC<TerminalLoginCardProps> = ({
                   >
                     <div>
                       <strong className="text-white block group-hover:text-indigo-300">2. Assistant Manager</strong>
-                      <span className="text-[10px] text-slate-400">Fatima Aliyu (Queue &amp; Document Review)</span>
+                      <span className="text-[10px] text-slate-400">Mamuda Ahmed (Queue &amp; Document Review)</span>
                     </div>
                     <span className="text-[10px] font-bold text-indigo-400">&rarr;</span>
                   </button>
@@ -288,7 +288,7 @@ export const TerminalLoginCard: React.FC<TerminalLoginCardProps> = ({
                   >
                     <div>
                       <strong className="text-white block group-hover:text-teal-300">4. Agent (Production Site)</strong>
-                      <span className="text-[10px] text-slate-400">Haruna Danladi (Truck Issuance &amp; Gate Pass)</span>
+                      <span className="text-[10px] text-slate-400">Isiyaka Sulaiman (Truck Issuance &amp; Gate Pass)</span>
                     </div>
                     <span className="text-[10px] font-bold text-teal-400">&rarr;</span>
                   </button>

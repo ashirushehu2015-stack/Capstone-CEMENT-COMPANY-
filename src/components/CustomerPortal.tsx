@@ -877,7 +877,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 </span>
                 <strong className="text-xs text-white block font-bold">Manager Approval</strong>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Engr. Sanusi Kalambaina verifies plant capacity and approves reservation in terminal inventory.
+                  Uwaisu Musa verifies plant capacity and approves reservation in terminal inventory.
                 </p>
               </div>
 
@@ -888,7 +888,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 </span>
                 <strong className="text-xs text-white block font-bold">Manager Payment Verification</strong>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Engr. Sanusi Kalambaina verifies 100% upfront settlement (₦6,510,000 per trailer, ₦0 delivery fee) into company accounts. No credit.
+                  Uwaisu Musa verifies 100% upfront settlement (₦6,510,000 per trailer, ₦0 delivery fee) into company accounts. No credit.
                 </p>
               </div>
 
@@ -910,7 +910,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 </span>
                 <strong className="text-xs text-white block font-bold">Agent Gate Clearance</strong>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Haruna Danladi verifies arriving truck plates, inspects rig, physically loads 600 bags per truck, and issues gate pass.
+                  Isiyaka Sulaiman verifies arriving truck plates, inspects rig, physically loads 600 bags per truck, and issues gate pass.
                 </p>
               </div>
             </div>

@@ -487,7 +487,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
           <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs shadow-inner">
             <span className="text-[10px] text-slate-500 font-bold px-1.5 uppercase hidden md:inline">RBAC Role:</span>
             <button
-              onClick={() => handleSwitchToStaffDemo('MANAGER', 'Engr. Sanusi Kalambaina')}
+              onClick={() => handleSwitchToStaffDemo('MANAGER', 'Uwaisu Musa')}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                 user?.role === 'MANAGER'
                   ? 'bg-purple-600 text-white shadow-sm'
@@ -498,7 +498,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
               👔 Manager
             </button>
             <button
-              onClick={() => handleSwitchToStaffDemo('ASSISTANT_MANAGER', 'Fatima Aliyu')}
+              onClick={() => handleSwitchToStaffDemo('ASSISTANT_MANAGER', 'Mamuda Ahmed')}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                 user?.role === 'ASSISTANT_MANAGER'
                   ? 'bg-indigo-600 text-white shadow-sm'
@@ -509,7 +509,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
               📋 Asst. Mgr
             </button>
             <button
-              onClick={() => handleSwitchToStaffDemo('AGENT', 'Haruna Danladi')}
+              onClick={() => handleSwitchToStaffDemo('AGENT', 'Isiyaka Sulaiman')}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                 user?.role === 'AGENT'
                   ? 'bg-teal-600 text-white shadow-sm'
@@ -1180,7 +1180,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-bold text-white">Agent Kalambaina Plant Gate Clearance &amp; Loading</h2>
-                  <p className="text-xs text-slate-400">Haruna Danladi physically inspects arriving customer rigs, verifies gate passes, and loads 600 bags per trailer</p>
+                  <p className="text-xs text-slate-400">Isiyaka Sulaiman physically inspects arriving customer rigs, verifies gate passes, and loads 600 bags per trailer</p>
                 </div>
               </div>
 
@@ -1889,15 +1889,15 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                           <th className="p-3.5 w-1/3">System Operational Function</th>
                           <th className="p-3.5 text-center bg-blue-950/20 text-blue-300">
                             1. Manager
-                            <span className="block text-[10px] text-slate-400 font-normal">Sanusi Kalambaina</span>
+                            <span className="block text-[10px] text-slate-400 font-normal">Uwaisu Musa</span>
                           </th>
                           <th className="p-3.5 text-center bg-indigo-950/20 text-indigo-300">
                             2. Asst. Manager
-                            <span className="block text-[10px] text-slate-400 font-normal">Fatima Aliyu</span>
+                            <span className="block text-[10px] text-slate-400 font-normal">Mamuda Ahmed</span>
                           </th>
                           <th className="p-3.5 text-center bg-teal-950/20 text-teal-300">
                             3. Issuing Agent
-                            <span className="block text-[10px] text-slate-400 font-normal">Haruna Danladi</span>
+                            <span className="block text-[10px] text-slate-400 font-normal">Isiyaka Sulaiman</span>
                           </th>
                           <th className="p-3.5 text-center bg-amber-950/20 text-amber-300">
                             Administrator
@@ -2079,7 +2079,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                         Corporate Governance: Complete Elimination of the Cashier Role
                       </strong>
                       <p className="text-emerald-200/90 leading-relaxed">
-                        To protect company capital and prevent cash handling discrepancies, A.A. Master Nig. Limited operates with 100% upfront banking settlement. Wholesale buyers remit directly to Zenith Bank (Account: 1018492049), and verification is conducted by Engr. Sanusi Kalambaina (Plant Depot Manager) prior to physical loading by Haruna Danladi.
+                        To protect company capital and prevent cash handling discrepancies, A.A. Master Nig. Limited operates with 100% upfront banking settlement. Wholesale buyers remit directly to Zenith Bank (Account: 1018492049), and verification is conducted by Uwaisu Musa (Plant Depot Manager) prior to physical loading by Isiyaka Sulaiman.
                       </p>
                     </div>
                   </div>
@@ -2375,7 +2375,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                   onChange={(e) => setDriverForm({ ...driverForm, deliveryOfficerId: e.target.value })}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold"
                 >
-                  <option value="usr_driver_001">Haruna Danladi (Articulated Fleet Captain)</option>
+                  <option value="usr_driver_001">Isiyaka Sulaiman (Articulated Fleet Captain)</option>
                   <option value="usr_driver_002">Bello Gusau (Kalambaina Heavy Rig Master)</option>
                 </select>
               </div>

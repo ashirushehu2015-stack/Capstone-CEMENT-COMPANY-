@@ -35,7 +35,7 @@
 | **Real-time Inventory Ledger** | COMPLETED | Audited kiln line goods receipts from Kalambaina Plant with batch numbers and kiln line references, damaged bag repacking adjustments, audit reconciliations, and complete immutable history. |
 | **Administrative Dashboard** | COMPLETED | Role-tailored views for Executive Overview, Orders & Processing, Inventory Ledger, Cashier & Payment Reconciliation, Logistics Dispatch, Catalog Pricing, Staff Accounts, Audit Trail, and Business Settings. |
 | **Payment Verification & Receipts** | COMPLETED | Customer bank transfer claim submission, Cashier credit alert reconciliation, POS terminal recording, and printable NIS 444-1:2018 compliant official Sokoto Cement Delivery Waybill & Gate Pass with recipient signature signoff. |
-| **Delivery & Logistics Management** | COMPLETED | Articulated tractor head (e.g. SKK-782-XA) and trailer bed (T-904-SOK) assignment, fleet captain driver assignment (Haruna Danladi), departure dispatch tracking, and site delivery proof signoff. |
+| **Delivery & Logistics Management** | COMPLETED | Articulated tractor head (e.g. SKK-782-XA) and trailer bed (T-904-SOK) assignment, fleet captain driver assignment (Isiyaka Sulaiman), departure dispatch tracking, and site delivery proof signoff. |
 | **Audit Logs & Business Reports** | COMPLETED | Authoritative revenue aggregation, trailer volume turnover, grade sales distribution, and immutable event logging. |
 
 ## Pre-Configured Test Personas (One-Click Demo Switcher in Navbar)
@@ -43,10 +43,10 @@
 |------|-------|----------|--------------------------|
 | **Customer** | `customer@buildcem.ng` | `Customer123!` | Alhaji Mukhtar Dan-Kano (Dan-Kano Mega Estates Ltd) - places trailer orders, views waybills, submits transfer claims |
 | **System Admin** | `admin@buildcem.ng` | `Admin123!` | Alhaji Shehu Bello (Managing Director) - manages staff, audit trail, global settings, and business profile |
-| **Store Manager** | `manager@buildcem.ng` | `Manager123!` | Engr. Sanusi Kalambaina (Plant Depot Manager) - receives kiln trailer batches, adjusts stock, updates pricing, confirms orders |
-| **Sales Officer** | `sales@buildcem.ng` | `Sales123!` | Fatima Aliyu (Trailer Sales Officer) - processes customer orders, stages plant gate passes |
+| **Store Manager** | `manager@buildcem.ng` | `Manager123!` | Uwaisu Musa (Plant Depot Manager) - receives kiln trailer batches, adjusts stock, updates pricing, confirms orders |
+| **Sales Officer** | `sales@buildcem.ng` | `Sales123!` | Mamuda Ahmed (Trailer Sales Officer) - processes customer orders, stages plant gate passes |
 | **Cashier / Accounts** | `cashier@buildcem.ng` | `Cashier123!` | Abubakar Garba (Chief Cashier & Treasury) - verifies bank credit alerts, logs POS slips, issues paid waybill receipts |
-| **Delivery Officer** | `driver@buildcem.ng` | `Driver123!` | Haruna Danladi (Articulated Fleet Captain) - assigned 30-ton trailer rigs, marks dispatched, records site delivery signoff |
+| **Delivery Officer** | `driver@buildcem.ng` | `Driver123!` | Isiyaka Sulaiman (Articulated Fleet Captain) - assigned 30-ton trailer rigs, marks dispatched, records site delivery signoff |
 
 ## Verification & Build Status
 - **TypeScript & Linting**: `npm run lint` (`tsc --noEmit`) verified with 0 errors.

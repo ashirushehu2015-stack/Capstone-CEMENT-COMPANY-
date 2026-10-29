@@ -227,7 +227,7 @@ class DatabaseEngine {
       {
         id: 'usr_mgr_001',
         email: 'manager@aamaster.ng',
-        fullName: 'Engr. Sanusi Kalambaina (Plant Depot Manager)',
+        fullName: 'Uwaisu Musa (Plant Depot Manager)',
         phone: '+234 805 222 3344',
         role: 'MANAGER',
         isActive: true,
@@ -240,7 +240,7 @@ class DatabaseEngine {
       {
         id: 'usr_asst_mgr_001',
         email: 'asstmanager@aamaster.ng',
-        fullName: 'Fatima Aliyu (Assistant Manager - Stock Registration)',
+        fullName: 'Mamuda Ahmed (Assistant Manager - Stock Registration)',
         phone: '+234 807 333 4455',
         role: 'ASSISTANT_MANAGER',
         isActive: true,
@@ -253,7 +253,7 @@ class DatabaseEngine {
       {
         id: 'usr_agent_001',
         email: 'agent@aamaster.ng',
-        fullName: 'Haruna Danladi (Physical Issuing Agent)',
+        fullName: 'Isiyaka Sulaiman (Physical Issuing Agent)',
         phone: '+234 812 555 6677',
         role: 'AGENT',
         isActive: true,
@@ -361,7 +361,7 @@ class DatabaseEngine {
           name: 'Kalambaina Main Plant Loading Terminal',
           address: 'Cement Works Expressway, Kalambaina Industrial Area, Sokoto State',
           contactPhone: '+234 803 456 7890',
-          managerName: 'Engr. Sanusi Kalambaina',
+          managerName: 'Uwaisu Musa',
         },
         {
           id: 'depot_kano',
@@ -441,11 +441,11 @@ class DatabaseEngine {
         trucksCounted: 40,
         totalConfirmedBags: 24000,
         countingStaffId: 'usr_asst_mgr_001',
-        countingStaffName: 'Fatima Aliyu',
+        countingStaffName: 'Mamuda Ahmed',
         verifierId: 'usr_mgr_001',
-        verifierName: 'Engr. Sanusi Kalambaina',
+        verifierName: 'Uwaisu Musa',
         approvedByManagerId: 'usr_mgr_001',
-        approvedByManagerName: 'Engr. Sanusi Kalambaina',
+        approvedByManagerName: 'Uwaisu Musa',
         status: 'APPROVED',
         notes: 'Initial audited baseline physical stock count at Kalambaina Loading Bay.',
         linkedMovementId: 'mov_init_skt_425r',
@@ -471,12 +471,12 @@ class DatabaseEngine {
         driverName: 'Bello Gusau',
         driverPhone: '+234 812 555 6677',
         receivingStaffId: 'usr_asst_mgr_001',
-        receivingStaffName: 'Fatima Aliyu',
+        receivingStaffName: 'Mamuda Ahmed',
         receivingStaffRole: 'ASSISTANT_MANAGER',
         notesOrDiscrepancies: 'All 10 trucks inspected and verified at Kalambaina weighing bridge.',
         status: 'APPROVED',
         verifierId: 'usr_mgr_001',
-        verifierName: 'Engr. Sanusi Kalambaina',
+        verifierName: 'Uwaisu Musa',
         verifierRole: 'MANAGER',
         verifiedAt: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
         verificationNotes: 'Physical bag count matches 6,000 bags. NIS 444-1 seal intact.',
@@ -504,10 +504,10 @@ class DatabaseEngine {
         resultingAvailableBags: 30000,
         resultingReservedBags: 0,
         userResponsibleId: 'usr_asst_mgr_001',
-        userResponsibleName: 'Fatima Aliyu',
+        userResponsibleName: 'Mamuda Ahmed',
         userRole: 'ASSISTANT_MANAGER',
         approvingUserId: 'usr_mgr_001',
-        approvingUserName: 'Engr. Sanusi Kalambaina',
+        approvingUserName: 'Uwaisu Musa',
         approvingUserRole: 'MANAGER',
         reason: 'Approved stock receipt AAM-SR-202610-0001: 10 full trucks (6,000 bags) from Kalambaina Plant.',
         timestamp: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
@@ -584,7 +584,7 @@ class DatabaseEngine {
       paymentStatus: 'VERIFIED',
       managerApprovalStatus: 'APPROVED',
       approvedByManagerId: 'usr_mgr_001',
-      approvedByManagerName: 'Engr. Sanusi Kalambaina',
+      approvedByManagerName: 'Uwaisu Musa',
       approvedAt: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
       truckAllocations,
       issuedTrucksCount: 0,
@@ -601,7 +601,7 @@ class DatabaseEngine {
           status: 'APPROVED_AWAITING_PAYMENT',
           timestamp: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
           updatedByUserId: 'usr_mgr_001',
-          updatedByName: 'Engr. Sanusi Kalambaina',
+          updatedByName: 'Uwaisu Musa',
           role: 'MANAGER',
           notes: 'Order approved by Manager. Stock reserved. Awaiting 100% full payment of ₦13,020,000.',
         },
@@ -609,7 +609,7 @@ class DatabaseEngine {
           status: 'PAID',
           timestamp: new Date(Date.now() - 10 * 3600 * 1000).toISOString(),
           updatedByUserId: 'usr_mgr_001',
-          updatedByName: 'Engr. Sanusi Kalambaina',
+          updatedByName: 'Uwaisu Musa',
           role: 'MANAGER',
           notes: 'Verified 100% full wire transfer of ₦13,020,000 into Zenith Bank. Order released to Agent for issuance.',
         },
@@ -633,7 +633,7 @@ class DatabaseEngine {
         bankPayerName: 'Dan-Kano Mega Estates Ltd',
         destinationAccount: 'Zenith Bank - 1018492049',
         verifiedByStaffId: 'usr_mgr_001',
-        verifiedByStaffName: 'Engr. Sanusi Kalambaina',
+        verifiedByStaffName: 'Uwaisu Musa',
         verificationNotes: 'Reconciled in bank portal; 100% full value confirmed. No partial balance.',
         verifiedAt: new Date(Date.now() - 10 * 3600 * 1000).toISOString(),
         createdAt: new Date(Date.now() - 11 * 3600 * 1000).toISOString(),
@@ -644,7 +644,7 @@ class DatabaseEngine {
       {
         id: 'aud_001',
         userId: 'usr_asst_mgr_001',
-        userName: 'Fatima Aliyu',
+        userName: 'Mamuda Ahmed',
         userRole: 'ASSISTANT_MANAGER',
         action: 'REGISTER_STOCK_RECEIPT',
         entityType: 'STOCK_RECEIPT',
@@ -655,7 +655,7 @@ class DatabaseEngine {
       {
         id: 'aud_002',
         userId: 'usr_mgr_001',
-        userName: 'Engr. Sanusi Kalambaina',
+        userName: 'Uwaisu Musa',
         userRole: 'MANAGER',
         action: 'APPROVE_STOCK_RECEIPT',
         entityType: 'STOCK_RECEIPT',
@@ -666,7 +666,7 @@ class DatabaseEngine {
       {
         id: 'aud_003',
         userId: 'usr_mgr_001',
-        userName: 'Engr. Sanusi Kalambaina',
+        userName: 'Uwaisu Musa',
         userRole: 'MANAGER',
         action: 'APPROVE_ORDER',
         entityType: 'ORDER',
@@ -677,7 +677,7 @@ class DatabaseEngine {
       {
         id: 'aud_004',
         userId: 'usr_agent_001',
-        userName: 'Haruna Danladi',
+        userName: 'Isiyaka Sulaiman',
         userRole: 'AGENT',
         action: 'ISSUE_CEMENT_TRUCK',
         entityType: 'DELIVERY',
@@ -1985,7 +1985,7 @@ class DatabaseEngine {
         supplierDeliveryNote: 'TEST-DN-01',
         vehicleReg: 'TEST-REG-01',
         isDraft: true,
-        user: { id: 'usr_asst_mgr_001', name: 'Fatima Aliyu', role: 'ASSISTANT_MANAGER' },
+        user: { id: 'usr_asst_mgr_001', name: 'Mamuda Ahmed', role: 'ASSISTANT_MANAGER' },
       });
       addResult(1, 'Staff can create a stock receipt draft', 'Allows staff to save stock receipt in draft status', draft.status === 'DRAFT', `Created draft with reference ${draft.receiptReference}.`);
     } catch (e: any) {
@@ -2003,7 +2003,7 @@ class DatabaseEngine {
         supplierDeliveryNote: 'TEST-DN-02',
         vehicleReg: 'TEST-REG-02',
         isDraft: false, // PENDING_VERIFICATION
-        user: { id: 'usr_asst_mgr_001', name: 'Fatima Aliyu', role: 'ASSISTANT_MANAGER' },
+        user: { id: 'usr_asst_mgr_001', name: 'Mamuda Ahmed', role: 'ASSISTANT_MANAGER' },
       });
       const prodAfter = this.data.products[0].physicalStockBags;
       const unchanged = prodBefore === prodAfter;
@@ -2022,12 +2022,12 @@ class DatabaseEngine {
         trucksReceived: 4,
         supplierDeliveryNote: 'TEST-DN-03',
         vehicleReg: 'TEST-REG-03',
-        user: { id: 'usr_asst_mgr_001', name: 'Fatima Aliyu', role: 'ASSISTANT_MANAGER' },
+        user: { id: 'usr_asst_mgr_001', name: 'Mamuda Ahmed', role: 'ASSISTANT_MANAGER' },
       });
       const { receipt } = this.approveStockReceipt({
         receiptId: pendingReceipt.id,
         verificationNotes: 'Test approval by Manager',
-        user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+        user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
       });
       approvedReceiptId = receipt.id;
       addResult(3, 'An authorised verifier can approve a valid receipt', 'Manager approval transitions receipt to APPROVED', receipt.status === 'APPROVED' && receipt.verifierRole === 'MANAGER', `Receipt ${receipt.receiptReference} approved by ${receipt.verifierName}.`);
@@ -2046,11 +2046,11 @@ class DatabaseEngine {
         trucksReceived: 1, // 600 bags
         supplierDeliveryNote: 'TEST-DN-04',
         vehicleReg: 'TEST-REG-04',
-        user: { id: 'usr_asst_mgr_001', name: 'Fatima Aliyu', role: 'ASSISTANT_MANAGER' },
+        user: { id: 'usr_asst_mgr_001', name: 'Mamuda Ahmed', role: 'ASSISTANT_MANAGER' },
       });
       this.approveStockReceipt({
         receiptId: receipt.id,
-        user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+        user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
       });
       const stockAfter = prod.physicalStockBags;
       const diff = stockAfter - initialStock;
@@ -2070,11 +2070,11 @@ class DatabaseEngine {
         trucksReceived: 4, // 4 * 600 = 2,400 bags
         supplierDeliveryNote: 'TEST-DN-05',
         vehicleReg: 'TEST-REG-05',
-        user: { id: 'usr_asst_mgr_001', name: 'Fatima Aliyu', role: 'ASSISTANT_MANAGER' },
+        user: { id: 'usr_asst_mgr_001', name: 'Mamuda Ahmed', role: 'ASSISTANT_MANAGER' },
       });
       this.approveStockReceipt({
         receiptId: receipt.id,
-        user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+        user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
       });
       const diff = prod.physicalStockBags - initialStock;
       addResult(5, 'Four full trucks add exactly 2,400 bags', 'Verifies 4 trucks × 600 bags = 2,400 bags calculation', diff === 2400, `Posted 4 trucks. Expected: 2,400 bags. Actual added: ${diff} bags.`);
@@ -2091,7 +2091,7 @@ class DatabaseEngine {
       try {
         this.approveStockReceipt({
           receiptId: approvedReceiptId,
-          user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+          user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
         });
       } catch (err: any) {
         duplicateCaught = err.message.includes('already been approved');
@@ -2110,13 +2110,13 @@ class DatabaseEngine {
         trucksReceived: 1,
         supplierDeliveryNote: 'TEST-DN-07',
         vehicleReg: 'TEST-REG-07',
-        user: { id: 'usr_asst_mgr_001', name: 'Fatima Aliyu', role: 'ASSISTANT_MANAGER' },
+        user: { id: 'usr_asst_mgr_001', name: 'Mamuda Ahmed', role: 'ASSISTANT_MANAGER' },
       });
       let agentBlocked = false;
       try {
         this.approveStockReceipt({
           receiptId: receipt.id,
-          user: { id: 'usr_agent_001', name: 'Haruna Danladi', role: 'AGENT' },
+          user: { id: 'usr_agent_001', name: 'Isiyaka Sulaiman', role: 'AGENT' },
         });
       } catch (err: any) {
         agentBlocked = err.message.includes('Agent cannot approve');
@@ -2135,13 +2135,13 @@ class DatabaseEngine {
         trucksReceived: 1,
         supplierDeliveryNote: 'TEST-DN-08',
         vehicleReg: 'TEST-REG-08',
-        user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+        user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
       });
       let selfBlocked = false;
       try {
         this.approveStockReceipt({
           receiptId: managerReceipt.id,
-          user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+          user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
         });
       } catch (err: any) {
         selfBlocked = err.message.includes('cannot approve their own stock receipt');
@@ -2182,10 +2182,10 @@ class DatabaseEngine {
           productId: 'prod_sokoto_425r', // already recorded in seed
           trucksCounted: 50,
           countingStaffId: 'usr_asst_mgr_001',
-          countingStaffName: 'Fatima Aliyu',
+          countingStaffName: 'Mamuda Ahmed',
           verifierId: 'usr_mgr_001',
-          verifierName: 'Engr. Sanusi Kalambaina',
-          user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+          verifierName: 'Uwaisu Musa',
+          user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
         });
       } catch (err: any) {
         repeatBlocked = err.message.includes('already been registered');
@@ -2249,7 +2249,7 @@ class DatabaseEngine {
       });
       this.approveOrderByManager({
         orderId: order1.id,
-        user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+        user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
       });
 
       // Now available trailers is 1. Trying to reserve 5 trucks must fail
@@ -2280,7 +2280,7 @@ class DatabaseEngine {
       this.cancelOrder({
         orderId: order1.id,
         reason: 'Automated test cleanup',
-        user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+        user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
       });
 
       addResult(12, 'Concurrent orders cannot reserve the same bags', 'Verifies concurrency lock prevents double-reservation of terminal inventory', secondBlocked, 'Second concurrent order exceeding remaining available stock was prevented from reserving.');
@@ -2309,7 +2309,7 @@ class DatabaseEngine {
       });
       this.approveOrderByManager({
         orderId: order.id,
-        user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+        user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
       });
 
       // Try paying for only 1 truck (₦6,510,000 instead of ₦19,530,000)
@@ -2320,7 +2320,7 @@ class DatabaseEngine {
           amount: FIXED_PRICE_PER_TRUCK, // ₦6,510,000
           paymentMethod: 'BANK_TRANSFER',
           referenceNumber: 'PARTIAL-PAY-TEST',
-          user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+          user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
         });
       } catch (err: any) {
         partPaymentBlocked = err.message.includes('Partial payment rejected');
@@ -2336,7 +2336,7 @@ class DatabaseEngine {
           trailerBedReg: 'T-04',
           driverName: 'Driver 3',
           recipientSignatureName: 'Alhaji Mukhtar',
-          user: { id: 'usr_agent_001', name: 'Haruna Danladi', role: 'AGENT' },
+          user: { id: 'usr_agent_001', name: 'Isiyaka Sulaiman', role: 'AGENT' },
         });
       } catch (err: any) {
         issuanceBlocked = err.message.includes('Full 100% order payment must be verified');
@@ -2346,7 +2346,7 @@ class DatabaseEngine {
       this.cancelOrder({
         orderId: order.id,
         reason: 'Automated test cleanup',
-        user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+        user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
       });
 
       addResult(13, 'A three-truck order cannot be fulfilled after payment for only one truck', 'Strictly enforces 100% payment before physical issuance starts', partPaymentBlocked && issuanceBlocked, 'Part payment was rejected and cement issuance was blocked until 100% full payment.');
@@ -2378,14 +2378,14 @@ class DatabaseEngine {
       });
       this.approveOrderByManager({
         orderId: order.id,
-        user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+        user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
       });
       this.recordPayment({
         orderId: order.id,
         amount: order.totalAmount, // 100% full payment
         paymentMethod: 'BANK_TRANSFER',
         referenceNumber: 'FULL-PAY-TEST-14',
-        user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+        user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
       });
 
       const { allocation, movement } = this.issueTruckByAgent({
@@ -2395,7 +2395,7 @@ class DatabaseEngine {
         trailerBedReg: 'T-05',
         driverName: 'Driver 4',
         recipientSignatureName: 'Alhaji Mukhtar',
-        user: { id: 'usr_agent_001', name: 'Haruna Danladi', role: 'AGENT' },
+        user: { id: 'usr_agent_001', name: 'Isiyaka Sulaiman', role: 'AGENT' },
       });
 
       const finalPhysical = prod.physicalStockBags;
@@ -2415,17 +2415,17 @@ class DatabaseEngine {
         trucksReceived: 1,
         supplierDeliveryNote: 'REV-TEST-01',
         vehicleReg: 'REV-REG-01',
-        user: { id: 'usr_asst_mgr_001', name: 'Fatima Aliyu', role: 'ASSISTANT_MANAGER' },
+        user: { id: 'usr_asst_mgr_001', name: 'Mamuda Ahmed', role: 'ASSISTANT_MANAGER' },
       });
       this.approveStockReceipt({
         receiptId: receipt.id,
-        user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+        user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
       });
 
       const { movement } = this.reverseStockReceipt({
         receiptId: receipt.id,
         reversalReason: 'Discrepancy at weighbridge - test reversal',
-        user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+        user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
       });
 
       const hasOriginalMovement = this.data.stockMovements.some((m) => m.sourceDocumentReference === receipt.receiptReference && m.movementType === 'APPROVED_SUPPLIER_STOCK_RECEIPT');
@@ -2744,7 +2744,7 @@ class DatabaseEngine {
     const { movement } = this.approveStockReceipt({
       receiptId: receipt.id,
       verificationNotes: `Approved plant production transfer: ${params.trailersReceived} trucks from ${params.plantKilnReference}`,
-      user: { id: 'usr_mgr_001', name: 'Engr. Sanusi Kalambaina', role: 'MANAGER' },
+      user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
     });
 
     const product = this.getProductById(params.productId)!;

@@ -38,14 +38,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Quick Demo accounts mapping for A.A. Master Nig. Limited (Manager, Asst. Manager, Agent, Customer)
 export const DEMO_ACCOUNTS: Record<UserRole, { email: string; pass: string; label: string; role: UserRole }> = {
   CUSTOMER: { email: 'buyer@aamaster.ng', pass: 'Buyer123!', label: 'Customer Facing Portal (Alhaji Mukhtar Dan-Kano)', role: 'CUSTOMER' },
-  MANAGER: { email: 'manager@aamaster.ng', pass: 'Manager123!', label: 'Manager (Engr. Sanusi Kalambaina — Approval & Payment Verification)', role: 'MANAGER' },
-  ASSISTANT_MANAGER: { email: 'asstmanager@aamaster.ng', pass: 'AsstManager123!', label: 'Assistant Manager (Fatima Aliyu — Queue Verification)', role: 'ASSISTANT_MANAGER' },
-  AGENT: { email: 'agent@aamaster.ng', pass: 'Agent123!', label: 'Agent (Haruna Danladi — Production Site Stock Issuance)', role: 'AGENT' },
+  MANAGER: { email: 'manager@aamaster.ng', pass: 'Manager123!', label: 'Manager (Uwaisu Musa — Approval & Payment Verification)', role: 'MANAGER' },
+  ASSISTANT_MANAGER: { email: 'asstmanager@aamaster.ng', pass: 'AsstManager123!', label: 'Assistant Manager (Mamuda Ahmed — Queue Verification)', role: 'ASSISTANT_MANAGER' },
+  AGENT: { email: 'agent@aamaster.ng', pass: 'Agent123!', label: 'Agent (Isiyaka Sulaiman — Production Site Stock Issuance)', role: 'AGENT' },
   // System Administrator / Managing Director
   ADMIN: { email: 'admin@aamaster.ng', pass: 'Admin123!', label: 'Managing Director / Administrator (Alhaji Shehu Bello)', role: 'ADMIN' },
-  STORE_MANAGER: { email: 'manager@aamaster.ng', pass: 'Manager123!', label: 'Manager (Engr. Sanusi Kalambaina)', role: 'STORE_MANAGER' },
-  SALES_OFFICER: { email: 'asstmanager@aamaster.ng', pass: 'AsstManager123!', label: 'Assistant Manager (Fatima Aliyu)', role: 'SALES_OFFICER' },
-  DELIVERY_OFFICER: { email: 'agent@aamaster.ng', pass: 'Agent123!', label: 'Agent (Haruna Danladi)', role: 'DELIVERY_OFFICER' },
+  STORE_MANAGER: { email: 'manager@aamaster.ng', pass: 'Manager123!', label: 'Manager (Uwaisu Musa)', role: 'STORE_MANAGER' },
+  SALES_OFFICER: { email: 'asstmanager@aamaster.ng', pass: 'AsstManager123!', label: 'Assistant Manager (Mamuda Ahmed)', role: 'SALES_OFFICER' },
+  DELIVERY_OFFICER: { email: 'agent@aamaster.ng', pass: 'Agent123!', label: 'Agent (Isiyaka Sulaiman)', role: 'DELIVERY_OFFICER' },
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

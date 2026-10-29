@@ -37,9 +37,9 @@ export const OpeningStockTab: React.FC<OpeningStockTabProps> = ({
     productId: products[0]?.id || 'prod_sokoto_425r',
     trucksCounted: 20,
     countingStaffId: user?.id || 'usr_asst_mgr_001',
-    countingStaffName: user?.fullName || 'Fatima Aliyu',
+    countingStaffName: user?.fullName || 'Mamuda Ahmed',
     verifierId: 'usr_mgr_001',
-    verifierName: 'Engr. Sanusi Kalambaina',
+    verifierName: 'Uwaisu Musa',
     notes: 'Audited physical stock count of complete trailer payloads at Kalambaina Main Terminal.',
   });
 

@@ -27,10 +27,10 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
   };
 
   const isPaid = order.paymentStatus === 'VERIFIED';
-  const managerName = order.approvedByManagerName || 'Engr. Sanusi Kalambaina';
+  const managerName = order.approvedByManagerName || 'Uwaisu Musa';
   const issuingAgentName =
     order.truckAllocations?.find((t) => t.issuedByAgentName)?.issuedByAgentName ||
-    'Haruna Danladi';
+    'Isiyaka Sulaiman';
   const waybillNumber = `WB-${order.orderNumber.replace(/^(ORD-|AAM-)/, '')}`;
   const issueDateFormatted = new Date(order.createdAt).toLocaleDateString('en-GB', {
     day: '2-digit',
