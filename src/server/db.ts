@@ -122,8 +122,17 @@ class DatabaseEngine {
     schema.settings.fixedPricePerTruck = FIXED_PRICE_PER_TRUCK;
     schema.settings.bagsPerTrailer = FIXED_BAGS_PER_TRUCK;
 
-    // Ensure customer accounts (such as yusuf@gmail.com) exist and have valid credentials
+    // Ensure only the 3 registered staff members exist (strictly no admin accounts in staff directory)
     if (Array.isArray(schema.users)) {
+      schema.users = schema.users.filter(
+        (u: any) =>
+          u.id !== 'usr_admin_001' &&
+          u.id !== 'usr_admin_owner' &&
+          u.email?.toLowerCase().trim() !== 'admin@aamaster.ng' &&
+          u.email?.toLowerCase().trim() !== 'ashirushehu2015@gmail.com'
+      );
+
+      // Ensure customer accounts (such as yusuf@gmail.com) exist and have valid credentials
       const yusuf = schema.users.find((u: any) => u.email?.toLowerCase().trim() === 'yusuf@gmail.com');
       if (!yusuf) {
         const yPass = hashPassword('123456789');
@@ -222,7 +231,6 @@ class DatabaseEngine {
 
   // --- Seed Data Initializer for A.A. Master Nig. Limited ---
   private generateSeedData(): DatabaseSchema {
-    const adminPass = hashPassword('Admin123!');
     const managerPass = hashPassword('Manager123!');
     const asstManagerPass = hashPassword('AsstManager123!');
     const agentPass = hashPassword('Agent123!');
@@ -233,32 +241,6 @@ class DatabaseEngine {
     const now = new Date().toISOString();
 
     const users: DBUser[] = [
-      {
-        id: 'usr_admin_001',
-        email: 'admin@aamaster.ng',
-        fullName: 'Alhaji Shehu Bello (Managing Director)',
-        phone: '+234 803 111 2233',
-        role: 'ADMIN',
-        isActive: true,
-        companyName: 'A.A. Master Nig. Limited',
-        createdAt: now,
-        updatedAt: now,
-        passwordHash: adminPass.hash,
-        passwordSalt: adminPass.salt,
-      },
-      {
-        id: 'usr_admin_owner',
-        email: 'ashirushehu2015@gmail.com',
-        fullName: 'Ashiru Shehu (Principal)',
-        phone: '+234 802 333 4455',
-        role: 'ADMIN',
-        isActive: true,
-        companyName: 'A.A. Master Nig. Limited',
-        createdAt: now,
-        updatedAt: now,
-        passwordHash: adminPass.hash,
-        passwordSalt: adminPass.salt,
-      },
       {
         id: 'usr_mgr_001',
         email: 'manager@aamaster.ng',

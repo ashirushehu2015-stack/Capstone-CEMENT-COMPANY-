@@ -138,7 +138,8 @@ router.post('/logout', authenticate, (req: AuthenticatedRequest, res) => {
 
 // GET /api/auth/staff (Manager and Admin)
 router.get('/staff', authenticate, requireRole('ADMIN', 'MANAGER'), (_req, res) => {
-  const users = db.getAllUsers().filter((u) => u.role !== 'CUSTOMER');
+  const staffRoles = ['MANAGER', 'ASSISTANT_MANAGER', 'AGENT', 'STORE_MANAGER', 'SALES_OFFICER', 'DELIVERY_OFFICER'];
+  const users = db.getAllUsers().filter((u) => staffRoles.includes(u.role) && u.email !== 'admin@aamaster.ng' && u.email !== 'ashirushehu2015@gmail.com');
   return res.json({ success: true, staff: users });
 });
 
@@ -232,7 +233,7 @@ router.patch('/staff/:id/toggle-status', authenticate, requireRole('ADMIN', 'MAN
     return res.status(404).json({ success: false, error: 'Staff member not found' });
   }
 
-  if (existing.email === 'ashirushehu2015@gmail.com' || existing.id === 'usr_admin_001') {
+  if (existing.role === 'MANAGER' || existing.id === 'usr_mgr_001') {
     return res.status(403).json({ success: false, error: 'Cannot suspend primary executive administrator accounts' });
   }
 
@@ -310,7 +311,7 @@ router.delete('/staff/:id', authenticate, requireRole('ADMIN', 'MANAGER'), (req:
     return res.status(404).json({ success: false, error: 'Staff member not found' });
   }
 
-  if (existing.email === 'ashirushehu2015@gmail.com' || existing.id === 'usr_admin_001') {
+  if (existing.role === 'MANAGER' || existing.id === 'usr_mgr_001') {
     return res.status(403).json({ success: false, error: 'Cannot delete primary executive administrator accounts' });
   }
 

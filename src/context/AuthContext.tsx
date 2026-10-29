@@ -42,7 +42,7 @@ export const DEMO_ACCOUNTS: Record<UserRole, { email: string; pass: string; labe
   ASSISTANT_MANAGER: { email: 'asstmanager@aamaster.ng', pass: 'AsstManager123!', label: 'Assistant Manager (Mamuda Ahmed — Queue Verification)', role: 'ASSISTANT_MANAGER' },
   AGENT: { email: 'agent@aamaster.ng', pass: 'Agent123!', label: 'Agent (Isiyaka Sulaiman — Production Site Stock Issuance)', role: 'AGENT' },
   // System Administrator / Managing Director
-  ADMIN: { email: 'admin@aamaster.ng', pass: 'Admin123!', label: 'Managing Director / Administrator (Alhaji Shehu Bello)', role: 'ADMIN' },
+  ADMIN: { email: 'manager@aamaster.ng', pass: 'Manager123!', label: 'Manager (Uwaisu Musa)', role: 'MANAGER' },
   STORE_MANAGER: { email: 'manager@aamaster.ng', pass: 'Manager123!', label: 'Manager (Uwaisu Musa)', role: 'STORE_MANAGER' },
   SALES_OFFICER: { email: 'asstmanager@aamaster.ng', pass: 'AsstManager123!', label: 'Assistant Manager (Mamuda Ahmed)', role: 'SALES_OFFICER' },
   DELIVERY_OFFICER: { email: 'agent@aamaster.ng', pass: 'Agent123!', label: 'Agent (Isiyaka Sulaiman)', role: 'DELIVERY_OFFICER' },

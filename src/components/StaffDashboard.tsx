@@ -1484,14 +1484,14 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
 
                 <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm">
                   <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
-                    <span>Executive Directorate</span>
-                    <KeyRound className="w-4 h-4 text-amber-400" />
+                    <span>Depot Manager</span>
+                    <KeyRound className="w-4 h-4 text-purple-400" />
                   </div>
-                  <div className="text-2xl font-black text-white font-mono">
-                    {staffList.filter((s) => s.role === 'ADMIN').length}
+                  <div className="text-base font-black text-white truncate">
+                    Uwaisu Musa
                   </div>
-                  <div className="text-[10px] text-amber-400/90 mt-1">
-                    Full System Administration
+                  <div className="text-[10px] text-purple-300 mt-1">
+                    Chief Approval &amp; Treasury Authority
                   </div>
                 </div>
 
@@ -1578,11 +1578,10 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                           onChange={(e) => setStaffRoleFilter(e.target.value)}
                           className="bg-transparent text-xs text-slate-300 font-semibold focus:outline-none cursor-pointer"
                         >
-                          <option value="ALL">All Roles</option>
-                          <option value="MANAGER">Manager</option>
-                          <option value="ASSISTANT_MANAGER">Assistant Manager</option>
-                          <option value="AGENT">Issuing Agent</option>
-                          <option value="ADMIN">Executive Administrator</option>
+                          <option value="ALL">All Staff ({staffList.length})</option>
+                          <option value="MANAGER">Manager (Uwaisu Musa)</option>
+                          <option value="ASSISTANT_MANAGER">Assistant Manager (Mamuda Ahmed)</option>
+                          <option value="AGENT">Issuing Agent (Isiyaka Sulaiman)</option>
                         </select>
                       </div>
 
@@ -1677,7 +1676,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                               })
                               .map((s) => {
                                 const isCurrentUser = s.id === user?.id;
-                                const isSuperAdmin = s.email === 'ashirushehu2015@gmail.com' || s.id === 'usr_admin_001';
+                                const isDepotManager = s.role === 'MANAGER' || s.id === 'usr_mgr_001';
 
                                 return (
                                   <tr key={s.id} className="hover:bg-slate-800/40 transition-colors">
@@ -1827,7 +1826,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                                         </button>
 
                                         {/* Toggle Active / Suspended */}
-                                        {!isSuperAdmin && !isCurrentUser && (
+                                        {!isDepotManager && !isCurrentUser && (
                                           <button
                                             type="button"
                                             onClick={() => handleToggleStaffStatus(s)}
@@ -1843,7 +1842,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                                         )}
 
                                         {/* Delete Staff Member */}
-                                        {!isSuperAdmin && !isCurrentUser && (
+                                        {!isDepotManager && !isCurrentUser && (
                                           <button
                                             type="button"
                                             onClick={() => setDeleteStaffTarget(s)}
@@ -1899,10 +1898,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                             3. Issuing Agent
                             <span className="block text-[10px] text-slate-400 font-normal">Isiyaka Sulaiman</span>
                           </th>
-                          <th className="p-3.5 text-center bg-amber-950/20 text-amber-300">
-                            Administrator
-                            <span className="block text-[10px] text-slate-400 font-normal">MD / Principal</span>
-                          </th>
+                          
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-800 text-[11px]">
@@ -1919,9 +1915,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                           <td className="p-3 text-center bg-teal-950/10 text-slate-500">
                             ❌ Prohibited
                           </td>
-                          <td className="p-3 text-center bg-amber-950/10 font-bold text-emerald-400">
-                            ✅ Full Authority
-                          </td>
+                          
                         </tr>
 
                         <tr className="hover:bg-slate-800/30">
@@ -1937,9 +1931,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                           <td className="p-3 text-center bg-teal-950/10 text-slate-500">
                             ❌ Prohibited
                           </td>
-                          <td className="p-3 text-center bg-amber-950/10 font-bold text-emerald-400">
-                            ✅ Full Authority
-                          </td>
+                          
                         </tr>
 
                         <tr className="hover:bg-slate-800/30">
@@ -1955,9 +1947,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                           <td className="p-3 text-center bg-teal-950/10 text-slate-500">
                             ❌ Prohibited
                           </td>
-                          <td className="p-3 text-center bg-amber-950/10 font-bold text-emerald-400">
-                            ✅ Full Authority
-                          </td>
+                          
                         </tr>
 
                         <tr className="hover:bg-slate-800/30">
@@ -1973,9 +1963,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                           <td className="p-3 text-center bg-teal-950/10 font-bold text-emerald-400">
                             ✅ Exclusive Plant Site Authority
                           </td>
-                          <td className="p-3 text-center bg-amber-950/10 text-slate-500">
-                            ❌ Prohibited
-                          </td>
+                          
                         </tr>
 
                         <tr className="hover:bg-slate-800/30">
@@ -1991,9 +1979,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                           <td className="p-3 text-center bg-teal-950/10 font-bold text-emerald-400">
                             ✅ Mandatory Plant Gate Check
                           </td>
-                          <td className="p-3 text-center bg-amber-950/10 text-slate-500">
-                            ❌ Prohibited
-                          </td>
+                          
                         </tr>
 
                         <tr className="hover:bg-slate-800/30">
@@ -2009,9 +1995,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                           <td className="p-3 text-center bg-teal-950/10 font-bold text-emerald-400">
                             ✅ Official Dispatch Release
                           </td>
-                          <td className="p-3 text-center bg-amber-950/10 text-slate-500">
-                            ❌ Prohibited
-                          </td>
+                          
                         </tr>
 
                         <tr className="hover:bg-slate-800/30">
@@ -2027,9 +2011,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                           <td className="p-3 text-center bg-teal-950/10 text-slate-500">
                             ❌ Prohibited
                           </td>
-                          <td className="p-3 text-center bg-amber-950/10 font-bold text-emerald-400">
-                            ✅ Full Authority
-                          </td>
+                          
                         </tr>
 
                         <tr className="hover:bg-slate-800/30">
@@ -2045,26 +2027,21 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                           <td className="p-3 text-center bg-teal-950/10 text-slate-500">
                             ❌ Prohibited
                           </td>
-                          <td className="p-3 text-center bg-amber-950/10 font-bold text-emerald-400">
-                            ✅ Full Governance
-                          </td>
+                          
                         </tr>
 
                         <tr className="hover:bg-slate-800/30">
                           <td className="p-3 font-semibold text-white">
                             Zenith Bank Treasury &amp; Regional Haulage Matrix
                           </td>
-                          <td className="p-3 text-center bg-blue-950/10 font-bold text-amber-400">
-                            👁️ View Only
+                          <td className="p-3 text-center bg-blue-950/10 font-bold text-emerald-400">
+                            ✅ Full Configuration &amp; Treasury Oversight
                           </td>
                           <td className="p-3 text-center bg-indigo-950/10 text-slate-500">
                             ❌ Prohibited
                           </td>
                           <td className="p-3 text-center bg-teal-950/10 text-slate-500">
                             ❌ Prohibited
-                          </td>
-                          <td className="p-3 text-center bg-amber-950/10 font-bold text-emerald-400">
-                            ✅ Full Configuration
                           </td>
                         </tr>
                       </tbody>
@@ -2227,7 +2204,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
           )}
 
           {/* TAB 9: SETTINGS & DELIVERY MATRIX */}
-          {activeTab === 'settings' && isAdmin && businessSettings && (
+          {activeTab === 'settings' && (isAdmin || isManager) && businessSettings && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-lg font-bold text-white">Business Settings & Delivery Fee Matrix</h2>

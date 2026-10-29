@@ -397,7 +397,7 @@ export const StaffAuthModal: React.FC<StaffAuthModalProps> = ({ isOpen, onClose,
             /* ALTERNATIVE: MANUAL CUSTOM EMAIL / PASSWORD */
             <div className="bg-[#050e1f] border border-blue-900/80 rounded-2xl p-4 sm:p-5 space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-blue-900/40">
-                <h4 className="text-sm font-black text-white">Manual Staff / Administrator Sign-In</h4>
+                <h4 className="text-sm font-black text-white">Manual Staff Sign-In</h4>
                 <button
                   type="button"
                   onClick={() => setShowManualForm(false)}
@@ -418,7 +418,7 @@ export const StaffAuthModal: React.FC<StaffAuthModalProps> = ({ isOpen, onClose,
                       type="email"
                       value={customEmail}
                       onChange={(e) => setCustomEmail(e.target.value)}
-                      placeholder="e.g. admin@aamaster.ng"
+                      placeholder="e.g. manager@aamaster.ng"
                       required
                       className="w-full bg-[#030914] border border-blue-900/80 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 font-medium"
                     />
