@@ -37,7 +37,10 @@ import {
   ExternalLink,
   ChevronRight,
   UserPlus,
-  Info
+  Info,
+  Printer,
+  Landmark,
+  Receipt
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.tsx';
 import {
@@ -124,6 +127,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
   const [paymentSearchQuery, setPaymentSearchQuery] = useState('');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('ALL');
   const [viewingPaymentReceipt, setViewingPaymentReceipt] = useState<PaymentRecord | null>(null);
+  const [receiptModalMode, setReceiptModalMode] = useState<'receipt' | 'audit'>('receipt');
   const [copiedBankAcc, setCopiedBankAcc] = useState(false);
 
   const [showRecordPaymentModal, setShowRecordPaymentModal] = useState(false);
@@ -1496,7 +1500,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                               <th className="p-3.5">Bank Reference / Details</th>
                               <th className="p-3.5">Verified By</th>
                               <th className="p-3.5">Reconciled Time</th>
-                              <th className="p-3.5 text-right">Audit Slip</th>
+                              <th className="p-3.5 text-right">Receipt &amp; Audit Actions</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-800">
@@ -1538,14 +1542,31 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                                   {new Date(p.createdAt).toLocaleDateString()}
                                   <span className="block text-[10px] text-slate-500">{new Date(p.createdAt).toLocaleTimeString()}</span>
                                 </td>
-                                <td className="p-3.5 text-right">
-                                  <button
-                                    onClick={() => setViewingPaymentReceipt(p)}
-                                    className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-amber-300 text-[11px] font-bold border border-slate-700 transition-colors flex items-center gap-1 ml-auto"
-                                  >
-                                    <FileText className="w-3.5 h-3.5" />
-                                    <span>Audit Slip</span>
-                                  </button>
+                                <td className="p-3.5 text-right whitespace-nowrap">
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    <button
+                                      onClick={() => {
+                                        setViewingPaymentReceipt(p);
+                                        setReceiptModalMode('receipt');
+                                      }}
+                                      className="px-2.5 py-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 hover:text-white text-[11px] font-bold border border-emerald-800 transition-colors flex items-center gap-1 shadow-sm"
+                                      title="View &amp; Print Customer Wholesale Payment Receipt"
+                                    >
+                                      <Receipt className="w-3.5 h-3.5 text-emerald-400" />
+                                      <span>View / Print Receipt</span>
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setViewingPaymentReceipt(p);
+                                        setReceiptModalMode('audit');
+                                      }}
+                                      className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-amber-300 text-[11px] font-bold border border-slate-700 transition-colors flex items-center gap-1 shadow-sm"
+                                      title="View Treasury Clearance Audit Slip"
+                                    >
+                                      <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                                      <span>Audit Slip</span>
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                             ))}
@@ -2736,6 +2757,307 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
           )}
         </main>
       </div>
+
+            {/* MODAL: VIEW & PRINT PAYMENT RECEIPT & TREASURY AUDIT SLIP */}
+      {viewingPaymentReceipt && (() => {
+        const matchingOrder = orders.find(
+          (o) => o.id === viewingPaymentReceipt.orderId || o.orderNumber === viewingPaymentReceipt.orderNumber
+        );
+        const trucksCount = matchingOrder?.totalTrailers || Math.max(1, Math.round(viewingPaymentReceipt.amount / 6510000));
+        const bagsCount = matchingOrder?.totalBags || trucksCount * 600;
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+            <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl space-y-5 text-xs my-6 max-h-[92vh] overflow-y-auto">
+              
+              {/* Modal Top Control Bar */}
+              <div className="no-print flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                    <Receipt className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-white">Payment Documentation Desk</h3>
+                    <p className="text-[11px] text-slate-400">Order: <strong className="text-amber-400">{viewingPaymentReceipt.orderNumber}</strong> • Receipt: <span className="font-mono text-emerald-400">{viewingPaymentReceipt.id}</span></p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>Print</span>
+                  </button>
+                  <button
+                    onClick={() => setViewingPaymentReceipt(null)}
+                    className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* View Switcher: Wholesale Customer Receipt vs Treasury Audit Slip */}
+              <div className="no-print flex rounded-xl bg-slate-950 p-1 border border-slate-800 text-xs font-bold shadow-inner">
+                <button
+                  type="button"
+                  onClick={() => setReceiptModalMode('receipt')}
+                  className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                    receiptModalMode === 'receipt'
+                      ? 'bg-emerald-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Receipt className="w-4 h-4" />
+                  <span>Official Wholesale Payment Receipt</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReceiptModalMode('audit')}
+                  className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                    receiptModalMode === 'audit'
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Treasury Reconciliation Audit Slip</span>
+                </button>
+              </div>
+
+              {/* VIEW 1: OFFICIAL WHOLESALE PAYMENT RECEIPT */}
+              {receiptModalMode === 'receipt' && (
+                <div id="printable-payment-receipt" className="bg-slate-950 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-5 text-slate-200">
+                  {/* Receipt Header / Letterhead */}
+                  <div className="border-b border-slate-800 pb-4 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Building className="w-5 h-5 text-amber-400" />
+                        <h4 className="text-base font-black text-white tracking-wide">A.A. MASTER NIG. LIMITED</h4>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Wholesale Cement Commercial &amp; Physical Loading Operations</p>
+                      <p className="text-[10px] text-slate-500 font-mono">RC: RC-1928410 • TIN: 29810419-0001</p>
+                      <p className="text-[10px] text-slate-500">Kalambaina Industrial Hub, Cement Works Expressway, Sokoto State</p>
+                    </div>
+
+                    <div className="sm:text-right space-y-1">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px] font-black uppercase tracking-wider">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> 100% Fully Paid
+                      </span>
+                      <div className="text-[11px] text-slate-400 font-mono">
+                        Receipt #: <strong className="text-white font-mono">{viewingPaymentReceipt.id.toUpperCase()}</strong>
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono">
+                        Date: {new Date(viewingPaymentReceipt.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Customer & Order Metadata */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 text-xs">
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Issued To (Customer):</span>
+                      <strong className="text-white text-sm block mt-0.5">{viewingPaymentReceipt.customerName}</strong>
+                      <span className="text-slate-400 text-[11px] block">{matchingOrder?.companyName || viewingPaymentReceipt.bankPayerName || 'Wholesale Client'}</span>
+                      {matchingOrder?.customerPhone && (
+                        <span className="text-slate-400 text-[10px] font-mono block">Phone: {matchingOrder.customerPhone}</span>
+                      )}
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Wholesale Order &amp; Fulfillment:</span>
+                      <strong className="text-amber-400 font-mono text-sm block mt-0.5">{viewingPaymentReceipt.orderNumber}</strong>
+                      <span className="text-slate-300 text-[11px] block">Ex-Factory Plant Collection (Direct Transporter Dispatch)</span>
+                      <span className="text-slate-400 text-[10px] block">Kalambaina Plant Weighbridge Clearance Bay</span>
+                    </div>
+                  </div>
+
+                  {/* Itemized Order Summary */}
+                  <div className="overflow-x-auto rounded-xl border border-slate-800">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-900 text-slate-400 uppercase font-bold text-[10px] border-b border-slate-800">
+                        <tr>
+                          <th className="p-3">Product Description</th>
+                          <th className="p-3 text-center">Trailers Ordered</th>
+                          <th className="p-3 text-center">Total Bags (x600)</th>
+                          <th className="p-3 text-right">Fixed Truck Rate</th>
+                          <th className="p-3 text-right">Total Reconciled</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800 font-mono text-[11px]">
+                        <tr>
+                          <td className="p-3 font-sans">
+                            <strong className="text-white block">Sokoto Cement (Kalambaina 42.5R)</strong>
+                            <span className="text-[10px] text-slate-400 font-mono">SKU: AAM-SKT-600 • 30 Tonnes / Truck</span>
+                          </td>
+                          <td className="p-3 text-center text-white font-bold">{trucksCount} Full Truck{trucksCount > 1 ? 's' : ''}</td>
+                          <td className="p-3 text-center text-emerald-400 font-bold">{bagsCount.toLocaleString()} Bags</td>
+                          <td className="p-3 text-right text-slate-300">₦6,510,000</td>
+                          <td className="p-3 text-right text-emerald-400 font-black text-xs">₦{viewingPaymentReceipt.amount.toLocaleString('en-NG')}</td>
+                        </tr>
+                      </tbody>
+                      <tfoot className="bg-slate-900/80 font-bold border-t border-slate-800">
+                        <tr>
+                          <td colSpan={4} className="p-3 text-right text-slate-300 uppercase text-[10px] tracking-wider">
+                            Total 100% Upfront Amount Paid:
+                          </td>
+                          <td className="p-3 text-right font-mono text-emerald-400 text-sm font-black">
+                            ₦{viewingPaymentReceipt.amount.toLocaleString('en-NG')}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colSpan={4} className="p-2 text-right text-slate-400 text-[10px]">
+                            Outstanding Balance:
+                          </td>
+                          <td className="p-2 text-right font-mono text-slate-300 text-xs">
+                            ₦0.00 (Zero Balance)
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                  {/* Banking Verification Details */}
+                  <div className="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 space-y-2 text-xs">
+                    <div className="flex items-center gap-2 text-amber-400 font-bold text-[11px]">
+                      <Landmark className="w-4 h-4" />
+                      <span>Zenith Bank Settlement &amp; Treasury Verification</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1">
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Destination Corporate Account:</span>
+                        <strong className="text-white font-mono">{viewingPaymentReceipt.destinationAccount || 'Zenith Bank - 1018492049'}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Bank Transaction / Session ID:</span>
+                        <strong className="text-emerald-400 font-mono">{viewingPaymentReceipt.bankTransferReference || viewingPaymentReceipt.gatewayReference || 'ZEN-TX-CONFIRMED'}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Reconciled By Authorized Executive:</span>
+                        <strong className="text-white">{viewingPaymentReceipt.verifiedByStaffName || 'Uwaisu Musa'} (Plant Depot Manager)</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Verification Timestamp:</span>
+                        <span className="text-slate-300 font-mono">{new Date(viewingPaymentReceipt.createdAt).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Certified Footnote */}
+                  <div className="p-3 bg-emerald-950/30 border border-emerald-800/40 rounded-xl text-[10px] text-emerald-300 flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>
+                      <strong>Official Release Clearance:</strong> This official receipt certifies that payment was received 100% in full without credit or part payments. Transporter is authorized for physical truck clearance at the Kalambaina plant weighbridge.
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* VIEW 2: TREASURY RECONCILIATION AUDIT SLIP */}
+              {receiptModalMode === 'audit' && (
+                <div id="printable-audit-slip" className="bg-slate-950 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-5 text-slate-200">
+                  <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5 text-purple-400" />
+                        <h4 className="text-sm font-black text-white">TREASURY RECONCILIATION AUDIT SLIP</h4>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Internal Accounting &amp; Executive Compliance Proof</p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-lg bg-purple-950 text-purple-300 border border-purple-800 text-[10px] font-black uppercase font-mono">
+                      AUDIT STATUS: VERIFIED
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">Internal Payment ID:</span>
+                      <span className="font-mono text-white font-bold">{viewingPaymentReceipt.id}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">Linked Order Entity:</span>
+                      <span className="font-mono text-amber-400 font-bold">{viewingPaymentReceipt.orderNumber}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">Wholesale Contractor:</span>
+                      <strong className="text-white">{viewingPaymentReceipt.customerName}</strong>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">Payer Account / Label:</span>
+                      <span className="text-slate-300 font-mono">{viewingPaymentReceipt.bankPayerName || viewingPaymentReceipt.customerName}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">Settlement Channel:</span>
+                      <span className="font-mono text-emerald-400 font-bold">{viewingPaymentReceipt.paymentMethod}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">Destination Treasury:</span>
+                      <span className="font-mono text-slate-300">{viewingPaymentReceipt.destinationAccount || 'Zenith Bank - 1018492049'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">Bank Transaction ID / Ref:</span>
+                      <span className="font-mono text-emerald-400 font-bold">{viewingPaymentReceipt.bankTransferReference || viewingPaymentReceipt.gatewayReference || 'ZEN-TX-CONFIRMED'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">Exact Inflow Cleared:</span>
+                      <span className="font-mono text-emerald-400 font-black text-sm">₦{viewingPaymentReceipt.amount.toLocaleString('en-NG')}</span>
+                    </div>
+                  </div>
+
+                  {/* Verifier Attestation */}
+                  <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-2 text-xs">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Reconciling Authority Attestation:</span>
+                    <div className="flex items-center justify-between text-xs pt-1">
+                      <div>
+                        <strong className="text-white text-sm block">{viewingPaymentReceipt.verifiedByStaffName || 'Uwaisu Musa'}</strong>
+                        <span className="text-purple-300 text-[11px]">Plant Depot General Manager (Approval Authority)</span>
+                      </div>
+                      <div className="text-right font-mono text-[11px] text-slate-400">
+                        <span>Cleared: {new Date(viewingPaymentReceipt.createdAt).toLocaleString()}</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 pt-2 border-t border-slate-800 text-[11px] text-slate-400">
+                      <strong>Audit Notes:</strong> {viewingPaymentReceipt.verificationNotes || 'Reconciled in bank portal; 100% full value confirmed. No partial balance.'}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Modal Footer Controls */}
+              <div className="no-print flex items-center justify-between pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setReceiptModalMode(receiptModalMode === 'receipt' ? 'audit' : 'receipt')}
+                  className="text-xs text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1"
+                >
+                  {receiptModalMode === 'receipt' ? 'Switch to Treasury Audit Slip →' : '← Switch to Customer Payment Receipt'}
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>Print {receiptModalMode === 'receipt' ? 'Official Receipt' : 'Audit Slip'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewingPaymentReceipt(null)}
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* MODAL 3: MANAGER PAYMENT VERIFICATION */}
       {showRecordPaymentModal && (

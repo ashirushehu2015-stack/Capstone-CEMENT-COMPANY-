@@ -44,4 +44,36 @@
     flex-direction: column !important;
     justify-content: space-between !important;
   }
+
+  .no-print {
+    display: none !important;
+  }
+
+  #printable-payment-receipt,
+  #printable-audit-slip {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+  }
+
+  #printable-payment-receipt *,
+  #printable-audit-slip * {
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  #printable-payment-receipt .text-emerald-400,
+  #printable-payment-receipt .text-amber-400,
+  #printable-payment-receipt .text-emerald-300 {
+    color: #047857 !important;
+    font-weight: 800 !important;
+  }
+
+  #printable-payment-receipt .bg-slate-900,
+  #printable-payment-receipt .bg-slate-900\/60,
+  #printable-payment-receipt .bg-slate-900\/80,
+  #printable-payment-receipt .bg-slate-950 {
+    background: #f8fafc !important;
+  }
 }
