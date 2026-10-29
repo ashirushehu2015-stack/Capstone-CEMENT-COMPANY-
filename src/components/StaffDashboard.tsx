@@ -94,10 +94,23 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
     | 'audit'
     | 'settings';
 
-  const [activeTab, setActiveTab] = useState<TabType>(() => {
+  const STAFF_TAB_KEY = 'aamaster_staff_tab';
+
+  const [activeTab, setActiveTabState] = useState<TabType>(() => {
+    try {
+      const saved = localStorage.getItem(STAFF_TAB_KEY) as TabType | null;
+      if (saved) return saved;
+    } catch {}
     if (isDeliveryOfficer) return 'deliveries';
     return 'overview';
   });
+
+  const setActiveTab = (tab: TabType) => {
+    setActiveTabState(tab);
+    try {
+      localStorage.setItem(STAFF_TAB_KEY, tab);
+    } catch {}
+  };
 
   const [isLoading, setIsLoading] = useState(true);
   const [analytics, setAnalytics] = useState<any>(null);

@@ -61,7 +61,24 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   const customerUser = user?.role === 'CUSTOMER' ? user : null;
   const { addItem, setSingleItem, totalTrailers, totalBags, totalWeightTonnes, subtotalNGN, setIsCartOpen } = useCart();
 
-  const [activeTab, setActiveTab] = useState<'catalogue' | 'my_orders' | 'how_it_works' | 'bank_details'>('catalogue');
+  const CUSTOMER_TAB_KEY = 'aamaster_customer_tab';
+
+  const [activeTab, setActiveTabState] = useState<'catalogue' | 'my_orders' | 'how_it_works' | 'bank_details'>(() => {
+    try {
+      const saved = localStorage.getItem(CUSTOMER_TAB_KEY);
+      if (saved === 'catalogue' || saved === 'my_orders' || saved === 'how_it_works' || saved === 'bank_details') {
+        return saved;
+      }
+    } catch {}
+    return 'catalogue';
+  });
+
+  const setActiveTab = (tab: 'catalogue' | 'my_orders' | 'how_it_works' | 'bank_details') => {
+    setActiveTabState(tab);
+    try {
+      localStorage.setItem(CUSTOMER_TAB_KEY, tab);
+    } catch {}
+  };
   const [customerOrders, setCustomerOrders] = useState<Order[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
   const [claimOrderId, setClaimOrderId] = useState<string | null>(null);

@@ -37,7 +37,7 @@ import { OrderTrackerModal } from './components/OrderTrackerModal.tsx';
 import { StaffDashboard } from './components/StaffDashboard.tsx';
 import { StaffAuthModal } from './components/StaffAuthModal.tsx';
 import { CustomerPortal } from './components/CustomerPortal.tsx';
-import { apiProducts, apiReports } from './services/api.ts';
+import { apiProducts, apiReports, getStoredUser } from './services/api.ts';
 import type { Product, Order, BusinessSettings, UserRole } from './types/index.ts';
 
 const FALLBACK_PRODUCTS: Product[] = [
@@ -106,8 +106,32 @@ function StorefrontContent() {
   const [isStaffAuthModalOpen, setIsStaffAuthModalOpen] = useState(false);
   const [receiptOrder, setReceiptOrder] = useState<Order | null>(null);
 
-  // View state: 'landing' (single unscrollable), 'customer_portal' (full buyer experience), or 'dashboard' (staff logistics)
-  const [activeView, setActiveView] = useState<'landing' | 'customer_portal' | 'dashboard'>('landing');
+  const VIEW_STORAGE_KEY = 'aamaster_active_view';
+
+  function getInitialActiveView(): 'landing' | 'customer_portal' | 'dashboard' {
+    try {
+      const saved = localStorage.getItem(VIEW_STORAGE_KEY);
+      if (saved === 'dashboard' || saved === 'customer_portal' || saved === 'landing') {
+        return saved;
+      }
+      const cached = getStoredUser();
+      if (cached) {
+        if (cached.role === 'CUSTOMER') return 'customer_portal';
+        return 'dashboard';
+      }
+    } catch {}
+    return 'landing';
+  }
+
+  // View state: 'landing', 'customer_portal', or 'dashboard'
+  const [activeView, setActiveViewState] = useState<'landing' | 'customer_portal' | 'dashboard'>(getInitialActiveView);
+
+  const setActiveView = (view: 'landing' | 'customer_portal' | 'dashboard') => {
+    setActiveViewState(view);
+    try {
+      localStorage.setItem(VIEW_STORAGE_KEY, view);
+    } catch {}
+  };
 
   // Landing Card Portal & Auth state
   const [customerAuthMode, setCustomerAuthMode] = useState<'login' | 'register'>('login');
@@ -161,6 +185,30 @@ function StorefrontContent() {
   useEffect(() => {
     loadInitialData();
   }, []);
+
+  // Ensure portal view persists and rehydrates accurately on page refresh
+  useEffect(() => {
+    if (!isLoading) {
+      if (user) {
+        const saved = localStorage.getItem(VIEW_STORAGE_KEY);
+        if (isStaff) {
+          if (saved === 'dashboard' || !saved || saved === 'customer_portal') {
+            setActiveViewState('dashboard');
+            localStorage.setItem(VIEW_STORAGE_KEY, 'dashboard');
+          }
+        } else if (user.role === 'CUSTOMER') {
+          if (saved === 'customer_portal') {
+            setActiveViewState('customer_portal');
+          }
+        }
+      } else {
+        if (activeView !== 'landing') {
+          setActiveViewState('landing');
+          localStorage.setItem(VIEW_STORAGE_KEY, 'landing');
+        }
+      }
+    }
+  }, [user?.id, user?.role, isStaff, isLoading]);
 
   const handleManualLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -447,7 +495,7 @@ function StorefrontContent() {
               </div>
 
               {/* Sub-tabs: Customer Login vs Register (when not logged in as customer) */}
-              {!(user && user.role === 'CUSTOMER') && (
+              {!user && (
                 <div className="grid grid-cols-2 p-1.5 bg-[#071738] text-xs font-bold border-b border-blue-900/40">
                   <button
                     type="button"
@@ -546,6 +594,48 @@ function StorefrontContent() {
                         className="text-xs text-blue-600 hover:underline font-semibold"
                       >
                         Open Catalog &rarr;
+                      </button>
+                    </div>
+                  </div>
+                ) : user && isStaff ? (
+                  /* If Logged In as STAFF MEMBER: Show Active Staff Session Card */
+                  <div className="space-y-3">
+                    <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 px-2.5 py-0.5 rounded font-mono">
+                          Staff ({user.role.replace(/_/g, ' ')})
+                        </span>
+                        <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Active Session
+                        </span>
+                      </div>
+                      <div>
+                        <strong className="text-sm text-slate-900 block font-bold">{user.fullName}</strong>
+                        <span className="text-xs text-blue-800 font-medium block">{user.companyName || 'A.A. Master Nig. Limited'}</span>
+                        <span className="text-xs text-slate-600 font-mono">{user.email}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => setActiveView('dashboard')}
+                        className="w-full bg-[#0b224d] hover:bg-[#122e61] text-amber-400 font-bold py-2.5 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-xs sm:text-sm transition-all active:scale-95 border border-amber-500/30"
+                      >
+                        <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                        <span>Enter Operations Dashboard</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <button
+                        onClick={async () => {
+                          await logout();
+                          setActiveView('landing');
+                        }}
+                        className="text-xs text-rose-600 hover:text-rose-800 font-semibold flex items-center gap-1"
+                      >
+                        <LogOut className="w-3.5 h-3.5" /> Sign Out
                       </button>
                     </div>
                   </div>

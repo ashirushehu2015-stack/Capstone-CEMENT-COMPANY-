@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { User, UserRole } from '../types/index.ts';
-import { apiAuth, getStoredToken, clearStoredToken } from '../services/api.ts';
+import { apiAuth, getStoredToken, clearStoredToken, getStoredUser, setStoredUser, clearStoredUser } from '../services/api.ts';
 
 interface AuthContextType {
   user: User | null;
@@ -49,9 +49,9 @@ export const DEMO_ACCOUNTS: Record<UserRole, { email: string; pass: string; labe
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(getStoredToken());
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(() => getStoredUser());
+  const [token, setToken] = useState<string | null>(() => getStoredToken());
+  const [isLoading, setIsLoading] = useState<boolean>(() => !getStoredUser() && !!getStoredToken());
 
   useEffect(() => {
     async function initAuth() {
@@ -59,18 +59,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!stored) {
         setUser(null);
         setToken(null);
+        clearStoredToken();
+        clearStoredUser();
         setIsLoading(false);
         return;
       }
 
       try {
         const res = await apiAuth.getMe();
-        setUser(res.user);
-        setToken(stored);
-      } catch {
-        setUser(null);
-        setToken(null);
-        clearStoredToken();
+        if (res && res.user) {
+          setUser(res.user);
+          setStoredUser(res.user);
+          setToken(stored);
+        }
+      } catch (err: any) {
+        // Only wipe credentials if server explicitly rejected auth with 401 or 403
+        if (err?.status === 401 || err?.status === 403) {
+          setUser(null);
+          setToken(null);
+          clearStoredToken();
+          clearStoredUser();
+        } else {
+          console.warn('Network issue or server warm-up during session check. Preserving cached session:', err);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -84,6 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await apiAuth.login({ email: email.trim(), password });
       setUser(res.user);
       setToken(res.token);
+      setStoredUser(res.user);
       return res.user;
     } finally {
       setIsLoading(false);
@@ -96,6 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await apiAuth.register(data);
       setUser(res.user);
       setToken(res.token);
+      setStoredUser(res.user);
     } finally {
       setIsLoading(false);
     }
@@ -105,9 +118,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       await apiAuth.logout();
+    } catch {
+      // ignore
     } finally {
       setUser(null);
       setToken(null);
+      clearStoredToken();
+      clearStoredUser();
+      try {
+        localStorage.removeItem('aamaster_active_view');
+        localStorage.removeItem('aamaster_staff_tab');
+        localStorage.removeItem('aamaster_customer_tab');
+      } catch {}
       setIsLoading(false);
     }
   };

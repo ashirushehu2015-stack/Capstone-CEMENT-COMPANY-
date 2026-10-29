@@ -20,6 +20,7 @@ import type {
 } from '../types/index.ts';
 
 const TOKEN_KEY = 'sokoto_cement_auth_token';
+const USER_KEY = 'sokoto_cement_auth_user';
 
 export function getStoredToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
@@ -31,6 +32,25 @@ export function setStoredToken(token: string): void {
 
 export function clearStoredToken(): void {
   localStorage.removeItem(TOKEN_KEY);
+}
+
+export function getStoredUser(): User | null {
+  try {
+    const item = localStorage.getItem(USER_KEY);
+    return item ? (JSON.parse(item) as User) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredUser(user: User): void {
+  try {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  } catch {}
+}
+
+export function clearStoredUser(): void {
+  localStorage.removeItem(USER_KEY);
 }
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -52,7 +72,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   const data = await response.json().catch(() => ({ error: 'Invalid response from server' }));
 
   if (!response.ok) {
-    throw new Error(data.error || `Request failed with status ${response.status}`);
+    const error: any = new Error(data.error || `Request failed with status ${response.status}`);
+    error.status = response.status;
+    throw error;
   }
 
   return data as T;
@@ -66,6 +88,7 @@ export const apiAuth = {
       body: JSON.stringify(credentials),
     });
     if (res.token) setStoredToken(res.token);
+    if (res.user) setStoredUser(res.user);
     return res;
   },
 
@@ -86,6 +109,7 @@ export const apiAuth = {
       body: JSON.stringify(userData),
     });
     if (res.token) setStoredToken(res.token);
+    if (res.user) setStoredUser(res.user);
     return res;
   },
 
@@ -98,6 +122,7 @@ export const apiAuth = {
       await request<{ success: boolean }>('/api/auth/logout', { method: 'POST' });
     } finally {
       clearStoredToken();
+      clearStoredUser();
     }
   },
 
