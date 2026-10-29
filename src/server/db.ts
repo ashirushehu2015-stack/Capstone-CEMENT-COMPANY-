@@ -522,17 +522,9 @@ class DatabaseEngine {
         truckLabel: 'Truck 1 of 2',
         bagsCount: 600,
         tonnes: 30,
-        status: 'ISSUED',
-        issuedAt: new Date(Date.now() - 6 * 3600 * 1000).toISOString(),
-        issuedByAgentId: 'usr_agent_001',
-        issuedByAgentName: 'Haruna Danladi',
-        truckHeadReg: 'SKK-782-XA',
-        trailerBedReg: 'T-904-SOK',
-        driverName: 'Musa Danladi',
-        driverPhone: '+234 812 555 6677',
-        recipientSignatureName: 'Alhaji Mukhtar Dan-Kano',
+        status: 'PENDING_ISSUANCE',
         waybillPassCode: 'AAM-PASS-8841',
-        notes: 'Truck 1 of 2 physically dispatched from Bay 1 with official gate pass.',
+        notes: 'Awaiting truck 1 loading at Kalambaina Bay 1.',
       },
       {
         id: 'alloc_002',
@@ -587,7 +579,7 @@ class DatabaseEngine {
         driverName: 'Musa Danladi',
         driverLicenseNo: 'KBB-89104-AA',
       },
-      status: 'PARTIALLY_ISSUED',
+      status: 'PAID',
       paymentMethod: 'BANK_TRANSFER',
       paymentStatus: 'VERIFIED',
       managerApprovalStatus: 'APPROVED',
@@ -595,7 +587,7 @@ class DatabaseEngine {
       approvedByManagerName: 'Engr. Sanusi Kalambaina',
       approvedAt: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
       truckAllocations,
-      issuedTrucksCount: 1, // 1 of 2 issued
+      issuedTrucksCount: 0,
       statusHistory: [
         {
           status: 'PENDING_APPROVAL',
@@ -620,14 +612,6 @@ class DatabaseEngine {
           updatedByName: 'Engr. Sanusi Kalambaina',
           role: 'MANAGER',
           notes: 'Verified 100% full wire transfer of ₦13,020,000 into Zenith Bank. Order released to Agent for issuance.',
-        },
-        {
-          status: 'PARTIALLY_ISSUED',
-          timestamp: new Date(Date.now() - 6 * 3600 * 1000).toISOString(),
-          updatedByUserId: 'usr_agent_001',
-          updatedByName: 'Haruna Danladi',
-          role: 'AGENT',
-          notes: 'Truck 1 of 2 physically issued (600 bags deducted from physical stock).',
         },
       ],
       createdAt: new Date(Date.now() - 14 * 3600 * 1000).toISOString(),
@@ -1753,7 +1737,7 @@ class DatabaseEngine {
 
     // Check if multi-truck order is fully issued
     const allIssued = order.truckAllocations.every((a) => a.status === 'ISSUED');
-    order.status = allIssued ? 'COMPLETED' : 'PARTIALLY_ISSUED';
+    order.status = allIssued ? 'COMPLETED' : 'PAID';
     order.updatedAt = now;
 
     // Record immutable CEMENT_ISSUANCE ledger movement

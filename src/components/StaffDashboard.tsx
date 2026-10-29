@@ -119,29 +119,13 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
   }, [user?.role, isAgent, isAssistantManager]);
 
   // Modals inside dashboard
-  const [showReceiveGoodsModal, setShowReceiveGoodsModal] = useState(false);
-  const [showAdjustStockModal, setShowAdjustStockModal] = useState(false);
   const [showRecordPaymentModal, setShowRecordPaymentModal] = useState(false);
   const [showAssignDriverModal, setShowAssignDriverModal] = useState<Order | null>(null);
   const [showConfirmDeliveryModal, setShowConfirmDeliveryModal] = useState<Order | null>(null);
   const [showCreateProductModal, setShowCreateProductModal] = useState(false);
   const [showCreateStaffModal, setShowCreateStaffModal] = useState(false);
 
-  // Form states for modals
-  const [receiveForm, setReceiveForm] = useState({
-    productId: '',
-    trailersReceived: 1, // 1 trailer trip = 600 bags (30 tonnes)
-    batchNumber: 'SKT-KLB-2026-B08',
-    plantKilnReference: 'Kalambaina Kiln Line 2',
-    notes: 'Direct factory trailer dispatch to depot yard',
-  });
 
-  const [adjustForm, setAdjustForm] = useState({
-    productId: '',
-    trailerChange: -1,
-    type: 'DAMAGED_BAGS_REPACKED' as 'DAMAGED_BAGS_REPACKED' | 'DEPOT_AUDIT_ADJUSTMENT',
-    reason: 'Damaged bags offloaded and repacked under depot supervision',
-  });
 
   const [paymentForm, setPaymentForm] = useState({
     orderId: '',
@@ -237,10 +221,6 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
 
       if (productsRes) {
         setProducts(productsRes.products);
-        if (productsRes.products.length > 0) {
-          setReceiveForm((prev) => ({ ...prev, productId: productsRes.products[0].id }));
-          setAdjustForm((prev) => ({ ...prev, productId: productsRes.products[0].id }));
-        }
       }
 
       if (isAdmin || isStoreManager || isSalesOfficer || isManager || isAssistantManager) {
@@ -329,29 +309,6 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
   };
 
   // --- Handlers ---
-  const handleReceiveGoods = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await apiInventory.receiveGoods(receiveForm);
-      showNotification('success', `Goods receipt recorded: ${receiveForm.trailersReceived} trailer(s) (${receiveForm.trailersReceived * 600} bags) added.`);
-      setShowReceiveGoodsModal(false);
-      loadAllData();
-    } catch (err: any) {
-      showNotification('error', err.message || 'Failed to record receipt');
-    }
-  };
-
-  const handleAdjustStock = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await apiInventory.adjustStock(adjustForm);
-      showNotification('success', `Stock adjusted by ${adjustForm.trailerChange} trailer(s).`);
-      setShowAdjustStockModal(false);
-      loadAllData();
-    } catch (err: any) {
-      showNotification('error', err.message || 'Adjustment failed');
-    }
-  };
 
   const handleRecordOfflinePayment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -929,12 +886,14 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                                 ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
                                 : o.status === 'CANCELLED'
                                 ? 'bg-rose-950 text-rose-300 border border-rose-800'
-                                : o.status === 'PAID'
-                                ? 'bg-blue-950 text-blue-300 border border-blue-800'
+                                : o.status === 'PAID' || o.status === 'PARTIALLY_ISSUED'
+                                ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
                                 : 'bg-amber-950 text-amber-300 border border-amber-800'
                             }`}
                           >
-                            {o.status.replace('_', ' ')}
+                            {o.status === 'PAID' || o.status === 'PARTIALLY_ISSUED'
+                              ? 'FULLY PAID'
+                              : o.status.replace(/_/g, ' ')}
                           </span>
                         </td>
                         <td className="p-3.5 text-right space-x-1.5">
@@ -1072,22 +1031,6 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                   <h2 className="text-lg font-bold text-white">Authoritative Cement Inventory Ledger</h2>
                   <p className="text-xs text-slate-400">Track trailer deliveries from plants, stock reservations, and adjustments</p>
                 </div>
-                {(isAdmin || isStoreManager) && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setShowAdjustStockModal(true)}
-                      className="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors"
-                    >
-                      Damage / Audit Adjustment
-                    </button>
-                    <button
-                      onClick={() => setShowReceiveGoodsModal(true)}
-                      className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition-colors shadow-md"
-                    >
-                      <Plus className="w-4 h-4" /> Receive Factory Trailer
-                    </button>
-                  </div>
-                )}
               </div>
 
               {/* Stock Balances Summary Cards */}
@@ -2335,179 +2278,6 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
           )}
         </main>
       </div>
-
-      {/* MODAL 1: RECEIVE GOODS (FACTORY KILN LINE DISPATCH) */}
-      {showReceiveGoodsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl space-y-4 text-xs">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Truck className="w-5 h-5 text-emerald-400" /> Receive Factory Kiln Production (Kalambaina Plant)
-              </h3>
-              <button onClick={() => setShowReceiveGoodsModal(false)} className="text-slate-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <form onSubmit={handleReceiveGoods} className="space-y-3">
-              <div>
-                <label className="text-slate-400 block mb-1">Select Sokoto Cement Product</label>
-                <select
-                  value={receiveForm.productId}
-                  onChange={(e) => setReceiveForm({ ...receiveForm, productId: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold"
-                >
-                  {products.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} ({p.sku})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-slate-400 block mb-1">Trailers Received (600 Bags / 30T each)</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={receiveForm.trailersReceived}
-                    onChange={(e) => setReceiveForm({ ...receiveForm, trailersReceived: Number(e.target.value) })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold font-mono"
-                  />
-                  <span className="text-[10px] text-emerald-400">{(receiveForm.trailersReceived * 600).toLocaleString()} bags total</span>
-                </div>
-                <div>
-                  <label className="text-slate-400 block mb-1">Batch Number</label>
-                  <input
-                    type="text"
-                    required
-                    value={receiveForm.batchNumber}
-                    onChange={(e) => setReceiveForm({ ...receiveForm, batchNumber: e.target.value })}
-                    placeholder="e.g. SKT-KLB-2026-B08"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="text-slate-400 block mb-1">Plant Kiln Reference Line</label>
-                <input
-                  type="text"
-                  required
-                  value={receiveForm.plantKilnReference}
-                  onChange={(e) => setReceiveForm({ ...receiveForm, plantKilnReference: e.target.value })}
-                  placeholder="e.g. Kalambaina Kiln Line 2"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
-                />
-              </div>
-              <div>
-                <label className="text-slate-400 block mb-1">Receipt Notes / Quality Inspection</label>
-                <input
-                  type="text"
-                  value={receiveForm.notes}
-                  onChange={(e) => setReceiveForm({ ...receiveForm, notes: e.target.value })}
-                  placeholder="e.g. Lab tested standard batch, verified valve bags intact"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
-                />
-              </div>
-              <div className="pt-2 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowReceiveGoodsModal(false)}
-                  className="px-4 py-2 text-slate-400 hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-xl"
-                >
-                  Confirm Trailer Batch Receipt
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 2: ADJUST STOCK */}
-      {showAdjustStockModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl space-y-4 text-xs">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-rose-400" /> Stock Adjustment / Depot Audit
-              </h3>
-              <button onClick={() => setShowAdjustStockModal(false)} className="text-slate-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <form onSubmit={handleAdjustStock} className="space-y-3">
-              <div>
-                <label className="text-slate-400 block mb-1">Select Product</label>
-                <select
-                  value={adjustForm.productId}
-                  onChange={(e) => setAdjustForm({ ...adjustForm, productId: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold"
-                >
-                  {products.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} (Current: {p.availableTrailers} trailers / {(p.availableTrailers * p.bagsPerTrailer).toLocaleString()} bags)
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-slate-400 block mb-1">Adjustment Type</label>
-                  <select
-                    value={adjustForm.type}
-                    onChange={(e) => setAdjustForm({ ...adjustForm, type: e.target.value as any })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold"
-                  >
-                    <option value="DAMAGED_BAGS_REPACKED">Damaged Bags Repacked</option>
-                    <option value="DEPOT_AUDIT_ADJUSTMENT">Depot Audit Adjustment</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-slate-400 block mb-1">Trailer Change (Negative for deduction)</label>
-                  <input
-                    type="number"
-                    value={adjustForm.trailerChange}
-                    onChange={(e) => setAdjustForm({ ...adjustForm, trailerChange: Number(e.target.value) })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono font-bold"
-                  />
-                  <span className="text-[10px] text-slate-500">Trailers (1 TRL = 600 bags)</span>
-                </div>
-              </div>
-              <div>
-                <label className="text-slate-400 block mb-1">Reason & Supporting Audit Notes</label>
-                <input
-                  type="text"
-                  required
-                  value={adjustForm.reason}
-                  onChange={(e) => setAdjustForm({ ...adjustForm, reason: e.target.value })}
-                  placeholder="e.g. 1 trailer re-bagged under quality control due to rain cover tear"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
-                />
-              </div>
-              <div className="pt-2 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAdjustStockModal(false)}
-                  className="px-4 py-2 text-slate-400 hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-rose-600 hover:bg-rose-500 text-white font-bold px-4 py-2 rounded-xl"
-                >
-                  Post Adjustment
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* MODAL 3: MANAGER PAYMENT VERIFICATION */}
       {showRecordPaymentModal && (

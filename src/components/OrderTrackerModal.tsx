@@ -98,9 +98,9 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({
 
   const steps: { label: string; key: OrderStatus; desc: string }[] = [
     { label: 'Order Placed', key: 'PENDING_APPROVAL', desc: 'Awaiting Manager review' },
-    { label: 'Payment Verified', key: 'PAID', desc: 'Manager confirmed 100% wire' },
+    { label: 'Fully Paid', key: 'PAID', desc: 'Manager confirmed 100% wire' },
     { label: 'Gate Pass Active', key: 'READY_FOR_COLLECTION', desc: 'Security pass issued' },
-    { label: 'Agent Issuance', key: 'PARTIALLY_ISSUED', desc: 'Loading 600 bags per truck' },
+    { label: 'Agent Issuance', key: 'FULLY_ISSUED', desc: 'Loading 600 bags per truck' },
     { label: 'Rig Collected', key: 'COMPLETED', desc: 'Customer trailer cleared' },
   ];
 
