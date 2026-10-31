@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Layers,
   ShoppingBag,
@@ -70,6 +71,7 @@ import type {
 import { StockRegistrationTab } from './StockRegistrationTab.tsx';
 import { OpeningStockTab } from './OpeningStockTab.tsx';
 import { AcceptanceTestsTab } from './AcceptanceTestsTab.tsx';
+import { PrintSlipPortal } from './PrintSlipPortal.tsx';
 
 interface StaffDashboardProps {
   onClose: () => void;
@@ -141,6 +143,17 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('ALL');
   const [viewingPaymentReceipt, setViewingPaymentReceipt] = useState<PaymentRecord | null>(null);
   const [receiptModalMode, setReceiptModalMode] = useState<'receipt' | 'audit'>('receipt');
+
+  useEffect(() => {
+    if (viewingPaymentReceipt) {
+      document.body.classList.add('printing-slip-active');
+    } else {
+      document.body.classList.remove('printing-slip-active');
+    }
+    return () => {
+      document.body.classList.remove('printing-slip-active');
+    };
+  }, [viewingPaymentReceipt]);
   const [copiedBankAcc, setCopiedBankAcc] = useState(false);
 
   const [showRecordPaymentModal, setShowRecordPaymentModal] = useState(false);
@@ -476,9 +489,9 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className={`min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans ${viewingPaymentReceipt ? 'print:min-h-0 print:h-auto print:bg-white print:text-black' : ''}`}>
       {/* Dashboard Top Header */}
-      <header className="bg-slate-900 border-b border-slate-800 px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <header className={`bg-slate-900 border-b border-slate-800 px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 ${viewingPaymentReceipt ? 'print:hidden' : ''}`}>
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
             <Layers className="w-5 h-5" />
@@ -577,7 +590,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
       {/* Global Notification Banner */}
       {actionMessage && (
         <div
-          className={`px-6 py-3 text-xs font-bold flex items-center justify-between ${
+          className={`px-6 py-3 text-xs font-bold flex items-center justify-between print:hidden ${
             actionMessage.type === 'success' ? 'bg-emerald-950 text-emerald-300 border-b border-emerald-800' : 'bg-rose-950 text-rose-300 border-b border-rose-800'
           }`}
         >
@@ -589,7 +602,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
       )}
 
       {/* Main Workspace Layout */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className={`flex-1 flex overflow-hidden ${viewingPaymentReceipt ? 'print:hidden' : ''}`}>
         {/* Sidebar Nav */}
         <aside className="w-64 bg-slate-900/60 border-r border-slate-800/80 p-4 space-y-1 overflow-y-auto">
           {(isAdmin || isManager) && (
@@ -2780,8 +2793,14 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
         const bagsCount = matchingOrder?.totalBags || trucksCount * 600;
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-sm animate-in fade-in overflow-y-auto">
-            <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl space-y-5 text-xs my-6 max-h-[92vh] overflow-y-auto">
+          <>
+            <PrintSlipPortal
+              receipt={viewingPaymentReceipt}
+              order={matchingOrder}
+              mode={receiptModalMode}
+            />
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-sm animate-in fade-in overflow-y-auto print:hidden">
+            <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl space-y-5 text-xs my-6 max-h-[92vh] overflow-y-auto print:border-none print:shadow-none print:bg-white print:text-black print:m-0 print:p-0 print:max-w-none print:w-full print:block print:max-h-none print:overflow-visible">
               
               {/* Modal Top Control Bar */}
               <div className="no-print flex items-center justify-between border-b border-slate-800 pb-3">
@@ -2799,7 +2818,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                   <button
                     type="button"
                     onClick={() => window.print()}
-                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all"
+                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
                   >
                     <Printer className="w-4 h-4" />
                     <span>Print</span>
@@ -2843,13 +2862,13 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
 
               {/* VIEW 1: OFFICIAL WHOLESALE PAYMENT RECEIPT */}
               {receiptModalMode === 'receipt' && (
-                <div id="printable-payment-receipt" className="bg-slate-950 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-5 text-slate-200">
+                <div id="printable-payment-receipt" className="bg-slate-950 print:!bg-white print:!text-slate-950 border border-slate-800 print:!border-slate-300 rounded-2xl print:!rounded-lg p-5 sm:p-6 print:!p-6 space-y-5 text-slate-200 print:shadow-none">
                   {/* Receipt Header / Letterhead */}
                   <div className="border-b border-slate-800 pb-4 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
                         <Building className="w-5 h-5 text-amber-400" />
-                        <h4 className="text-base font-black text-white tracking-wide">A.A. MASTER NIG. LIMITED</h4>
+                        <h4 className="text-base font-black text-white print:!text-slate-950 tracking-wide">A.A. MASTER NIG. LIMITED</h4>
                       </div>
                       <p className="text-[11px] text-slate-400 mt-0.5">Wholesale Cement Commercial &amp; Physical Loading Operations</p>
                       <p className="text-[10px] text-slate-500 font-mono">RC: RC-1928410 • TIN: 29810419-0001</p>
@@ -2870,7 +2889,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                   </div>
 
                   {/* Customer & Order Metadata */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-900/60 print:!bg-slate-50 p-3.5 rounded-xl border border-slate-800 print:!border-slate-300 text-xs">
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Issued To (Customer):</span>
                       <strong className="text-white text-sm block mt-0.5">{viewingPaymentReceipt.customerName}</strong>
@@ -2889,9 +2908,9 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                   </div>
 
                   {/* Itemized Order Summary */}
-                  <div className="overflow-x-auto rounded-xl border border-slate-800">
+                  <div className="overflow-x-auto rounded-xl border border-slate-800 print:!border-slate-300">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-900 text-slate-400 uppercase font-bold text-[10px] border-b border-slate-800">
+                      <thead className="bg-slate-900 print:!bg-slate-100 text-slate-400 print:!text-slate-700 uppercase font-bold text-[10px] border-b border-slate-800 print:!border-slate-300">
                         <tr>
                           <th className="p-3">Product Description</th>
                           <th className="p-3 text-center">Trailers Ordered</th>
@@ -2912,7 +2931,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                           <td className="p-3 text-right text-emerald-400 font-black text-xs">₦{viewingPaymentReceipt.amount.toLocaleString('en-NG')}</td>
                         </tr>
                       </tbody>
-                      <tfoot className="bg-slate-900/80 font-bold border-t border-slate-800">
+                      <tfoot className="bg-slate-900/80 print:!bg-slate-50 font-bold border-t border-slate-800 print:!border-slate-300">
                         <tr>
                           <td colSpan={4} className="p-3 text-right text-slate-300 uppercase text-[10px] tracking-wider">
                             Total 100% Upfront Amount Paid:
@@ -2971,21 +2990,41 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
 
               {/* VIEW 2: TREASURY RECONCILIATION AUDIT SLIP */}
               {receiptModalMode === 'audit' && (
-                <div id="printable-audit-slip" className="bg-slate-950 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-5 text-slate-200">
-                  <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
+                <div id="printable-audit-slip" className="bg-slate-950 print:!bg-white print:!text-slate-950 border border-slate-800 print:!border-slate-300 rounded-2xl print:!rounded-lg p-5 sm:p-6 print:!p-6 space-y-5 text-slate-200 print:shadow-none">
+                  {/* Audit Slip Corporate Letterhead */}
+                  <div className="border-b border-slate-800 pb-4 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-5 h-5 text-purple-400" />
-                        <h4 className="text-sm font-black text-white">TREASURY RECONCILIATION AUDIT SLIP</h4>
+                        <Building className="w-5 h-5 text-purple-400 print:!text-purple-700" />
+                        <h4 className="text-base font-black text-white print:!text-slate-950 tracking-wide">A.A. MASTER NIG. LIMITED</h4>
                       </div>
-                      <p className="text-[10px] text-slate-400 mt-0.5">Internal Accounting &amp; Executive Compliance Proof</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Wholesale Cement Commercial &amp; Physical Loading Operations</p>
+                      <p className="text-[10px] text-slate-500 font-mono">RC: RC-1928410 • TIN: 29810419-0001</p>
+                      <p className="text-[10px] text-slate-500">Kalambaina Industrial Hub, Cement Works Expressway, Sokoto State</p>
                     </div>
-                    <span className="px-2.5 py-1 rounded-lg bg-purple-950 text-purple-300 border border-purple-800 text-[10px] font-black uppercase font-mono">
-                      AUDIT STATUS: VERIFIED
-                    </span>
+
+                    <div className="sm:text-right space-y-1">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-950 print:!bg-purple-100 text-purple-300 print:!text-purple-900 border border-purple-800 print:!border-purple-300 text-[10px] font-black uppercase font-mono">
+                        <ShieldCheck className="w-3.5 h-3.5 text-purple-400" /> AUDIT STATUS: VERIFIED
+                      </span>
+                      <div className="text-[11px] text-slate-400 font-mono">
+                        Audit Ref: <strong className="text-white font-mono">AUD-{viewingPaymentReceipt.id.toUpperCase()}</strong>
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono">
+                        Date: {new Date(viewingPaymentReceipt.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 text-xs bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                  <div className="flex items-center gap-2 bg-purple-950/30 print:!bg-purple-50 border border-purple-800/40 print:!border-purple-300 p-2.5 rounded-xl text-purple-300 print:!text-purple-950 text-xs">
+                    <ShieldCheck className="w-4 h-4 text-purple-400 shrink-0" />
+                    <div>
+                      <span className="font-bold uppercase tracking-wider block text-[11px]">TREASURY RECONCILIATION AUDIT SLIP</span>
+                      <span className="text-[10px] text-slate-400">Internal Accounting &amp; Executive Compliance Proof — 100% Upfront Direct Bank Settlement Verification</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs bg-slate-900/80 print:!bg-slate-50 p-4 rounded-xl border border-slate-800 print:!border-slate-300">
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-bold block">Internal Payment ID:</span>
                       <span className="font-mono text-white font-bold">{viewingPaymentReceipt.id}</span>
@@ -3021,7 +3060,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                   </div>
 
                   {/* Verifier Attestation */}
-                  <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-2 text-xs">
+                  <div className="bg-slate-900/60 print:!bg-slate-50 p-4 rounded-xl border border-slate-800 print:!border-slate-300 space-y-2 text-xs">
                     <span className="text-[10px] text-slate-400 uppercase font-bold block">Reconciling Authority Attestation:</span>
                     <div className="flex items-center justify-between text-xs pt-1">
                       <div>
@@ -3053,7 +3092,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
                   <button
                     type="button"
                     onClick={() => window.print()}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all"
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
                   >
                     <Printer className="w-4 h-4" />
                     <span>Print {receiptModalMode === 'receipt' ? 'Official Receipt' : 'Audit Slip'}</span>
@@ -3069,6 +3108,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
               </div>
             </div>
           </div>
+          </>
         );
       })()}
 

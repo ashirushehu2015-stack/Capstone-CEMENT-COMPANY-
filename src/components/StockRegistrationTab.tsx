@@ -170,7 +170,7 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
           <h2 className="text-xl font-black text-white mt-1">Sokoto Cement Physical Stock Receipts</h2>
           <p className="text-xs text-slate-400 mt-1 max-w-2xl">
             Register physical cement received from factory kilns or suppliers. Enforces strictly 600 bags per full truck.
-            Stock increases authoritative inventory balance only upon Manager independent verification and approval.
+            Registering a new stock does not require any approval — authoritative inventory balance updates immediately upon registration.
           </p>
         </div>
 
@@ -187,13 +187,13 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
       {/* Rules & Permissions Info Banner */}
       <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-xl text-xs text-slate-300 space-y-1.5 font-mono">
         <div className="font-sans font-bold text-slate-200 flex items-center gap-2">
-          <ShieldAlert className="w-4 h-4 text-emerald-400" /> Separation of Duties & Truck Rules
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Direct Stock Intake &amp; Truck Rules
         </div>
         <p className="text-slate-400">
-          • Receiving staff: Assistant Manager / Manager registers incoming stock. Receiving staff <strong className="text-amber-400">cannot approve their own receipt</strong>.
+          • No Approval Required: Registering a new stock <strong className="text-emerald-400">does not require any approval</strong>. Authoritative inventory updates immediately upon registration.
         </p>
         <p className="text-slate-400">
-          • Approvals: <strong className="text-emerald-400">Manager only</strong>. Agents are prohibited from approving receipts.
+          • Receiving Staff: Authorized depot staff can register incoming factory physical stock.
         </p>
         <p className="text-slate-400">
           • Trucks: Fixed at <strong className="text-white">600 bags per truck</strong>. Formula: <span className="text-amber-400">total_bags_received = number_of_trucks × 600</span>.
@@ -216,7 +216,7 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
         <div className="flex items-center gap-2">
           <Filter className="w-3.5 h-3.5 text-slate-400" />
           <div className="flex rounded-lg overflow-hidden border border-slate-800 text-xs">
-            {['ALL', 'PENDING_VERIFICATION', 'APPROVED', 'REJECTED', 'REVERSED', 'DRAFT'].map((st) => (
+            {['ALL', 'APPROVED', 'PENDING_VERIFICATION', 'REVERSED', 'REJECTED', 'DRAFT'].map((st) => (
               <button
                 key={st}
                 onClick={() => setStatusFilter(st)}
@@ -288,6 +288,8 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
                         <span className="text-slate-300 block">Rec: {r.receivingStaffName}</span>
                         {r.verifierName ? (
                           <span className="text-[10px] text-emerald-400">Ver: {r.verifierName}</span>
+                        ) : r.status === 'APPROVED' ? (
+                          <span className="text-[10px] text-emerald-400 font-semibold">Direct Intake</span>
                         ) : (
                           <span className="text-[10px] text-amber-400 italic">Unverified</span>
                         )}
@@ -331,9 +333,9 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
                           </>
                         )}
 
-                        {r.status === 'PENDING_VERIFICATION' && isCreator && (
-                          <span className="text-[10px] text-slate-500 italic block">
-                            Self-approval prohibited (Separation of duties)
+                        {r.status === 'APPROVED' && (
+                          <span className="text-[10px] text-emerald-400 font-bold inline-block mr-1">
+                            ✓ Posted to Inventory
                           </span>
                         )}
 
@@ -367,7 +369,7 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                   <Truck className="w-5 h-5 text-amber-500" /> Register New Stock
                 </h3>
-                <p className="text-xs text-slate-400">Record direct factory stock purchase allocation at plant depot</p>
+                <p className="text-xs text-slate-400">Record incoming cement delivery — inventory balance updates immediately upon registration (no approval required)</p>
               </div>
               <button
                 onClick={() => setShowCreateModal(false)}
@@ -378,6 +380,13 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
             </div>
 
             <form onSubmit={handleCreateReceipt} className="space-y-4 text-xs">
+              <div className="p-3 bg-emerald-950/40 border border-emerald-800/60 rounded-xl text-xs text-emerald-300 flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Direct Inventory Intake:</strong> Registering this stock does not require any approval. The {calculatedBags.toLocaleString()} bags ({formData.trucksReceived} trucks) will immediately increase your physical and available inventory balance upon submission.
+                </span>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-slate-300 font-semibold mb-1">Supplier Name *</label>
@@ -438,8 +447,6 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
                 </div>
               </div>
 
-              
-
               <div>
                 <label className="block text-slate-300 font-semibold mb-1">Notes / Discrepancy Observations</label>
                 <textarea
@@ -460,7 +467,7 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
                   className="rounded border-slate-800 bg-slate-950 text-amber-500"
                 />
                 <label htmlFor="draftCheckbox" className="text-slate-400 text-xs cursor-pointer">
-                  Save as Draft (will not enter verification queue until submitted)
+                  Save as Draft (will not post to inventory balance until submitted)
                 </label>
               </div>
 
@@ -478,7 +485,7 @@ export const StockRegistrationTab: React.FC<StockRegistrationTabProps> = ({
                   className="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl flex items-center gap-2 disabled:opacity-50"
                 >
                   {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                  Register New Stock ({calculatedBags.toLocaleString()} Bags)
+                  Register &amp; Post Stock ({calculatedBags.toLocaleString()} Bags)
                 </button>
               </div>
             </form>

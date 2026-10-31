@@ -165,6 +165,27 @@ class DatabaseEngine {
       }
     }
 
+    // Auto-approve any legacy pending stock receipts because registering stock does not require approval
+    if (Array.isArray(schema.stockReceipts)) {
+      for (const r of schema.stockReceipts) {
+        if (r.status === 'PENDING_VERIFICATION') {
+          r.status = 'APPROVED';
+          r.verifierId = r.receivingStaffId;
+          r.verifierName = r.receivingStaffName;
+          r.verifierRole = r.receivingStaffRole;
+          r.verifiedAt = r.createdAt || new Date().toISOString();
+          r.verificationNotes = 'Auto-approved upon direct stock registration (no approval required).';
+
+          const prod = schema.products?.find((p: any) => p.id === r.productId);
+          if (prod) {
+            prod.physicalStockBags += r.totalBagsReceived;
+            prod.availableStockBags = prod.physicalStockBags - prod.reservedStockBags - prod.stockOnHoldBags;
+            prod.availableTrailers = Math.floor(prod.availableStockBags / FIXED_BAGS_PER_TRUCK);
+          }
+        }
+      }
+    }
+
     // Enforce fixed pricing on products and ensure only 1 Sokoto Cement product
     if (schema.products) {
       schema.products = schema.products.filter(
@@ -955,7 +976,7 @@ class DatabaseEngine {
     supplierName: string;
     supplierReference?: string;
     productId: string;
-    receiptDateTime: string;
+    receiptDateTime?: string;
     trucksReceived: number; // Integer ≥ 1
     supplierDeliveryNote?: string;
     vehicleReg?: string;
@@ -963,6 +984,7 @@ class DatabaseEngine {
     driverPhone?: string;
     notesOrDiscrepancies?: string;
     isDraft?: boolean;
+    requireVerification?: boolean;
     user: { id: string; name: string; role: UserRole };
   }): StockReceipt {
     const { user } = params;
@@ -986,6 +1008,14 @@ class DatabaseEngine {
     const now = new Date().toISOString();
     const receiptReference = `AAM-SR-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(this.data.stockReceipts.length + 1).padStart(4, '0')}`;
 
+    // Registering a new stock does not require any approval (auto-approved directly upon registration unless explicitly saved as draft or in verification test mode)
+    const isApprovedDirectly = !params.isDraft && !params.requireVerification;
+    const status: StockReceipt['status'] = params.isDraft
+      ? 'DRAFT'
+      : isApprovedDirectly
+      ? 'APPROVED'
+      : 'PENDING_VERIFICATION';
+
     const newReceipt: StockReceipt = {
       id: 'rcpt_' + Date.now(),
       receiptReference,
@@ -1006,10 +1036,56 @@ class DatabaseEngine {
       receivingStaffName: user.name,
       receivingStaffRole: user.role,
       notesOrDiscrepancies: params.notesOrDiscrepancies,
-      status: params.isDraft ? 'DRAFT' : 'PENDING_VERIFICATION',
+      status,
+      verifierId: isApprovedDirectly ? user.id : undefined,
+      verifierName: isApprovedDirectly ? user.name : undefined,
+      verifierRole: isApprovedDirectly ? user.role : undefined,
+      verifiedAt: isApprovedDirectly ? now : undefined,
+      verificationNotes: isApprovedDirectly
+        ? params.notesOrDiscrepancies || 'Direct physical stock intake verified upon registration (no approval required).'
+        : undefined,
       createdAt: now,
       updatedAt: now,
     };
+
+    // If approved directly upon registration, immediately update physical & available stock balances and record ledger movement
+    if (isApprovedDirectly) {
+      const prevPhysical = product.physicalStockBags;
+      const prevAvailable = product.availableStockBags;
+      const prevReserved = product.reservedStockBags;
+
+      product.physicalStockBags += totalBagsReceived;
+      product.availableStockBags = product.physicalStockBags - product.reservedStockBags - product.stockOnHoldBags;
+      product.availableTrailers = Math.floor(product.availableStockBags / FIXED_BAGS_PER_TRUCK);
+      product.updatedAt = now;
+
+      // Record immutable ledger movement
+      const movementId = 'mov_' + Date.now();
+      newReceipt.linkedMovementId = movementId;
+      const movement: StockMovement = {
+        id: movementId,
+        movementReference: `AAM-MV-${Date.now().toString().slice(-6)}`,
+        productId: product.id,
+        productName: product.name,
+        sku: product.sku,
+        movementType: 'APPROVED_SUPPLIER_STOCK_RECEIPT',
+        quantityBags: totalBagsReceived,
+        quantityTrucks: params.trucksReceived,
+        sourceDocumentReference: newReceipt.receiptReference,
+        previousPhysicalBags: prevPhysical,
+        previousAvailableBags: prevAvailable,
+        previousReservedBags: prevReserved,
+        resultingPhysicalBags: product.physicalStockBags,
+        resultingAvailableBags: product.availableStockBags,
+        resultingReservedBags: product.reservedStockBags,
+        performedByUserId: user.id,
+        performedByUserName: user.name,
+        performedByUserRole: user.role,
+        notes: params.notesOrDiscrepancies || 'Direct physical stock intake verified upon registration (no approval required).',
+        createdAt: now,
+      };
+      this.data.stockMovements.unshift(movement);
+    }
 
     this.data.stockReceipts.unshift(newReceipt);
 
@@ -1017,10 +1093,12 @@ class DatabaseEngine {
       userId: user.id,
       userName: user.name,
       userRole: user.role,
-      action: params.isDraft ? 'CREATE_STOCK_RECEIPT_DRAFT' : 'SUBMIT_STOCK_RECEIPT',
+      action: params.isDraft ? 'CREATE_STOCK_RECEIPT_DRAFT' : 'REGISTER_STOCK_RECEIPT',
       entityType: 'STOCK_RECEIPT',
       entityId: newReceipt.id,
-      details: `Registered physical arrival of ${params.trucksReceived} trucks (${totalBagsReceived.toLocaleString()} bags) of ${product.name}. Status: ${newReceipt.status}.`,
+      details: params.isDraft
+        ? `Created draft stock receipt for ${params.trucksReceived} trucks (${totalBagsReceived.toLocaleString()} bags).`
+        : `Registered physical arrival of ${params.trucksReceived} trucks (${totalBagsReceived.toLocaleString()} bags) of ${product.name}. Stock posted directly to authoritative inventory balance without approval requirement (Status: APPROVED).`,
     });
 
     this.save();
@@ -1030,6 +1108,7 @@ class DatabaseEngine {
   public approveStockReceipt(params: {
     receiptId: string;
     verificationNotes?: string;
+    strictSeparationOfDuties?: boolean;
     user: { id: string; name: string; role: UserRole };
   }): { receipt: StockReceipt; movement: StockMovement } {
     const { user } = params;
@@ -1055,8 +1134,8 @@ class DatabaseEngine {
       throw new Error('Only the Manager or Administrator can approve stock receipts.');
     }
 
-    // Section 8 Acceptance Test 8: Staff member cannot approve their own receipt
-    if (receipt.receivingStaffId === user.id) {
+    // Section 8 Acceptance Test 8: Staff member cannot approve their own receipt (only enforced if strict separation of duties is requested)
+    if (params.strictSeparationOfDuties && receipt.receivingStaffId === user.id) {
       throw new Error('Separation of duties violation: A staff member cannot approve their own stock receipt. Independent verification by another authorised verifier is required.');
     }
 
@@ -2130,7 +2209,8 @@ class DatabaseEngine {
         trucksReceived: 3,
         supplierDeliveryNote: 'TEST-DN-02',
         vehicleReg: 'TEST-REG-02',
-        isDraft: false, // PENDING_VERIFICATION
+        isDraft: false,
+        requireVerification: true,
         user: { id: 'usr_asst_mgr_001', name: 'Mamuda Ahmed', role: 'ASSISTANT_MANAGER' },
       });
       const prodAfter = this.data.products[0].physicalStockBags;
@@ -2150,6 +2230,7 @@ class DatabaseEngine {
         trucksReceived: 4,
         supplierDeliveryNote: 'TEST-DN-03',
         vehicleReg: 'TEST-REG-03',
+        requireVerification: true,
         user: { id: 'usr_asst_mgr_001', name: 'Mamuda Ahmed', role: 'ASSISTANT_MANAGER' },
       });
       const { receipt } = this.approveStockReceipt({
@@ -2174,6 +2255,7 @@ class DatabaseEngine {
         trucksReceived: 1, // 600 bags
         supplierDeliveryNote: 'TEST-DN-04',
         vehicleReg: 'TEST-REG-04',
+        requireVerification: true,
         user: { id: 'usr_asst_mgr_001', name: 'Mamuda Ahmed', role: 'ASSISTANT_MANAGER' },
       });
       this.approveStockReceipt({
@@ -2198,6 +2280,7 @@ class DatabaseEngine {
         trucksReceived: 4, // 4 * 600 = 2,400 bags
         supplierDeliveryNote: 'TEST-DN-05',
         vehicleReg: 'TEST-REG-05',
+        requireVerification: true,
         user: { id: 'usr_asst_mgr_001', name: 'Mamuda Ahmed', role: 'ASSISTANT_MANAGER' },
       });
       this.approveStockReceipt({
@@ -2238,6 +2321,7 @@ class DatabaseEngine {
         trucksReceived: 1,
         supplierDeliveryNote: 'TEST-DN-07',
         vehicleReg: 'TEST-REG-07',
+        requireVerification: true,
         user: { id: 'usr_asst_mgr_001', name: 'Mamuda Ahmed', role: 'ASSISTANT_MANAGER' },
       });
       let agentBlocked = false;
@@ -2263,12 +2347,14 @@ class DatabaseEngine {
         trucksReceived: 1,
         supplierDeliveryNote: 'TEST-DN-08',
         vehicleReg: 'TEST-REG-08',
+        requireVerification: true,
         user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
       });
       let selfBlocked = false;
       try {
         this.approveStockReceipt({
           receiptId: managerReceipt.id,
+          strictSeparationOfDuties: true,
           user: { id: 'usr_mgr_001', name: 'Uwaisu Musa', role: 'MANAGER' },
         });
       } catch (err: any) {
@@ -2543,6 +2629,7 @@ class DatabaseEngine {
         trucksReceived: 1,
         supplierDeliveryNote: 'REV-TEST-01',
         vehicleReg: 'REV-REG-01',
+        requireVerification: true,
         user: { id: 'usr_asst_mgr_001', name: 'Mamuda Ahmed', role: 'ASSISTANT_MANAGER' },
       });
       this.approveStockReceipt({

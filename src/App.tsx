@@ -306,7 +306,7 @@ function StorefrontContent() {
   };
 
   return (
-    <div className={`w-screen ${activeView === 'landing' ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-[#040914] text-slate-100 font-sans flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950`}>
+    <div className={`w-full ${activeView === 'landing' ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-[#040914] print:bg-white print:text-black print:min-h-0 print:h-auto text-slate-100 font-sans flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950`}>
       
       {/* 1. TOP STATUS & NAVIGATION BAR (Only on Landing Screen so Customer Portal & Staff Dashboard have no duplicate header) */}
       {activeView === 'landing' && (
@@ -349,9 +349,9 @@ function StorefrontContent() {
       )}
 
       {/* RENDER VIEW: STAFF LOGISTICS PORTAL, CUSTOMER FACING PORTAL, OR SPLIT LANDING PAGE */}
-      <div className="flex-1 min-h-0 flex flex-col print:hidden">
+      <div className={`flex-1 min-h-0 flex flex-col ${receiptOrder ? 'print:hidden' : ''} print:block print:h-auto print:min-h-0 print:overflow-visible`}>
       {activeView === 'dashboard' && isStaff ? (
-        <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto print:block print:h-auto print:min-h-0 print:overflow-visible">
           <StaffDashboard
             onClose={() => setActiveView('landing')}
             onViewOrderReceipt={(order) => setReceiptOrder(order)}

@@ -2,19 +2,89 @@
 
 @page {
   size: A4 portrait;
-  margin: 8mm 10mm;
+  margin: 10mm 12mm;
 }
 
 @media print {
-  html, body {
-    width: 210mm !important;
-    max-width: 210mm !important;
+  /* 1. Global Page Reset: Pure White Paper, Clean Dark Text */
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #ffffff !important;
-    color: #000000 !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  /* 2. Hide all non-printable buttons, headers, sidebars and controls */
+  .no-print,
+  .print\:hidden,
+  button {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* 3. When printing a payment receipt or audit slip via the print portal, completely hide #root */
+  body.printing-slip-active #root,
+  body:has(#printable-slip-portal) #root {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* 4. Display the clean printable slip portal directly on the page */
+  #printable-slip-portal {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 20px 24px !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    box-sizing: border-box !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 10px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #printable-slip-portal * {
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  #printable-slip-portal strong,
+  #printable-slip-portal h4 {
+    color: #020617 !important;
+  }
+
+  /* Reset modal overlay containers so they do not cover or black out the page in any fallback */
+  div[class*="fixed"][class*="inset-0"] {
+    position: static !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* 5. Printable Waybill Formatting */
+  #printable-waybill {
+    position: static !important;
+    width: 100% !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
   }
 
   .print-page-1 {
@@ -28,6 +98,7 @@
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
+    background: #ffffff !important;
   }
 
   .print-page-2 {
@@ -43,37 +114,6 @@
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
-  }
-
-  .no-print {
-    display: none !important;
-  }
-
-  #printable-payment-receipt,
-  #printable-audit-slip {
     background: #ffffff !important;
-    color: #0f172a !important;
-    border: 1px solid #cbd5e1 !important;
-    box-shadow: none !important;
-  }
-
-  #printable-payment-receipt *,
-  #printable-audit-slip * {
-    color: #0f172a !important;
-    border-color: #cbd5e1 !important;
-  }
-
-  #printable-payment-receipt .text-emerald-400,
-  #printable-payment-receipt .text-amber-400,
-  #printable-payment-receipt .text-emerald-300 {
-    color: #047857 !important;
-    font-weight: 800 !important;
-  }
-
-  #printable-payment-receipt .bg-slate-900,
-  #printable-payment-receipt .bg-slate-900\/60,
-  #printable-payment-receipt .bg-slate-900\/80,
-  #printable-payment-receipt .bg-slate-950 {
-    background: #f8fafc !important;
   }
 }

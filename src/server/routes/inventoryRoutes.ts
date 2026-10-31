@@ -120,7 +120,9 @@ router.post(
       return res.status(201).json({
         success: true,
         receipt,
-        message: `Stock receipt ${receipt.receiptReference} registered for ${receipt.trucksReceived} trucks (${receipt.totalBagsReceived.toLocaleString()} bags). Status: ${receipt.status}.`,
+        message: receipt.status === 'APPROVED'
+          ? `Stock receipt ${receipt.receiptReference} registered and posted directly to inventory (${receipt.trucksReceived} trucks / ${receipt.totalBagsReceived.toLocaleString()} bags). No approval required.`
+          : `Stock receipt ${receipt.receiptReference} saved as draft (${receipt.trucksReceived} trucks / ${receipt.totalBagsReceived.toLocaleString()} bags).`,
       });
     } catch (err: any) {
       return res.status(400).json({ success: false, error: err.message || 'Failed to register stock receipt' });

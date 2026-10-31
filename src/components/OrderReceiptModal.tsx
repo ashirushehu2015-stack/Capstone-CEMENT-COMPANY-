@@ -88,7 +88,7 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
         </div>
 
         {/* Printable Official Waybill & Gate Pass Document Body */}
-        <div ref={receiptRef} className="p-4 sm:p-8 space-y-8 print:space-y-0 bg-slate-100 print:bg-white text-slate-900 print:p-0">
+        <div id="printable-waybill" ref={receiptRef} className="p-4 sm:p-8 space-y-8 print:space-y-0 bg-slate-100 print:bg-white text-slate-900 print:p-0">
           
           {/* ============================================================== */}
           {/* PAGE 1: COMMERCIAL WAYBILL & HAULAGE MANIFEST                   */}
