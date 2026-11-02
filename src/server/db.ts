@@ -1078,11 +1078,11 @@ class DatabaseEngine {
         resultingPhysicalBags: product.physicalStockBags,
         resultingAvailableBags: product.availableStockBags,
         resultingReservedBags: product.reservedStockBags,
-        performedByUserId: user.id,
-        performedByUserName: user.name,
-        performedByUserRole: user.role,
-        notes: params.notesOrDiscrepancies || 'Direct physical stock intake verified upon registration (no approval required).',
-        createdAt: now,
+        userResponsibleId: user.id,
+        userResponsibleName: user.name,
+        userRole: user.role,
+        reason: params.notesOrDiscrepancies || 'Direct physical stock intake verified upon registration (no approval required).',
+        timestamp: now,
       };
       this.data.stockMovements.unshift(movement);
     }

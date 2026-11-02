@@ -192,12 +192,14 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
   const [orderRejectionReason, setOrderRejectionReason] = useState<string>('');
 
   const [driverForm, setDriverForm] = useState({
-    deliveryOfficerId: 'usr_driver_001',
+    deliveryOfficerId: 'usr_agent_001',
     truckTractorHeadReg: 'SKK-782-XA',
     trailerBedReg: 'T-904-SOK',
     driverPhone: '+234 812 555 6677',
     notes: '30-Ton Articulated Trailer haulage dispatched',
   });
+  const [isAssigningDriver, setIsAssigningDriver] = useState(false);
+  const [assignDriverError, setAssignDriverError] = useState<string | null>(null);
 
   const [confirmDeliveryForm, setConfirmDeliveryForm] = useState({
     recipientSignatureName: '',
@@ -361,14 +363,20 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
 
   const handleAssignDriver = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!showAssignDriverModal) return;
+    if (!showAssignDriverModal || isAssigningDriver) return;
+    setIsAssigningDriver(true);
+    setAssignDriverError(null);
     try {
       await apiDeliveries.assign(showAssignDriverModal.id, driverForm);
       showNotification('success', `Driver & Rig ${driverForm.truckTractorHeadReg} / ${driverForm.trailerBedReg} assigned.`);
       setShowAssignDriverModal(null);
       loadAllData();
     } catch (err: any) {
-      showNotification('error', err.message || 'Failed to assign driver');
+      const errMsg = err.message || 'Failed to assign driver';
+      setAssignDriverError(errMsg);
+      showNotification('error', errMsg);
+    } finally {
+      setIsAssigningDriver(false);
     }
   };
 
@@ -3248,15 +3256,41 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
               </button>
             </div>
             <form onSubmit={handleAssignDriver} className="space-y-3">
+              {assignDriverError && (
+                <div className="p-3 bg-rose-950/80 border border-rose-800 rounded-xl text-rose-300 text-xs flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>{assignDriverError}</span>
+                </div>
+              )}
               <div>
                 <label className="text-slate-400 block mb-1">Articulated Fleet Captain / Driver</label>
                 <select
                   value={driverForm.deliveryOfficerId}
-                  onChange={(e) => setDriverForm({ ...driverForm, deliveryOfficerId: e.target.value })}
+                  onChange={(e) => {
+                    const selId = e.target.value;
+                    const matchedStaff = staffList.find(s => s.id === selId);
+                    setDriverForm({
+                      ...driverForm,
+                      deliveryOfficerId: selId,
+                      driverPhone: matchedStaff?.phone || driverForm.driverPhone,
+                    });
+                  }}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold"
                 >
-                  <option value="usr_driver_001">Isiyaka Sulaiman (Articulated Fleet Captain)</option>
-                  <option value="usr_driver_002">Bello Gusau (Kalambaina Heavy Rig Master)</option>
+                  {staffList.filter(s => s.role === 'AGENT' || s.role === 'DELIVERY_OFFICER').length > 0 ? (
+                    staffList
+                      .filter(s => s.role === 'AGENT' || s.role === 'DELIVERY_OFFICER')
+                      .map(s => (
+                        <option key={s.id} value={s.id}>
+                          {s.fullName} ({s.role === 'AGENT' ? 'Fleet Agent / Captain' : 'Fleet Driver'})
+                        </option>
+                      ))
+                  ) : (
+                    <>
+                      <option value="usr_agent_001">Isiyaka Sulaiman (Articulated Fleet Captain)</option>
+                      <option value="usr_driver_002">Bello Gusau (Kalambaina Heavy Rig Master)</option>
+                    </>
+                  )}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -3296,16 +3330,27 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ onClose, onViewO
               <div className="pt-2 flex justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setShowAssignDriverModal(null)}
+                  onClick={() => {
+                    setAssignDriverError(null);
+                    setShowAssignDriverModal(null);
+                  }}
                   className="px-4 py-2 text-slate-400 hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-xl"
+                  disabled={isAssigningDriver}
+                  className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold px-4 py-2 rounded-xl flex items-center gap-2"
                 >
-                  Assign to Rig
+                  {isAssigningDriver ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Assigning...
+                    </>
+                  ) : (
+                    'Assign to Rig'
+                  )}
                 </button>
               </div>
             </form>
